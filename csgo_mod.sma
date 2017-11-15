@@ -1991,7 +1991,7 @@ public load_data(id)
 public load_data_handle(failState, Handle:query, error[], errorNum, playerId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO] SQL Error: %s (%d)", error, errorNum);
 		
 		return;
 	}
@@ -2070,7 +2070,7 @@ public load_skins(id)
 public load_skins_handle(failState, Handle:query, error[], errorNum, playerId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO] SQL Error: %s (%d)", error, errorNum);
 		
 		return;
 	}
@@ -2100,8 +2100,8 @@ public load_skins_handle(failState, Handle:query, error[], errorNum, playerId[],
 public ignore_handle(failState, Handle:query, error[], errorNum, data[], dataSize)
 {
 	if (failState) {
-		if (failState == TQUERY_CONNECT_FAILED) log_to_file("csgo-error.log", "Could not connect to SQL database. [%d] %s", errorNum, error);
-		else if (failState == TQUERY_QUERY_FAILED) log_to_file("csgo-error.log", "Query failed. [%d] %s", errorNum, error);
+		if (failState == TQUERY_CONNECT_FAILED) log_to_file("csgo-error.log", "[CS:GO] Could not connect to SQL database. [%d] %s", errorNum, error);
+		else if (failState == TQUERY_QUERY_FAILED) log_to_file("csgo-error.log", "[CS:GO] Query failed. [%d] %s", errorNum, error);
 	}
 	
 	return PLUGIN_CONTINUE;

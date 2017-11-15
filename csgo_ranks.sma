@@ -8,7 +8,7 @@
 #include <csgomod>
 
 #define PLUGIN "CS:GO Rank System"
-#define VERSION "1.3"
+#define VERSION "1.4"
 #define AUTHOR "O'Zone"
 
 #define get_bit(%2,%1) (%1 & (1<<(%2&31)))
@@ -26,7 +26,7 @@
 #define STATS 1
 #define TEAM_RANK 2
 #define ENEMY_RANK 4
-#define ABOVE_HEAD 8
+#define BELOW_HEAD 8
 
 new const rankName[MAX_RANKS + 1][] = {
 	"Unranked",
@@ -150,10 +150,10 @@ public plugin_precache()
 {
 	new spriteFile[32], bool:error;
 	
-	for (new i = 1; i <= MAX_RANKS; i++) {
+	for (new i = 0; i <= MAX_RANKS; i++) {
 		spriteFile[0] = '^0';
 
-		formatex(spriteFile, charsmax(spriteFile), "sprites/rank_system/%d.spr", i - 1);
+		formatex(spriteFile, charsmax(spriteFile), "sprites/csgo_ranks/%d.spr", i);
 		
 		if (!file_exists(spriteFile)) {
 			log_to_file("csgo-error.log", "[CS:GO] Brakujacy plik sprite: ^"%s^"", spriteFile);
@@ -224,13 +224,14 @@ public client_putinserver(id)
 	rem_bit(id, soundLastLeft);
 	rem_bit(id, soundPrepare);
 	
-	load_data(id);
+	set_task(0.1, "load_data", id);
 }
 	
 public client_disconnected(id)
 {
 	save_data(id, mapChange ? 2 : 1);
-		
+	
+	remove_task(id);
 	remove_task(id + TASK_HUD);
 	remove_task(id + TASK_TIME);
 
@@ -255,7 +256,7 @@ public load_data(id)
 public load_data_handle(failState, Handle:query, error[], errorNum, playerId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Stats] SQL Error: %s (%d)", error, errorNum);
 		
 		return;
 	}
@@ -281,7 +282,7 @@ public load_data_handle(failState, Handle:query, error[], errorNum, playerId[], 
 
 		check_rank(id, 1);
 	} else {
-		new queryData[128], firstVisit = get_systime();
+		new queryData[192], firstVisit = get_systime();
 
 		formatex(queryData, charsmax(queryData), "INSERT IGNORE INTO `csgo_ranks` (`name`, `firstvisit`, `elorank`) VALUES ('%s', '%i', '100');", playerData[id][SAFE_NAME], firstVisit);
 
@@ -350,8 +351,8 @@ stock save_data(id, end = 0)
 
 public ignore_handle(FailState, Handle:Query, Error[], ErrCode, Data[], DataSize)
 {
-	if (FailState == TQUERY_CONNECT_FAILED) log_to_file("csgo-error.log", "Could not connect to SQL database. [%d] %s", ErrCode, Error);
-	else if (FailState == TQUERY_QUERY_FAILED) log_to_file("csgo-error.log", "Query failed. [%d] %s", ErrCode, Error);
+	if (FailState == TQUERY_CONNECT_FAILED) log_to_file("csgo-error.log", "[CS:GO Ranks] Could not connect to SQL database. [%d] %s", ErrCode, Error);
+	else if (FailState == TQUERY_QUERY_FAILED) log_to_file("csgo-error.log", "[CS:GO Ranks] Query failed. [%d] %s", ErrCode, Error);
 }
 
 stock check_rank(id, check = 0)
@@ -612,7 +613,7 @@ public check_time(id)
 		return;
 	}
 	
-	set_bit(id, loaded);
+	set_bit(id, visit);
 	
 	new time = get_systime(), visitYear, Year, visitMonth, Month, visitDay, Day, visitHour, visitMinutes, visitSeconds;
 	
@@ -664,7 +665,7 @@ public cmd_topranks(id)
 public show_topranks(failState, Handle:query, error[], errorNum, playerId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Stats] SQL Error: %s (%d)", error, errorNum);
 		
 		return PLUGIN_HANDLED;
 	}
@@ -703,7 +704,7 @@ public show_topranks(failState, Handle:query, error[], errorNum, playerId[], dat
 
 public cmd_time(id)
 {
-	new queryData[128], playerId[1];
+	new queryData[192], playerId[1];
 
 	playerId[0] = id;
 	
@@ -717,7 +718,7 @@ public cmd_time(id)
 public show_time(failState, Handle:query, error[], errorNum, playerId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Stats] SQL Error: %s (%d)", error, errorNum);
 		
 		return PLUGIN_HANDLED;
 	}
@@ -756,7 +757,7 @@ public cmd_toptime(id)
 public show_toptime(failState, Handle:query, error[], errorNum, playerId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Stats] SQL Error: %s (%d)", error, errorNum);
 		
 		return PLUGIN_HANDLED;
 	}
@@ -805,7 +806,7 @@ public show_toptime(failState, Handle:query, error[], errorNum, playerId[], data
 
 public cmd_medals(id)
 {
-	new queryData[128], playerId[1];
+	new queryData[192], playerId[1];
 
 	playerId[0] = id;
 	
@@ -819,7 +820,7 @@ public cmd_medals(id)
 public show_medals(failState, Handle:query, error[], errorNum, playerId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Stats] SQL Error: %s (%d)", error, errorNum);
 		
 		return PLUGIN_HANDLED;
 	}
@@ -848,7 +849,7 @@ public cmd_topmedals(id)
 public show_topmedals(failState, Handle:query, error[], errorNum, playerId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Stats] SQL Error: %s (%d)", error, errorNum);
 		
 		return PLUGIN_HANDLED;
 	}
@@ -888,7 +889,7 @@ public show_topmedals(failState, Handle:query, error[], errorNum, playerId[], da
 
 public cmd_stats(id)
 {
-	new queryData[128], playerId[1];
+	new queryData[192], playerId[1];
 
 	playerId[0] = id;
 	
@@ -905,7 +906,7 @@ public cmd_stats(id)
 public show_stats(failState, Handle:query, error[], errorNum, playerId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Stats] SQL Error: %s (%d)", error, errorNum);
 		
 		return PLUGIN_HANDLED;
 	}
@@ -936,7 +937,7 @@ public cmd_topstats(id)
 public show_topstats(failState, Handle:query, error[], errorNum, playerId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Stats] SQL Error: %s (%d)", error, errorNum);
 		
 		return PLUGIN_HANDLED;
 	}
@@ -988,8 +989,8 @@ public show_icon(id)
 	if (get_user_team(target) == 1) color[0] = 255;
 	else color[1] = 255;
 
-	if (flags & ABOVE_HEAD) height = 0.35;
-	else height = 0.60;
+	if (flags & BELOW_HEAD) height = 0.6;
+	else height = 0.35;
 
 	if (get_user_team(id) == get_user_team(target)) {
 		if (flags && !defaultHUD) {
@@ -1008,9 +1009,8 @@ public show_icon(id)
 			}
 		}
 
-		create_attachment(id, target, 55, sprites[rank], 15);
-	} else if (flags && !defaultHUD)
-	{
+		create_attachment(id, target, 45, sprites[rank], 15);
+	} else if (flags && !defaultHUD) {
 		set_hudmessage(color[0], 50, color[1], -1.0, height, 1, 0.01, 3.0, 0.01, 0.01);
 
 		if (flags & ENEMY_RANK) ShowSyncHudMsg(id, aimHUD, "%s : %s", playerData[target][PLAYER_NAME], rankName[rank]);

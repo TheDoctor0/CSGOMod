@@ -630,7 +630,7 @@ public load_account(id)
 public load_account_handle(failState, Handle:query, error[], errorNum, tempId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Accounts] SQL Error: %s (%d)", error, errorNum);
 		
 		return;
 	}
@@ -682,8 +682,8 @@ public account_query(id, type)
 public ignore_handle(failState, Handle:query, error[], errorNum, data[], dataSize)
 {
 	if (failState) {
-		if (failState == TQUERY_CONNECT_FAILED) log_to_file("csgo-error.log", "Could not connect to SQL database. [%d] %s", errorNum, error);
-		else if (failState == TQUERY_QUERY_FAILED) log_to_file("csgo-error.log", "Query failed. [%d] %s", errorNum, error);
+		if (failState == TQUERY_CONNECT_FAILED) log_to_file("csgo-error.log", "[CS:GO Accounts] Could not connect to SQL database. [%d] %s", errorNum, error);
+		else if (failState == TQUERY_QUERY_FAILED) log_to_file("csgo-error.log", "[CS:GO Accounts] Query failed. [%d] %s", errorNum, error);
 	}
 	
 	return PLUGIN_CONTINUE;
