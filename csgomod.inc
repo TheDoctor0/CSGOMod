@@ -36,6 +36,13 @@ Zwraca id wykonywanej operacji.
 native csgo_get_user_operation(id);
 
 /*------------------------------
+Zwraca opis wykonywanej opracji.
+Format: "x/x (x.x%)"
+"Wpisz /operacja" w przypadku braku operacji.
+------------------------------*/
+native csgo_get_user_operation_text(id, dataReturn[], dataLength);
+
+/*------------------------------
 Zwraca progres wykonania operacji.
 -1 w przypadku braku operacji.
 ------------------------------*/

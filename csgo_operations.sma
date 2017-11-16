@@ -54,6 +54,7 @@ public plugin_init()
 public plugin_natives()
 {
 	register_native("csgo_get_user_operation", "_csgo_get_user_operation", 1);
+	register_native("csgo_get_user_operation_text", "_csgo_get_user_operation_text", 1);
 	register_native("csgo_get_user_operation_progress", "_csgo_get_user_operation_progress", 1);
 	register_native("csgo_get_user_operation_need", "_csgo_get_user_operation_need", 1);
 }
@@ -74,6 +75,8 @@ public plugin_cfg()
 	}
 	
 	new lineData[128], operationData[4][16], operationInfo[operationsInfo], file = fopen(filePath, "r");
+
+	ArrayPushArray(operationList, operationInfo);
 	
 	while (!feof(file)) {
 		fgets(file, lineData, charsmax(lineData));
@@ -363,13 +366,21 @@ stock add_progress(id, amount = 1)
 }
 
 stock get_progress(id)
-	return playerData[id][PLAYER_PROGRESS] ? playerData[id][PLAYER_PROGRESS] : -1;
+	return playerData[id][PLAYER_ID] > -1 ? playerData[id][PLAYER_PROGRESS] : -1;
 
 stock get_progress_need(id)
 	return playerData[id][PLAYER_TYPE] ? get_operation_info(playerData[id][PLAYER_ID], OPERATION_AMOUNT) : -1;
 
 public _csgo_get_user_operation(id)
 	return playerData[id][PLAYER_ID];
+
+public _csgo_get_user_operation_text(id, dataReturn[], dataLength)
+{
+	param_convert(2);
+
+	if (playerData[id][PLAYER_ID] > -1) formatex(dataReturn, dataLength, "%i/%i (%0.1f%s)", get_progress(id), get_progress_need(id), float(get_progress(id)) / float(get_progress_need(id)) * 100.0, "%");
+	else formatex(dataReturn, dataLength, "Wpisz /operacja");
+}
 
 public _csgo_get_user_operation_progress(id)
 	return get_progress(id);

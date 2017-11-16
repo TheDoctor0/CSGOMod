@@ -402,12 +402,11 @@ public display_hud(id)
 		hours++;
 	}
 
-	if (csgo_get_user_operation(target) > -1) formatex(operation, charsmax(operation), "^n[Operacja : %i/%i (%0.1f%s)]", csgo_get_user_operation_progress(target), csgo_get_user_operation_need(target), float(csgo_get_user_operation_progress(target)) / float(csgo_get_user_operation_need(target)) * 100.0, "%");
-	else formatex(operation, charsmax(operation), "^n[Operacja : Wpisz /operacja]");
-
+	csgo_get_user_operation_text(target, operation, charsmax(operation));
 	csgo_get_current_skin_name(target, skin, charsmax(skin));
 
 	format(skin, charsmax(skin), "^n[Skin : %s]", skin);
+	format(operation, charsmax(operation), "^n[Operacja : %s]", operation);
 	
 	if (!playerData[target][RANK]) ShowSyncHudMsg(id, hud, "[Forum : %s]^n[Konto : %s]^n[Ranga : %s (%i / %i)]%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]", 
 		forum, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), rankName[playerData[target][RANK]], playerData[target][KILLS], unrankedKills, skin, csgo_get_money(target), operation, hours, minutes, seconds);
