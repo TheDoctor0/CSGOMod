@@ -1619,10 +1619,10 @@ public cmd_add_money(id, level, cid)
 	get_user_name(id, adminName, charsmax(adminName));
 	get_user_name(player, playerName, charsmax(playerName));
 
-	client_print_color(player, player, "^x04[CS:GO]^x03 %s^x01 przyznal ci^x04 %.2f Euro^x01!", addedMoney);
+	client_print_color(player, player, "^x04[CS:GO]^x03 %s^x01 przyznal ci^x04 %.2f Euro^x01!", adminName,  addedMoney);
 	client_print_color(id, id, "^x04[CS:GO]^x01 Przyznales^x04 %.2f Euro^x01 graczowi^x03 %s^x01.", addedMoney, playerName);
 	
-	log_to_file("csgo-admin.log", "%s przyznal %.2f Euro %s graczowi %s.", adminName, addedMoney, playerName);
+	log_to_file("csgo-admin.log", "%s przyznal %.2f Euro graczowi %s.", adminName, addedMoney, playerName);
 
 	return PLUGIN_HANDLED;
 }
@@ -1811,7 +1811,7 @@ public player_spawn(id)
 
 public add_player_item(id, ent)
 {
-	if (!pev_valid(ent) || !is_user_connected(id)) return HAM_IGNORED;
+	if (!pev_valid(ent) || !is_user_connected(id) || is_user_bot(id) || is_user_hltv(id)) return HAM_IGNORED;
 
 	new owner = entity_get_int(ent, EV_INT_iuser1);
 
@@ -1829,7 +1829,7 @@ public set_model(ent, model[])
 
 	new id = entity_get_edict(ent, EV_ENT_owner);
         
-	if (!is_user_connected(id) || !fm_get_weaponbox_type(ent)) return HAM_IGNORED;
+	if (!is_user_connected(id) || is_user_bot(id) || is_user_hltv(id) || !fm_get_weaponbox_type(ent)) return HAM_IGNORED;
 
 	new owner = entity_get_int(ent, EV_INT_iuser1);
 
@@ -1934,17 +1934,26 @@ stock change_skin(id, weapon, ent = 0)
 
 		weaponOwner = entity_get_int(ent, EV_INT_iuser1);
 
-		if (is_user_connected(weaponOwner)) {
+		if (is_user_connected(weaponOwner) && !is_user_hltv(weaponOwner) && !is_user_bot(weaponOwner)) {
 			playerData[id][TEMP][WEAPON_ENT] = ent;
 
 			weaponSkin = entity_get_int(ent, EV_INT_iuser2);
 
 			if (weaponSkin > -1) {
+				static weaponName[32];
+
 				ArrayGetArray(skins, weaponSkin, skin);
 
-				playerData[id][SKIN] = weaponSkin;
+				get_weaponname(weapon, weaponName, charsmax(weaponName));
+				
+				if (weapon == get_weapon_id(skin[SKIN_WEAPON])) {
+					playerData[id][SKIN] = weaponSkin;
 	
-				set_pev(id, pev_viewmodel2, skin[SKIN_MODEL]);
+					set_pev(id, pev_viewmodel2, skin[SKIN_MODEL]);
+				} else {
+					entity_set_int(ent, EV_INT_iuser1, 0);
+					entity_set_int(ent, EV_INT_iuser2, -1);
+				}
 			} else if (defaultSkins) set_pev(id, pev_viewmodel2, defaultSkin[weapon]);
 
 			return;
@@ -1962,7 +1971,7 @@ stock change_skin(id, weapon, ent = 0)
 
 stock get_weapon_skin(id, weapon)
 {
-	if (!is_user_connected(id) || weapon == CSW_HEGRENADE || weapon == CSW_SMOKEGRENADE || weapon == CSW_FLASHBANG || weapon == CSW_C4 || !weapon) return -1;
+	if (!is_user_connected(id) || is_user_hltv(id) || is_user_bot(id) || weapon == CSW_HEGRENADE || weapon == CSW_SMOKEGRENADE || weapon == CSW_FLASHBANG || weapon == CSW_C4 || !weapon) return -1;
 
 	if (playerData[id][ACTIVE][weapon] > -1) {
 		static skin[skinsInfo];
@@ -2159,16 +2168,26 @@ public _csgo_get_current_skin_name(id, dataReturn[], dataLength)
 
 stock get_weapon_skin_name(id, ent, dataReturn[], dataLength, weapon = 0, check = 0)
 {
-	new ownerName[32], weaponName[32], weaponOwner = 0, weaponSkin = -1;
+	static ownerName[32], weaponName[32], skinWeapon[32], weaponOwner, weaponSkin;
+	weaponOwner = 0, weaponSkin = -1;
 
 	if (is_valid_ent(ent)) {
 		weaponOwner = entity_get_int(ent, EV_INT_iuser1);
 
-		if (is_user_connected(weaponOwner)) {
+		if (is_user_connected(weaponOwner) && !is_user_hltv(weaponOwner) && !is_user_bot(weaponOwner)) {
 			weaponSkin = entity_get_int(ent, EV_INT_iuser2);
 
-			if (weaponSkin > -1) get_skin_info(weaponSkin, SKIN_NAME, dataReturn, dataLength);
-			else formatex(dataReturn, dataLength, "Domyslny");
+			if (weaponSkin > -1) {
+				get_skin_info(weaponSkin, SKIN_WEAPON, skinWeapon, charsmax(skinWeapon));
+
+				if (weapon == get_weapon_id(skinWeapon)) get_skin_info(weaponSkin, SKIN_NAME, dataReturn, dataLength);
+				else {
+					entity_set_int(ent, EV_INT_iuser1, 0);
+					entity_set_int(ent, EV_INT_iuser2, -1);
+
+					formatex(dataReturn, dataLength, "Domyslny");
+				}
+			} else formatex(dataReturn, dataLength, "Domyslny");
 
 			if (check && weaponOwner != id) {
 				get_user_name(weaponOwner, ownerName, charsmax(ownerName));
