@@ -88,15 +88,16 @@ enum _:playerInfo { KILLS, RANK, TIME, FIRST_VISIT, LAST_VISIT, BRONZE, SILVER, 
 
 enum _:winers { THIRD, SECOND, FIRST };
 
-new playerData[MAX_PLAYERS + 1][playerInfo], sprites[MAX_RANKS + 1], Handle:sql, bool:oneAndOnly, bool:mapChange,
-	bool:block, loaded, visit, hud, aimHUD, defaultInfo, round, sounds, soundMayTheForce, soundOneAndOnly, 
-	soundPrepare, soundHumiliation, soundLastLeft, forum[64], iconFlags[8], unrankedKills;
+new playerData[MAX_PLAYERS + 1][playerInfo], sprites[MAX_RANKS + 1], Handle:sql, bool:sqlConnected, bool:oneAndOnly, 
+	bool:mapChange,bool:block, loaded, visit, hud, aimHUD, defaultInfo, round, sounds, soundMayTheForce, soundOneAndOnly, 
+	soundPrepare, soundHumiliation, soundLastLeft, forum[64], iconFlags[8], unrankedKills, minPlayers;
 
 public plugin_init() 
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR);
 
-	bind_pcvar_num(create_cvar("csgo_unrankedKills", "100"), unrankedKills);
+	bind_pcvar_num(create_cvar("csgo_min_players", "4"), minPlayers);
+	bind_pcvar_num(create_cvar("csgo_unranked_kills", "100"), unrankedKills);
 	bind_pcvar_string(create_cvar("csgo_forum", "CS-Reload.pl"), forum, charsmax(forum));
 	bind_pcvar_string(create_cvar("csgo_icon_flags", "abcd"), iconFlags, charsmax(iconFlags));
 
@@ -202,6 +203,8 @@ public sql_init()
 	
 	SQL_FreeHandle(query);
 	SQL_FreeHandle(connectHandle);
+
+	sqlConnected = true;
 }
 
 public client_putinserver(id)
@@ -244,6 +247,12 @@ public client_disconnected(id)
 
 public load_data(id)
 {
+	if (!sqlConnected) {
+		set_task(1.0, "load_data", id);
+
+		return;
+	}
+
 	new playerId[1], queryData[128];
 	
 	playerId[0] = id;
@@ -256,7 +265,7 @@ public load_data(id)
 public load_data_handle(failState, Handle:query, error[], errorNum, playerId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "[CS:GO Stats] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL Error: %s (%d)", error, errorNum);
 		
 		return;
 	}
@@ -374,7 +383,7 @@ public display_hud(id)
 
 	remove_task(id + 768, 1);
 
-	static operation[64], skin[64], target;
+	static clan[64], operation[64], skin[64], target;
 
 	target = id;
 
@@ -402,18 +411,20 @@ public display_hud(id)
 		hours++;
 	}
 
+	csgo_get_clan_name(csgo_get_user_clan(target), clan, charsmax(clan));
 	csgo_get_user_operation_text(target, operation, charsmax(operation));
 	csgo_get_current_skin_name(target, skin, charsmax(skin));
 
 	format(skin, charsmax(skin), "^n[Skin : %s]", skin);
 	format(operation, charsmax(operation), "^n[Operacja : %s]", operation);
+	format(clan, charsmax(clan), "^n[Klan : %s]", clan);
 	
-	if (!playerData[target][RANK]) ShowSyncHudMsg(id, hud, "[Forum : %s]^n[Konto : %s]^n[Ranga : %s (%i / %i)]%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]", 
-		forum, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), rankName[playerData[target][RANK]], playerData[target][KILLS], unrankedKills, skin, csgo_get_money(target), operation, hours, minutes, seconds);
-	else if (playerData[target][RANK] < MAX_RANKS) ShowSyncHudMsg(id, hud, "[Forum : %s]^n[Konto : %s]^n[Ranga : %s]^n[Punkty Elo : %.2f / %d]%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]", 
-		forum, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), rankName[playerData[target][RANK]], playerData[target][ELO_RANK], rankElo[playerData[target][RANK] + 1], skin, csgo_get_money(target), operation, hours, minutes, seconds);
-	else ShowSyncHudMsg(id, hud, "[Forum : %s]^n[Konto : %s]^n[Ranga : %s]^n[Punkty Elo : %.2f]%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]", 
-		forum, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), rankName[playerData[target][RANK]], playerData[target][ELO_RANK], skin, csgo_get_money(target), operation, hours, minutes, seconds);
+	if (!playerData[target][RANK]) ShowSyncHudMsg(id, hud, "[Forum : %s]^n[Konto : %s]%s^n[Ranga : %s (%i / %i)]%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]", 
+		forum, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), clan, rankName[playerData[target][RANK]], playerData[target][KILLS], unrankedKills, skin, csgo_get_money(target), operation, hours, minutes, seconds);
+	else if (playerData[target][RANK] < MAX_RANKS) ShowSyncHudMsg(id, hud, "[Forum : %s]^n[Konto : %s]%s^n[Ranga : %s]^n[Punkty Elo : %.2f / %d]%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]", 
+		forum, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), clan, rankName[playerData[target][RANK]], playerData[target][ELO_RANK], rankElo[playerData[target][RANK] + 1], skin, csgo_get_money(target), operation, hours, minutes, seconds);
+	else ShowSyncHudMsg(id, hud, "[Forum : %s]^n[Konto : %s]%s^n[Ranga : %s]^n[Punkty Elo : %.2f]%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]", 
+		forum, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), clan, rankName[playerData[target][RANK]], playerData[target][ELO_RANK], skin, csgo_get_money(target), operation, hours, minutes, seconds);
 
 	return PLUGIN_CONTINUE;
 }
@@ -576,6 +587,8 @@ public bomb_planted(planter)
 
 public bomb_explode(planter, defuser)
 {
+	if (get_playersnum() < minPlayers) return;
+
 	playerData[planter][KILLS] += 3;
 	playerData[planter][ELO_RANK] += 3.0;
 
@@ -584,6 +597,8 @@ public bomb_explode(planter, defuser)
 
 public bomb_defused(defuser)
 {
+	if (get_playersnum() < minPlayers) return;
+
 	playerData[defuser][KILLS] += 3;
 	playerData[defuser][ELO_RANK] += 3.0;
 
@@ -592,8 +607,10 @@ public bomb_defused(defuser)
 
 public hostages_rescued()
 {
-	new rescuer = get_loguser_index();
+	if (get_playersnum() < minPlayers) return;
 	
+	new rescuer = get_loguser_index();
+
 	playerData[rescuer][KILLS] += 3;
 	playerData[rescuer][ELO_RANK] += 3.0;
 
@@ -603,24 +620,24 @@ public hostages_rescued()
 public check_time(id)
 {
 	id -= TASK_TIME;
-	
+
 	if (get_bit(id, visit)) return;
-	
+
 	if (!get_bit(id, loaded)) { 
 		set_task(3.0, "check_time", id + TASK_TIME);
 
 		return;
 	}
-	
+
 	set_bit(id, visit);
-	
+
 	new time = get_systime(), visitYear, Year, visitMonth, Month, visitDay, Day, visitHour, visitMinutes, visitSeconds;
-	
+
 	UnixToTime(time, visitYear, visitMonth, visitDay, visitHour, visitMinutes, visitSeconds, UT_TIMEZONE_SERVER);
-	
+
 	client_print_color(id, id, "^x04[CS:GO]^x01 Aktualnie jest godzina^x03 %02d:%02d:%02d (Data: %02d.%02d.%02d)^x01.", visitHour, visitMinutes, visitSeconds, visitDay, visitMonth, visitYear);
 	
-	if (playerData[id][FIRST_VISIT] == playerData[id][LAST_VISIT]) client_print_color(id, id, "^x03[CS:GO]^x01 To twoja^x04 pierwsza wizyta^x01 na serwerze. Zyczymy milej gry!" );
+	if (playerData[id][FIRST_VISIT] == playerData[id][LAST_VISIT]) client_print_color(id, id, "^x04[CS:GO]^x01 To twoja^x03 pierwsza wizyta^x01 na serwerze. Zyczymy milej gry!" );
 	else {
 		UnixToTime(playerData[id][LAST_VISIT], Year, Month, Day, visitHour, visitMinutes, visitSeconds, UT_TIMEZONE_SERVER);
 		
@@ -664,7 +681,7 @@ public cmd_topranks(id)
 public show_topranks(failState, Handle:query, error[], errorNum, playerId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "[CS:GO Stats] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL Error: %s (%d)", error, errorNum);
 		
 		return PLUGIN_HANDLED;
 	}
@@ -717,7 +734,7 @@ public cmd_time(id)
 public show_time(failState, Handle:query, error[], errorNum, playerId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "[CS:GO Stats] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL Error: %s (%d)", error, errorNum);
 		
 		return PLUGIN_HANDLED;
 	}
@@ -756,7 +773,7 @@ public cmd_toptime(id)
 public show_toptime(failState, Handle:query, error[], errorNum, playerId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "[CS:GO Stats] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL Error: %s (%d)", error, errorNum);
 		
 		return PLUGIN_HANDLED;
 	}
@@ -819,7 +836,7 @@ public cmd_medals(id)
 public show_medals(failState, Handle:query, error[], errorNum, playerId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "[CS:GO Stats] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL Error: %s (%d)", error, errorNum);
 		
 		return PLUGIN_HANDLED;
 	}
@@ -848,7 +865,7 @@ public cmd_topmedals(id)
 public show_topmedals(failState, Handle:query, error[], errorNum, playerId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "[CS:GO Stats] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL Error: %s (%d)", error, errorNum);
 		
 		return PLUGIN_HANDLED;
 	}
@@ -905,7 +922,7 @@ public cmd_stats(id)
 public show_stats(failState, Handle:query, error[], errorNum, playerId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "[CS:GO Stats] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL Error: %s (%d)", error, errorNum);
 		
 		return PLUGIN_HANDLED;
 	}
@@ -936,7 +953,7 @@ public cmd_topstats(id)
 public show_topstats(failState, Handle:query, error[], errorNum, playerId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "[CS:GO Stats] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL Error: %s (%d)", error, errorNum);
 		
 		return PLUGIN_HANDLED;
 	}
