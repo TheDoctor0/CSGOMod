@@ -10,12 +10,13 @@
 #include <csgomod>
 
 #define PLUGIN "CS:GO Mod"
-#define VERSION "1.4"
+#define VERSION "1.5"
 #define AUTHOR "O'Zone"
 
 #define TASK_SKINS 3045
 #define TASK_DATA 4592
 #define TASK_AIM 5309
+#define TASK_AD 6234
 
 new const commandSkins[][] = { "skiny", "say /skins", "say_team /skins", "say /skin", "say_team /skin", "say /skiny", 
 	"say_team /skiny", "say /modele", "say_team /modele", "say /model", "say_team /model", "say /jackpot", "say_team /jackpot" };
@@ -49,30 +50,34 @@ enum _:playerInfo { ACTIVE[CSW_P90 + 1], Float:MONEY, SKIN, bool:SKINS_LOADED, b
 enum _:skinsInfo { SKIN_NAME[64], SKIN_WEAPON[32], SKIN_MODEL[64], SKIN_PRICE };
 enum _:marketInfo { MARKET_ID, MARKET_SKIN, MARKET_OWNER, Float:MARKET_PRICE };
 
-new playerData[MAX_PLAYERS + 1][playerInfo], Array:playerSkins[MAX_PLAYERS + 1], Float:randomSkinPrice[CSW_P90 + 1], Array:skins, Array:weapons, Array:market, Handle:sql, marketSkins, defaultSkins, 
-	skinChance, skinChanceSVIP, maxMarketSkins, Float:killReward, Float:killHSReward, Float:bombReward, Float:defuseReward, Float:hostageReward, Float:winReward, minPlayers, bool:end;
+new playerData[MAX_PLAYERS + 1][playerInfo], Array:playerSkins[MAX_PLAYERS + 1], Float:randomSkinPrice[CSW_P90 + 1], Array:skins, Array:weapons, 
+	Array:market, Handle:sql, marketSkins, defaultSkins, skinChance, skinChanceSVIP, Float:skinChancePerMember, maxMarketSkins, Float:killReward, 
+	Float:killHSReward, Float:bombReward, Float:defuseReward, Float:hostageReward, Float:winReward, minPlayers, bool:end, bool:sqlConnected;
 
 public plugin_init() 
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR);
 
-	register_cvar("csgo_sql_host", "80.72.41.210", FCVAR_SPONLY|FCVAR_PROTECTED); 
-	register_cvar("csgo_sql_user", "srv40991", FCVAR_SPONLY|FCVAR_PROTECTED); 
-	register_cvar("csgo_sql_pass", "0F7O9PXlfb", FCVAR_SPONLY|FCVAR_PROTECTED); 
-	register_cvar("csgo_sql_db", "srv40991", FCVAR_SPONLY|FCVAR_PROTECTED);
+	register_cvar("csgo_version", VERSION, FCVAR_SERVER|FCVAR_SPONLY|FCVAR_UNLOGGED);
+
+	register_cvar("csgo_sql_host", "localhost", FCVAR_SPONLY|FCVAR_PROTECTED); 
+	register_cvar("csgo_sql_user", "user", FCVAR_SPONLY|FCVAR_PROTECTED); 
+	register_cvar("csgo_sql_pass", "password", FCVAR_SPONLY|FCVAR_PROTECTED); 
+	register_cvar("csgo_sql_db", "database", FCVAR_SPONLY|FCVAR_PROTECTED);
 
 	bind_pcvar_num(create_cvar("csgo_default_skins", "1"), defaultSkins);
 	bind_pcvar_num(create_cvar("csgo_min_players", "4"), minPlayers);
+	bind_pcvar_num(create_cvar("csgo_max_market_skins", "5"), maxMarketSkins);
 	bind_pcvar_num(create_cvar("csgo_skin_chance", "15"), skinChance);
 	bind_pcvar_num(create_cvar("csgo_svip_skin_chance", "25"), skinChanceSVIP);
-	bind_pcvar_num(create_cvar("csgo_max_market_skins", "5"), maxMarketSkins);
+	bind_pcvar_float(create_cvar("csgo_clan_skin_chance_per_member", "1"), skinChancePerMember);
 	bind_pcvar_float(create_cvar("csgo_kill_reward", "0.2"), killReward);
 	bind_pcvar_float(create_cvar("csgo_killhs_reward", "0.1"), killHSReward);
 	bind_pcvar_float(create_cvar("csgo_bomb_reward", "0.5"), bombReward);
 	bind_pcvar_float(create_cvar("csgo_defuse_reward", "0.5"), defuseReward);
 	bind_pcvar_float(create_cvar("csgo_hostages_reward", "0.5"), hostageReward);
 	bind_pcvar_float(create_cvar("csgo_round_reward", "0.25"), winReward);
-	
+
 	for (new i; i < sizeof commandSkins; i++) register_clcmd(commandSkins[i], "skins_menu");
 	for (new i; i < sizeof commandHelp; i++) register_clcmd(commandHelp[i], "skins_help");
 	for (new i; i < sizeof commandSet; i++) register_clcmd(commandSet[i], "set_skin_menu");
@@ -253,6 +258,8 @@ public plugin_cfg()
 	
 	SQL_FreeHandle(query);
 	SQL_FreeHandle(connectHandle);
+
+	sqlConnected = true;
 }
 
 public plugin_natives()
@@ -282,6 +289,7 @@ public client_disconnected(id)
 	remove_task(id + TASK_AIM);
 	remove_task(id + TASK_DATA);
 	remove_task(id + TASK_SKINS);
+	remove_task(id + TASK_AD);
 
 	remove_seller(id);
 }
@@ -305,6 +313,15 @@ public client_putinserver(id)
 
 	set_task(0.1, "load_data", id + TASK_DATA);
 	set_task(0.1, "load_skins", id + TASK_SKINS);
+	set_task(15.0, "show_advertisement", id + TASK_AD);
+}
+
+public show_advertisement(id)
+{
+	id -= TASK_AD;
+	
+	client_print_color(id, id, "^x04[CS:GO]^x01 Grasz na serwerze^x03 %s^x01 stworzonym przez^x03 %s^x01.", PLUGIN, AUTHOR);
+	client_print_color(id, id, "W celu uzyskania informacji o komendach wpisz^x03 /menu^x01 (klawisz^x03 ^"v^"^x01).");
 }
 
 public skins_menu(id)
@@ -632,15 +649,20 @@ public buy_weapon_skin_handle(id, menu, item)
 
 public random_weapon_skin(id, weapon[])
 {
-	new menuData[128];
+	new menuData[256], Float:chance = (csgo_get_user_svip(id) ? skinChanceSVIP : skinChance) + csgo_get_clan_members(csgo_get_user_clan(id)) * skinChancePerMember;
 
-	formatex(menuData, charsmax(menuData), "\yCzy chcesz sprobowac \rwylosowac \yskina broni %s za \r%.2f Euro\y?\w", weapon, randomSkinPrice[get_weapon_id(weapon)]);
+	formatex(menuData, charsmax(menuData), "\yCzy chcesz sprobowac \rwylosowac \yskina broni %s za \r%.2f Euro\y?\w^nSzansa na wylosowanie: \y%.2f%%\w.", weapon, randomSkinPrice[get_weapon_id(weapon)], chance);
 
 	new menu = menu_create(menuData, "random_weapon_skin_handle");
 
-	menu_additem(menu, "Tak", weapon);
+	menu_additem(menu, "\yTak", weapon);
+	menu_additem(menu, "Nie^n");
 
-	menu_setprop(menu, MPROP_EXITNAME, "Nie");
+	formatex(menuData, charsmax(menuData), "\wAby zwiekszyc szanse wylosowania kup \ySVIPa \r(+%i%%)^n\wlub \ydolacz do klanu \r(+%i%% za kazdego czlonka)\w.", skinChanceSVIP - skinChance, skinChancePerMember);
+
+	menu_addtext(menu, menuData);
+
+	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
 
 	menu_display(id, menu);
 
@@ -651,7 +673,7 @@ public random_weapon_skin_handle(id, menu, item)
 {
 	if (!is_user_connected(id)) return PLUGIN_HANDLED;
 	
-	if (item == MENU_EXIT) {
+	if (item == MENU_EXIT || item) {
 		menu_destroy(menu);
 
 		return PLUGIN_HANDLED;
@@ -675,7 +697,7 @@ public random_weapon_skin_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	} else playerData[id][MONEY] -= price;
 
-	new chance = csgo_get_user_svip(id) ? skinChanceSVIP : skinChance;
+	new chance = (csgo_get_user_svip(id) ? skinChanceSVIP : skinChance) + floatround(csgo_get_clan_members(csgo_get_user_clan(id)) * skinChancePerMember, floatround_floor);
 
 	if (random_num(1, 100) < chance) {
 		new skin[skinsInfo], playerName[32], skinId, skinsCount = 0, skinNumber = random_num(1, get_missing_weapon_skins_count(id, weapon));
@@ -1986,6 +2008,12 @@ stock get_weapon_skin(id, weapon)
 
 public load_data(id)
 {
+	if (!sqlConnected) {
+		set_task(1.0, "load_data", id);
+
+		return;
+	}
+
 	id -= TASK_DATA;
 
 	new playerId[1], queryData[128];
@@ -2011,7 +2039,6 @@ public load_data_handle(failState, Handle:query, error[], errorNum, playerId[], 
 		SQL_ReadResult(query, SQL_FieldNameToNum(query, "money"), playerData[id][MONEY]);
 
 		if (SQL_ReadResult(query, SQL_FieldNameToNum(query, "disabled"))) playerData[id][SKINS_DISABLED] = true;
-
 		if (SQL_ReadResult(query, SQL_FieldNameToNum(query, "exchange"))) playerData[id][EXCHANGE_BLOCKED] = true;
 	} else {
 		static queryData[192];
@@ -2065,6 +2092,12 @@ stock save_data(id, end = 0)
 
 public load_skins(id)
 {
+	if (!sqlConnected) {
+		set_task(1.0, "load_skins", id);
+
+		return;
+	}
+
 	id -= TASK_SKINS;
 
 	new playerId[1], queryData[128];
