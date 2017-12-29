@@ -4,11 +4,8 @@
 #include <csgomod>
 
 #define PLUGIN "CS:GO Accounts"
-#define VERSION "1.2"
+#define VERSION "1.3"
 #define AUTHOR "O'Zone"
-
-#define SETINFO "_csrpass"
-#define CONFIG "csrpass"
 
 #define TASK_PASSWORD 1945
 
@@ -21,13 +18,15 @@ new const accountStatus[status][] = { "Niezarejestrowany", "Niezalogowany", "Zal
 new const commandAccount[][] = { "say /haslo", "say_team /haslo", "say /password", "say_team /password", 
 	"say /konto", "say_team /konto", "say /account", "say_team /account", "konto" };
 
-new playerData[MAX_PLAYERS + 1][playerInfo], Handle:sql, dataLoaded, autoLogin;
+new playerData[MAX_PLAYERS + 1][playerInfo], setinfo[16], Handle:sql, bool:sqlConnected, dataLoaded, autoLogin;
 
 public plugin_init() 
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR);
 	
 	for (new i; i < sizeof commandAccount; i++) register_clcmd(commandAccount[i], "account_menu");
+
+	bind_pcvar_string(create_cvar("csgo_accounts_setinfo", "csrpass"), setinfo, charsmax(setinfo));
 	
 	register_clcmd("WPROWADZ_SWOJE_HASLO", "login_account");
 	register_clcmd("WPROWADZ_WYBRANE_HASLO", "register_step_one");
@@ -75,7 +74,10 @@ public client_connect(id)
 }
 
 public client_disconnected(id)
+{
 	remove_task(id + TASK_PASSWORD);
+	remove_task(id);
+}
 	
 public message_show_menu(msgId, dest, id)
 {
@@ -168,7 +170,7 @@ public account_menu(id)
 
 	formatex(menuData, charsmax(menuData), "\rSYSTEM REJESTRACJI^n^n\rNick: \w[\y%s\w]^n\rStatus: \w[\y%s\w]", playerData[id][NAME], accountStatus[playerData[id][STATUS]]);
 	
-	if ((playerData[id][STATUS] == NOT_LOGGED || playerData[id][STATUS] == LOGGED) && !get_bit(id, autoLogin)) format(menuData, charsmax(menuData),"%s^n\wWpisz w konsoli \ysetinfo ^"%s^" ^"twojehaslo^"^n\wSprawi to, ze twoje haslo bedzie ladowane \rautomatycznie\w.", menuData, SETINFO);
+	if ((playerData[id][STATUS] == NOT_LOGGED || playerData[id][STATUS] == LOGGED) && !get_bit(id, autoLogin)) format(menuData, charsmax(menuData),"%s^n\wWpisz w konsoli \ysetinfo ^"_%s^" ^"twojehaslo^"^n\wSprawi to, ze twoje haslo bedzie ladowane \rautomatycznie\w.", menuData, setinfo);
 
 	new menu = menu_create(menuData, "account_menu_handle"), callback = menu_makecallback("account_menu_callback");
 	
@@ -400,10 +402,10 @@ public register_confirmation_handle(id, menu, item)
 			show_hudmessage(id, "Zostales pomyslnie zarejestrowany i zalogowany.");
 
 			client_print_color(id, id, "^x04[CS:GO]^x01 Twoj nick zostal pomyslnie^x04 zarejestrowany^x01.");
-			client_print_color(id, id, "^x04[CS:GO]^x01 Wpisz w konsoli komende^x04 setinfo ^"%s^" ^"%s^"^x01, aby twoje haslo bylo ladowane automatycznie.", SETINFO, playerData[id][PASSWORD]);
+			client_print_color(id, id, "^x04[CS:GO]^x01 Wpisz w konsoli komende^x04 setinfo ^"_%s^" ^"%s^"^x01, aby twoje haslo bylo ladowane automatycznie.", setinfo, playerData[id][PASSWORD]);
 
-			cmd_execute(id, "setinfo %s %s", SETINFO, playerData[id][PASSWORD]);
-			cmd_execute(id, "writecfg %s", CONFIG);
+			cmd_execute(id, "setinfo _%s %s", setinfo, playerData[id][PASSWORD]);
+			cmd_execute(id, "writecfg %s", setinfo);
 
 			client_cmd(id, "chooseteam");
 			engclient_cmd(id, "chooseteam");
@@ -523,10 +525,10 @@ public change_step_three(id)
 	show_hudmessage(id, "Twoje haslo zostalo pomyslnie zmienione.");
 	
 	client_print_color(id, id, "^x04[CS:GO]^x01 Twoje haslo zostalo pomyslnie^x04 zmienione^x01.");
-	client_print_color(id, id, "^x04[CS:GO]^x01 Wpisz w konsoli komende^x04 setinfo ^"%s^" ^"%s^"^x01, aby twoje haslo bylo ladowane automatycznie.", SETINFO, playerData[id][PASSWORD]);
+	client_print_color(id, id, "^x04[CS:GO]^x01 Wpisz w konsoli komende^x04 setinfo ^"_%s^" ^"%s^"^x01, aby twoje haslo bylo ladowane automatycznie.", setinfo, playerData[id][PASSWORD]);
 	
-	cmd_execute(id, "setinfo %s %s", SETINFO, playerData[id][PASSWORD]);
-	cmd_execute(id, "writecfg %s", CONFIG);
+	cmd_execute(id, "setinfo _%s %s", setinfo, playerData[id][PASSWORD]);
+	cmd_execute(id, "writecfg %s", setinfo);
 	
 	return PLUGIN_HANDLED;
 }
@@ -606,6 +608,8 @@ public sql_init()
 		
 		return;
 	}
+
+	sqlConnected = true;
 	
 	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_accounts` (`name` VARCHAR(64), `pass` VARCHAR(32), PRIMARY KEY(`name`));");
 
@@ -619,6 +623,12 @@ public sql_init()
 
 public load_account(id)
 {
+	if (!sqlConnected) {
+		set_task(1.0, "load_account", id);
+
+		return;
+	}
+
 	new queryData[128], tempId[1];
 	
 	tempId[0] = id;
@@ -629,13 +639,15 @@ public load_account(id)
 
 public load_account_handle(failState, Handle:query, error[], errorNum, tempId[], dataSize)
 {
+	new id = tempId[0];
+
 	if (failState) {
 		log_to_file("csgo-error.log", "[CS:GO Accounts] SQL Error: %s (%d)", error, errorNum);
+
+		playerData[id][STATUS] = LOGGED;
 		
 		return;
 	}
-	
-	new id = tempId[0];
 	
 	if (SQL_MoreResults(query)) {
 		SQL_ReadResult(query, SQL_FieldNameToNum(query, "pass"), playerData[id][PASSWORD], charsmax(playerData[][PASSWORD]));
@@ -643,11 +655,11 @@ public load_account_handle(failState, Handle:query, error[], errorNum, tempId[],
 		if (playerData[id][PASSWORD][0]) {
 			new password[32], info[32];
 
-			get_user_info(id, "name", info, charsmax(info));
-		
-			cmd_execute(id, "exec %s.cfg", CONFIG);
-		
-			get_user_info(id, SETINFO, password, charsmax(password));
+			formatex(info, charsmax(info), "_%s", setinfo);
+
+			cmd_execute(id, "exec %s.cfg", setinfo);
+
+			get_user_info(id, info, password, charsmax(password));
 
 			if (equal(playerData[id][PASSWORD], password)) {
 				playerData[id][STATUS] = LOGGED;
