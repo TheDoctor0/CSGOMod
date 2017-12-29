@@ -73,6 +73,23 @@ Zwraca nazwe skina aktualnie trzymanej broni.
 native csgo_get_current_skin_name(id, dataReturn[], dataLength);
 
 /*------------------------------
+Zwraca id klanu gracza.
+0 w przypadku braku klanu.
+------------------------------*/
+native csgo_get_user_clan(id);
+
+/*------------------------------
+Zwraca nazwe klanu o podanym id - clan.
+"Brak" w przypadku braku clanu (id = 0).
+------------------------------*/
+native csgo_get_clan_name(clan, dataReturn[], dataLength);
+
+/*------------------------------
+Zwraca liczbe czlonkow klanu o podanym id - clan.
+------------------------------*/
+native csgo_get_clan_members(clan);
+
+/*------------------------------
 Dodaje zabojstwo do zliczanych statystyk.
 ------------------------------*/
 native csgo_add_kill(id);
