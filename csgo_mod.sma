@@ -662,7 +662,7 @@ public random_weapon_skin(id, weapon[])
 	menu_additem(menu, "\yTak", weapon);
 	menu_additem(menu, "Nie^n");
 
-	formatex(menuData, charsmax(menuData), "\wAby zwiekszyc szanse wylosowania kup \ySVIPa \r(+%i%%)^n\wlub \ydolacz do klanu \r(+%i%% za kazdego czlonka)\w.", skinChanceSVIP - skinChance, skinChancePerMember);
+	formatex(menuData, charsmax(menuData), "\wAby zwiekszyc szanse wylosowania kup \ySVIPa \r(+%i%%)^n\wlub \ydolacz do klanu \r(+%.0f%% za kazdego czlonka)\w.", skinChanceSVIP - skinChance, skinChancePerMember);
 
 	menu_addtext(menu, menuData);
 
