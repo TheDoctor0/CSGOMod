@@ -10,7 +10,7 @@
 #include <csgomod>
 
 #define PLUGIN "CS:GO Mod"
-#define VERSION "1.5"
+#define VERSION "1.6"
 #define AUTHOR "O'Zone"
 
 #define TASK_SKINS 3045
@@ -1877,7 +1877,7 @@ public add_player_item(id, ent)
 		entity_set_int(ent, EV_INT_iuser2, get_weapon_skin(id, cs_get_weapon_id(ent)));
 	}
 
-	return FMRES_IGNORED;
+	return HAM_IGNORED;
 }
 
 public set_model(ent, model[])
@@ -2002,15 +2002,19 @@ stock change_skin(id, weapon, ent = 0)
 				ArrayGetArray(skins, weaponSkin, skin);
 
 				get_weaponname(weapon, weaponName, charsmax(weaponName));
-				
-				if (weapon == get_weapon_id(skin[SKIN_WEAPON])) {
-					playerData[id][SKIN] = weaponSkin;
+
+				playerData[id][SKIN] = weaponSkin;
 	
-					set_pev(id, pev_viewmodel2, skin[SKIN_MODEL]);
-				} else {
-					entity_set_int(ent, EV_INT_iuser1, 0);
-					entity_set_int(ent, EV_INT_iuser2, -1);
-				}
+				set_pev(id, pev_viewmodel2, skin[SKIN_MODEL]);
+				
+				// if (weapon == get_weapon_id(skin[SKIN_WEAPON])) {
+				// 	playerData[id][SKIN] = weaponSkin;
+	
+				// 	set_pev(id, pev_viewmodel2, skin[SKIN_MODEL]);
+				// } else {
+				// 	entity_set_int(ent, EV_INT_iuser1, 0);
+				// 	entity_set_int(ent, EV_INT_iuser2, -1);
+				// }
 			} else if (defaultSkins) set_pev(id, pev_viewmodel2, defaultSkin[weapon]);
 
 			return;
@@ -2255,7 +2259,7 @@ stock get_weapon_skin_name(id, ent, dataReturn[], dataLength, weapon = 0, check 
 			if (weaponSkin > -1) {
 				get_skin_info(weaponSkin, SKIN_WEAPON, skinWeapon, charsmax(skinWeapon));
 
-				if (weapon == get_weapon_id(skinWeapon)) get_skin_info(weaponSkin, SKIN_NAME, dataReturn, dataLength);
+				if (!weapon || weapon == get_weapon_id(skinWeapon)) get_skin_info(weaponSkin, SKIN_NAME, dataReturn, dataLength);
 				else {
 					entity_set_int(ent, EV_INT_iuser1, 0);
 					entity_set_int(ent, EV_INT_iuser2, -1);

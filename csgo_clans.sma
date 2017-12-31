@@ -5,7 +5,7 @@
 #include <csgomod>
 
 #define PLUGIN "CS:GO Clans"
-#define VERSION "1.0"
+#define VERSION "1.1"
 #define AUTHOR "O'Zone"
 
 #define TASK_INFO 9843
@@ -19,7 +19,7 @@ enum _:statusInfo { STATUS_NONE, STATUS_MEMBER, STATUS_DEPUTY, STATUS_LEADER };
 new Float:cvarCreateFee, Float:cvarJoinFee, cvarMembersStart, cvarLevelMax, cvarChatPrefix, Float:cvarLevelCost, Float:cvarNextLevelCost, cvarMembersPerLevel;
 
 new playerName[MAX_PLAYERS + 1][64], chosenName[MAX_PLAYERS + 1][64], clan[MAX_PLAYERS + 1], chosenId[MAX_PLAYERS + 1], warFrags[MAX_PLAYERS + 1], 
-	warReward[MAX_PLAYERS + 1], Handle:sql, bool:sqlConnected, Array:csgoClans, Array:csgoWars, info, loaded;
+	warReward[MAX_PLAYERS + 1], Handle:sql, bool:sqlConnected, Array:csgoClans, Array:csgoWars, Handle:connection, info, loaded;
 
 public plugin_init()
 {
@@ -74,6 +74,7 @@ public plugin_cfg()
 public plugin_end()
 {
 	SQL_FreeHandle(sql);
+	SQL_FreeHandle(connection);
 
 	ArrayDestroy(csgoClans);
 }
@@ -1100,25 +1101,21 @@ public applications_confirm_handle(id, menu, item)
 
 			csgo_add_money(id, -cvarJoinFee);
 		} else {
-			new queryData[128], error[128], safeName[64], Float:money, errorNum;
+			new queryData[128], error[128], safeName[64], Handle:query, Float:money, errorNum;
 
 			mysql_escape_string(userName, safeName, charsmax(safeName));
 	
 			formatex(queryData, charsmax(queryData), "SELECT money FROM `csgo_data` WHERE `name` = ^"%s^"", safeName);
 			
-			new Handle:connectHandle = SQL_Connect(sql, errorNum, error, charsmax(error));
+			query = SQL_PrepareQuery(connection, queryData);
 			
-			if (errorNum) {
-				log_to_file("csgo_error.log", "[CS:GO Clans] SQL Error: %s", error);
-				
-				return PLUGIN_HANDLED;
+			if (SQL_Execute(query)) {
+				if (SQL_MoreResults(query)) SQL_ReadResult(query, SQL_FieldNameToNum(query, "money"), money);
+			} else {
+				errorNum = SQL_QueryError(query, error, charsmax(error));
+			
+				log_to_file("csgo_error.log", "SQL Query Error. [%d] %s", errorNum, error);
 			}
-			
-			new Handle:query = SQL_PrepareQuery(connectHandle, queryData);
-			
-			SQL_Execute(query);
-			
-			if (SQL_MoreResults(query)) SQL_ReadResult(query, SQL_FieldNameToNum(query, "money"), money);
 
 			SQL_FreeHandle(query);
 
@@ -1130,12 +1127,15 @@ public applications_confirm_handle(id, menu, item)
 
 			formatex(queryData, charsmax(queryData), "UPDATE `csgo_data` SET money = money - %.2f WHERE `name` = ^"%s^"", cvarJoinFee, safeName);
 
-			query = SQL_PrepareQuery(connectHandle, queryData);
+			query = SQL_PrepareQuery(connection, queryData);
+
+			if (!SQL_Execute(query)) {
+				errorNum = SQL_QueryError(query, error, charsmax(error));
 			
-			SQL_Execute(query);
+				log_to_file("csgo_error.log", "SQL Query Error. [%d] %s", errorNum, error);
+			}
 
 			SQL_FreeHandle(query);
-			SQL_FreeHandle(connectHandle);
 		}
 	}
 
@@ -2180,12 +2180,12 @@ public sql_init()
 	
 	sql = SQL_MakeDbTuple(host, user, pass, db);
 
-	new Handle:connectHandle = SQL_Connect(sql, errorNum, error, charsmax(error));
+	connection = SQL_Connect(sql, errorNum, error, charsmax(error));
 	
 	if (errorNum) {
-		log_to_file("csgo_error.log", "[CS:GO Clans] SQL Error: %s", error);
+		log_to_file("csgo_error.log", "[CS:GO Clans] Init SQL Error: %s", error);
 
-		set_task(3.0, "sql_init");
+		set_task(1.0, "sql_init");
 		
 		return;
 	}
@@ -2195,32 +2195,31 @@ public sql_init()
 	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_clans` (`id` INT NOT NULL AUTO_INCREMENT, `name` VARCHAR(64) NOT NULL, `members` INT DEFAULT 1 NOT NULL, ");
 	add(queryData, charsmax(queryData), "`money` DOUBLE(16, 2) NOT NULL, `kills` INT NOT NULL, `level` INT NOT NULL, `wins` INT NOT NULL, PRIMARY KEY (`id`));");
 
-	new Handle:query = SQL_PrepareQuery(connectHandle, queryData);
+	new Handle:query = SQL_PrepareQuery(connection, queryData);
 
 	SQL_Execute(query);
 
 	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_clans_members` (`name` varchar(64) NOT NULL, `clan` INT NOT NULL, ");
 	add(queryData, charsmax(queryData), "`flag` INT NOT NULL, `deposit` DOUBLE(16, 2) NOT NULL, `withdraw` DOUBLE(16, 2) NOT NULL, PRIMARY KEY (`name`));");
 
-	query = SQL_PrepareQuery(connectHandle, queryData);
+	query = SQL_PrepareQuery(connection, queryData);
 
 	SQL_Execute(query);
 
 	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_clans_applications` (`name` varchar(64) NOT NULL, `clan` INT NOT NULL, PRIMARY KEY (`name`, `clan`));");
 	
-	query = SQL_PrepareQuery(connectHandle, queryData);
+	query = SQL_PrepareQuery(connection, queryData);
 
 	SQL_Execute(query);
 
 	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_clans_wars` (`id` INT NOT NULL AUTO_INCREMENT, `clan` INT NOT NULL, `clan2` INT NOT NULL, ");
 	add(queryData, charsmax(queryData), "`progress` INT NOT NULL, `progress2` INT NOT NULL, `duration` INT NOT NULL, `reward` INT NOT NULL, `started` INT NOT NULL, PRIMARY KEY (`id`));");
 
-	query = SQL_PrepareQuery(connectHandle, queryData);
+	query = SQL_PrepareQuery(connection, queryData);
 
 	SQL_Execute(query);
 
 	SQL_FreeHandle(query);
-	SQL_FreeHandle(connectHandle);
 }
 
 public ignore_handle(failState, Handle:query, error[], errorNum, data[], dataSize)
@@ -2267,7 +2266,7 @@ public load_clan_data(id)
 public load_clan_data_handle(failState, Handle:query, error[], errorNum, tempId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo_error.log", "[CS:GO Clans] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo_error.log", "[CS:GO Clans] Data SQL Error: %s (%d)", error, errorNum);
 		
 		return;
 	}
@@ -2345,7 +2344,7 @@ public show_clan_info(id)
 public load_wars_data_handle(failState, Handle:query, error[], errorNum)
 {
 	if (failState) {
-		log_to_file("csgo_error.log", "[CS:GO Clans] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo_error.log", "[CS:GO Clans] Wars SQL Error: %s (%d)", error, errorNum);
 		
 		return;
 	}
@@ -2448,26 +2447,21 @@ stock accept_war(id, warId, clanId, duration, Float:money, const enemyClanName[]
 
 stock remove_war(warId, started = 0)
 {
-	new queryData[128], error[128], errorNum, bool:result;
+	new queryData[128], error[128], Handle:query, bool:result, errorNum;
 	
 	formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_clans_wars` WHERE id = '%i' AND started = '%i'", warId, started);
 	
-	new Handle:connectHandle = SQL_Connect(sql, errorNum, error, charsmax(error));
+	query = SQL_PrepareQuery(connection, queryData);
 	
-	if (errorNum) {
-		log_to_file("csgo_error.log", "[CS:GO Clans] SQL Error: %s", error);
-		
-		return false;
+	if (SQL_Execute(query)) {
+		if (SQL_AffectedRows(query)) result = true;
+	} else {
+		errorNum = SQL_QueryError(query, error, charsmax(error));
+			
+		log_to_file("csgo_error.log", "SQL Query Error. [%d] %s", errorNum, error);
 	}
-	
-	new Handle:query = SQL_PrepareQuery(connectHandle, queryData);
-	
-	SQL_Execute(query);
-	
-	if (SQL_AffectedRows(query)) result = true;
 
 	SQL_FreeHandle(query);
-	SQL_FreeHandle(connectHandle);
 	
 	return result;
 }
@@ -2475,7 +2469,7 @@ stock remove_war(warId, started = 0)
 public remove_clan_wars(failState, Handle:query, error[], errorNum, tempId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo_error.log", "[CS:GO Clans] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo_error.log", "[CS:GO Clans] Remove Clan SQL Error: %s (%d)", error, errorNum);
 		
 		return;
 	}
@@ -2616,26 +2610,21 @@ stock add_application(id, clanId)
 
 stock check_applications(id, clanId)
 {
-	new queryData[192], error[128], errorNum, bool:foundApplication;
+	new queryData[192], error[128], Handle:query, bool:foundApplication, errorNum;
 	
 	formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_clans_applications` WHERE `name` = ^"%s^" AND clan = '%i'", playerName[id], clanId);
 	
-	new Handle:connectHandle = SQL_Connect(sql, errorNum, error, charsmax(error));
+	query = SQL_PrepareQuery(connection, queryData);
 	
-	if (errorNum) {
-		log_to_file("csgo_error.log", "[CS:GO Clans] SQL Error: %s", error);
-		
-		return false;
+	if (SQL_Execute(query)) {
+		if (SQL_NumResults(query)) foundApplication = true;
+	} else {
+		errorNum = SQL_QueryError(query, error, charsmax(error));
+			
+		log_to_file("csgo_error.log", "SQL Query Error. [%d] %s", errorNum, error);
 	}
-	
-	new Handle:query = SQL_PrepareQuery(connectHandle, queryData);
-	
-	SQL_Execute(query);
-	
-	if (SQL_NumResults(query)) foundApplication = true;
 
 	SQL_FreeHandle(query);
-	SQL_FreeHandle(connectHandle);
 	
 	return foundApplication;
 }
@@ -2696,107 +2685,90 @@ stock remove_applications(id, const name[] = "")
 
 stock check_clan_name(const clanName[])
 {
-	new queryData[192], safeClanName[64], error[128], errorNum, bool:foundClan;
+	new queryData[192], error[128], safeClanName[64], Handle:query, bool:foundClan, errorNum;
 
 	mysql_escape_string(clanName, safeClanName, charsmax(safeClanName));
 	
 	formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_clans` WHERE `name` = ^"%s^"", safeClanName);
 	
-	new Handle:connectHandle = SQL_Connect(sql, errorNum, error, charsmax(error));
+	query = SQL_PrepareQuery(connection, queryData);
 	
-	if (errorNum) {
-		log_to_file("csgo_error.log", "[CS:GO Clans] SQL Error: %s", error);
-		
-		return false;
+	if (SQL_Execute(query)) {
+		if (SQL_NumResults(query)) foundClan = true;
+	} else {
+		errorNum = SQL_QueryError(query, error, charsmax(error));
+			
+		log_to_file("csgo_error.log", "SQL Query Error. [%d] %s", errorNum, error);
 	}
-	
-	new Handle:query = SQL_PrepareQuery(connectHandle, queryData);
-	
-	SQL_Execute(query);
-	
-	if (SQL_NumResults(query)) foundClan = true;
 
 	SQL_FreeHandle(query);
-	SQL_FreeHandle(connectHandle);
 	
 	return foundClan;
 }
 
 stock check_user_clan(const userName[])
 {
-	new queryData[192], safeUserName[64], error[128], errorNum, bool:foundClan;
+	new queryData[192], error[128], safeUserName[64], Handle:query, bool:foundClan, errorNum;
 
 	mysql_escape_string(userName, safeUserName, charsmax(safeUserName));
 	
 	formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_clans_members` WHERE `name` = ^"%s^" AND clan > 0", safeUserName);
 	
-	new Handle:connectHandle = SQL_Connect(sql, errorNum, error, charsmax(error));
+	query = SQL_PrepareQuery(connection, queryData);
 	
-	if (errorNum) {
-		log_to_file("csgo_error.log", "[CS:GO Clans] SQL Error: %s", error);
-		
-		return false;
+	if (SQL_Execute(query)) {
+		if (SQL_NumResults(query)) foundClan = true;
+	} else {
+		errorNum = SQL_QueryError(query, error, charsmax(error));
+			
+		log_to_file("csgo_error.log", "SQL Query Error. [%d] %s", errorNum, error);
 	}
-	
-	new Handle:query = SQL_PrepareQuery(connectHandle, queryData);
-	
-	SQL_Execute(query);
-	
-	if (SQL_NumResults(query)) foundClan = true;
 
 	SQL_FreeHandle(query);
-	SQL_FreeHandle(connectHandle);
 	
 	return foundClan;
 }
 
 stock create_clan(id, const clanName[])
 {
-	new csgoClan[clanInfo], queryData[192], safeClanName[64], error[128], errorNum;
+	new csgoClan[clanInfo], queryData[192], error[128], safeClanName[64], Handle:query, errorNum;
 
 	mysql_escape_string(clanName, safeClanName, charsmax(safeClanName));
 	
 	formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_clans` (`name`) VALUES (^"%s^")", safeClanName);
-	
-	new Handle:connectHandle = SQL_Connect(sql, errorNum, error, charsmax(error));
-	
-	if (errorNum) {
-		log_to_file("csgo_error.log", "[CS:GO Clans] SQL Error: %s", error);
-		
-		return;
-	}
 
-	new Handle:query = SQL_PrepareQuery(connectHandle, queryData);
+	query = SQL_PrepareQuery(connection, queryData);
 	
-	SQL_Execute(query);
+	if (!SQL_Execute(query)) {
+		errorNum = SQL_QueryError(query, error, charsmax(error));
+			
+		log_to_file("csgo_error.log", "SQL Query Error. [%d] %s", errorNum, error);
+	}
 
 	formatex(queryData, charsmax(queryData), "SELECT id FROM `csgo_clans` WHERE name = ^"%s^"", safeClanName);
+
+	query = SQL_PrepareQuery(connection, queryData);
 	
-	connectHandle = SQL_Connect(sql, errorNum, error, charsmax(error));
-	
-	if (errorNum) {
-		log_to_file("csgo_error.log", "[CS:GO Clans] SQL Error: %s", error);
+	if (SQL_Execute(query)) {
+		if (SQL_NumResults(query)) {
+			clan[id] = SQL_ReadResult(query, 0);
+
+			copy(csgoClan[CLAN_NAME], charsmax(csgoClan[CLAN_NAME]), clanName);
+			csgoClan[CLAN_STATUS] = _:TrieCreate();
+			csgoClan[CLAN_ID] = clan[id];
 		
-		return;
+			ArrayPushArray(csgoClans, csgoClan);
+
+			set_user_clan(id, clan[id], 1);
+			set_user_status(id, STATUS_LEADER);
+		}
+	} else {
+		errorNum = SQL_QueryError(query, error, charsmax(error));
+			
+		log_to_file("csgo_error.log", "SQL Query Error. [%d] %s", errorNum, error);
 	}
 
-	query = SQL_PrepareQuery(connectHandle, queryData);
-	
-	SQL_Execute(query);
-	
-	if (SQL_NumResults(query)) clan[id] = SQL_ReadResult(query, 0);
-
-	copy(csgoClan[CLAN_NAME], charsmax(csgoClan[CLAN_NAME]), clanName);
-	csgoClan[CLAN_STATUS] = _:TrieCreate();
-	csgoClan[CLAN_ID] = clan[id];
-	
-	ArrayPushArray(csgoClans, csgoClan);
-
-	set_user_clan(id, clan[id], 1);
-	set_user_status(id, STATUS_LEADER);
-
 	SQL_FreeHandle(query);
-	SQL_FreeHandle(connectHandle);
 }
 
 stock remove_clan(id)
@@ -2816,19 +2788,15 @@ stock remove_clan(id)
 	tempId[0] = clan[id];
 
 	formatex(queryData, charsmax(queryData), "SELECT a.*, (SELECT name FROM `csgo_clans` WHERE id = '%i') as name FROM `csgo_clans_wars` a WHERE (clan = '%i' OR clan2 = '%i') AND started = '1'", clan[id], clan[id], clan[id]);
-
 	SQL_ThreadQuery(sql, "remove_clan_wars", queryData, tempId, sizeof(tempId));
 
 	formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_clans` WHERE id = '%i'", clan[id]);
-
 	SQL_ThreadQuery(sql, "ignore_handle", queryData);
 
 	formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_clans_applications` WHERE clan = '%i'", clan[id]);
-
 	SQL_ThreadQuery(sql, "ignore_handle", queryData);
 
 	formatex(queryData, charsmax(queryData), "UPDATE `csgo_clans_members` SET flag = '0', clan = '0', deposit = '0', withdraw = '0' WHERE clan = '%i'", clan[id]);
-
 	SQL_ThreadQuery(sql, "ignore_handle", queryData);
 
 	ArrayDeleteItem(csgoClans, get_clan_id(clan[id]));
@@ -2851,61 +2819,51 @@ stock check_clan_loaded(clanId)
 
 stock get_applications_count(clanId)
 {
-	new queryData[128], error[128], errorNum, applicationsCount = 0;
+	new queryData[128], error[128], Handle:query, applicationsCount = 0, errorNum;
 	
 	formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_clans_applications` WHERE `clan` = '%i'", clanId);
 	
-	new Handle:connectHandle = SQL_Connect(sql, errorNum, error, charsmax(error));
+	query = SQL_PrepareQuery(connection, queryData);
 	
-	if (errorNum) {
-		log_to_file("csgo_error.log", "[CS:GO Clans] SQL Error: %s", error);
-		
-		return 0;
-	}
-	
-	new Handle:query = SQL_PrepareQuery(connectHandle, queryData);
-	
-	SQL_Execute(query);
-	
-	while (SQL_MoreResults(query)) {
-		applicationsCount++;
+	if (SQL_Execute(query)) {
+		while (SQL_MoreResults(query)) {
+			applicationsCount++;
 
-		SQL_NextRow(query);
+			SQL_NextRow(query);
+		}
+	} else {
+		errorNum = SQL_QueryError(query, error, charsmax(error));
+			
+		log_to_file("csgo_error.log", "SQL Query Error. [%d] %s", errorNum, error);
 	}
 
 	SQL_FreeHandle(query);
-	SQL_FreeHandle(connectHandle);
 
 	return applicationsCount;
 }
 
 stock get_wars_count(clanId, started = 1, iniciated = 0)
 {
-	new queryData[128], error[128], errorNum, warsCount = 0;
+	new queryData[128], error[128], Handle:query, warsCount = 0, errorNum;
 
 	if(started) formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_clans_wars` WHERE (clan = '%i' OR clan2 = '%i') AND started = '1'", clanId, clanId);
 	else formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_clans_wars` WHERE %s = '%i' AND started = '0'", iniciated ? "clan" : "clan2", clanId);
-
-	new Handle:connectHandle = SQL_Connect(sql, errorNum, error, charsmax(error));
-
-	if (errorNum) {
-		log_to_file("csgo_error.log", "[CS:GO Clans] SQL Error: %s", error);
-
-		return 0;
-	}
 	
-	new Handle:query = SQL_PrepareQuery(connectHandle, queryData);
+	query = SQL_PrepareQuery(connection, queryData);
 	
-	SQL_Execute(query);
-	
-	while (SQL_MoreResults(query)) {
-		warsCount++;
+	if (SQL_Execute(query)) {
+		while (SQL_MoreResults(query)) {
+			warsCount++;
 
-		SQL_NextRow(query);
+			SQL_NextRow(query);
+		}
+	} else {
+		errorNum = SQL_QueryError(query, error, charsmax(error));
+			
+		log_to_file("csgo_error.log", "SQL Query Error. [%d] %s", errorNum, error);
 	}
 
 	SQL_FreeHandle(query);
-	SQL_FreeHandle(connectHandle);
 	
 	return warsCount;
 }
@@ -2920,26 +2878,21 @@ stock Float:get_clan_money(clanId)
 		return csgoClan[CLAN_MONEY];
 	}
 
-	new queryData[128], error[128], Float:money = 0.0, errorNum;
+	new queryData[128], error[128], Handle:query, Float:money = 0.0, errorNum;
 
 	formatex(queryData, charsmax(queryData), "SELECT money FROM `csgo_clans` WHERE id = '%i'", clanId);
-
-	new Handle:connectHandle = SQL_Connect(sql, errorNum, error, charsmax(error));
-
-	if (errorNum) {
-		log_to_file("csgo_error.log", "[CS:GO Clans] SQL Error: %s", error);
-
-		return 0.0;
+	
+	query = SQL_PrepareQuery(connection, queryData);
+	
+	if (SQL_Execute(query)) {
+		if (SQL_NumResults(query)) SQL_ReadResult(query, 0, money);
+	} else {
+		errorNum = SQL_QueryError(query, error, charsmax(error));
+			
+		log_to_file("csgo_error.log", "SQL Query Error. [%d] %s", errorNum, error);
 	}
-	
-	new Handle:query = SQL_PrepareQuery(connectHandle, queryData);
-	
-	SQL_Execute(query);
-	
-	if (SQL_NumResults(query)) SQL_ReadResult(query, 0, money);
 
 	SQL_FreeHandle(query);
-	SQL_FreeHandle(connectHandle);
 	
 	return money;
 }
