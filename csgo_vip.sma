@@ -222,21 +222,21 @@ public restart_round()
 public player_spawn(id)
 {
 	if (!is_user_alive(id) || !get_bit(id, VIP) || disabled) return PLUGIN_CONTINUE;
-
-	StripWeapons(id, Secondary);
-	
-	give_item(id, "weapon_deagle");
-	give_item(id, "ammo_50ae");
-	
-	new weaponID = find_ent_by_owner(-1, "weapon_deagle", id);
-
-	if (weaponID) cs_set_weapon_ammo(weaponID, 7);
-	
-	cs_set_user_bpammo(id, CSW_DEAGLE, 35);
 	
 	if (get_user_team(id) == 2) cs_set_user_defuse(id, 1);
 
 	if (roundNum >= 2) {
+		StripWeapons(id, Secondary);
+	
+		give_item(id, "weapon_deagle");
+		give_item(id, "ammo_50ae");
+		
+		new weaponID = find_ent_by_owner(-1, "weapon_deagle", id);
+
+		if (weaponID) cs_set_weapon_ammo(weaponID, 7);
+		
+		cs_set_user_bpammo(id, CSW_DEAGLE, 35);
+
 		give_item(id, "weapon_hegrenade");
 
 		if (get_bit(id, SVIP)) {
@@ -246,6 +246,8 @@ public player_spawn(id)
 		}
 
 		cs_set_user_armor(id, 100, CS_ARMOR_VESTHELM);
+	} else {
+		vip_menu_pistol(id);
 	}
 	
 	if (roundNum >= 3) vip_menu(id);
@@ -405,6 +407,130 @@ public close_vip_menu(id)
 				cs_set_user_bpammo(id, CSW_AWP, 30);
 				
 				client_print(id, print_center, "Dostales AWP + Deagle!");
+			}
+		}
+	}
+	
+	return PLUGIN_CONTINUE;
+}
+
+public vip_menu_pistol(id)
+{
+	used[id] = false;
+	
+	set_task(15.0, "close_vip_menu_pistol", id);
+
+	new menu;
+
+	if(get_bit(id, SVIP)) menu = menu_create("\wMenu \ySuperVIP\w: Wybierz \rPistolet\w", "vip_menu_pistol_handle");
+	else menu = menu_create("\wMenu \yVIP\w: Wybierz \rPistolet\w", "vip_menu_pistol_handle");
+	
+	menu_additem(menu, "\yDeagle");
+	menu_additem(menu, "\yUSP");
+	menu_additem(menu, "\yGlock");
+	
+	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	
+	menu_display(id, menu);
+}
+
+public vip_menu_pistol_handle(id, menu, item)
+{
+	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	
+	if (item == MENU_EXIT) {
+		menu_destroy(menu);
+
+		return PLUGIN_HANDLED;
+	}
+
+	used[id] = true;
+	
+	switch(item) {
+		case 0: 
+		{
+			StripWeapons(id, Secondary);
+			
+			give_item(id, "weapon_deagle");
+			give_item(id, "ammo_50ae");
+			
+			cs_set_user_bpammo(id, CSW_DEAGLE, 35);
+			
+			client_print(id, print_center, "Dostales Deagle!");
+		}
+		case 1:
+		{
+			StripWeapons(id, Secondary);
+			
+			give_item(id, "weapon_usp");
+			give_item(id, "ammo_45acp");
+			
+			cs_set_user_bpammo(id, CSW_USP, 100);
+			
+			client_print(id, print_center, "Dostales USP!");
+		}
+		case 2:
+		{
+			StripWeapons(id, Secondary);
+
+			give_item(id, "weapon_glock18");
+			give_item(id, "ammo_9mm");
+			
+			cs_set_user_bpammo(id, CSW_GLOCK18, 120);
+			
+			client_print(id, print_center, "Dostales Glocka!");
+		}
+	}
+	
+	menu_destroy(menu);
+	
+	return PLUGIN_HANDLED;
+}
+
+public close_vip_menu_pistol(id)
+{
+	if (used[id] || !is_user_alive(id)) return PLUGIN_CONTINUE;
+
+	show_menu(id, 0, "^n", 1);
+	
+	if (!check_weapons(id)) {
+		client_print_color(id, id, "^x04[%sVIP]^x01 Pistolet zostal ci przydzielony losowo.", get_bit(id, SVIP) ? "S" : "");
+
+		new random = random_num(0, 2);
+		
+		switch(random) {
+			case 0: 
+			{
+				StripWeapons(id, Secondary);
+				
+				give_item(id, "weapon_deagle");
+				give_item(id, "ammo_50ae");
+				
+				cs_set_user_bpammo(id, CSW_DEAGLE, 35);
+				
+				client_print(id, print_center, "Dostales Deagle!");
+			}
+			case 1:
+			{
+				StripWeapons(id, Secondary);
+				
+				give_item(id, "weapon_usp");
+				give_item(id, "ammo_45acp");
+				
+				cs_set_user_bpammo(id, CSW_USP, 100);
+				
+				client_print(id, print_center, "Dostales USP!");
+			}
+			case 2:
+			{
+				StripWeapons(id, Secondary);
+
+				give_item(id, "weapon_glock18");
+				give_item(id, "ammo_9mm");
+				
+				cs_set_user_bpammo(id, CSW_GLOCK18, 120);
+				
+				client_print(id, print_center, "Dostales Glocka!");
 			}
 		}
 	}
