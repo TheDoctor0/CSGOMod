@@ -85,7 +85,7 @@ public client_putinserver(id)
 
 	clan[id] = 0;
 
-	warFrags[id] = 100;
+	warFrags[id] = 25;
 	warReward[id] = 100;
 
 	get_user_name(id, playerName[id], charsmax(playerName));
@@ -770,7 +770,7 @@ public members_menu(id)
 public members_menu_handle(failState, Handle:query, error[], errorNum, tempId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo_error.log", "[CS:GO Clans] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Clans] SQL Error: %s (%d)", error, errorNum);
 		
 		return PLUGIN_HANDLED;
 	}
@@ -969,7 +969,7 @@ public applications_menu(id)
 public applications_menu_handle(failState, Handle:query, error[], errorNum, tempId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo_error.log", "[CS:GO Clans] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Clans] SQL Error: %s (%d)", error, errorNum);
 		
 		return PLUGIN_HANDLED;
 	}
@@ -1114,7 +1114,7 @@ public applications_confirm_handle(id, menu, item)
 			} else {
 				errorNum = SQL_QueryError(query, error, charsmax(error));
 			
-				log_to_file("csgo_error.log", "SQL Query Error. [%d] %s", errorNum, error);
+				log_to_file("csgo-error.log", "SQL Query Error. [%d] %s", errorNum, error);
 			}
 
 			SQL_FreeHandle(query);
@@ -1132,7 +1132,7 @@ public applications_confirm_handle(id, menu, item)
 			if (!SQL_Execute(query)) {
 				errorNum = SQL_QueryError(query, error, charsmax(error));
 			
-				log_to_file("csgo_error.log", "SQL Query Error. [%d] %s", errorNum, error);
+				log_to_file("csgo-error.log", "SQL Query Error. [%d] %s", errorNum, error);
 			}
 
 			SQL_FreeHandle(query);
@@ -1213,7 +1213,7 @@ public war_list_menu(id)
 public show_war_list_menu(failState, Handle:query, error[], errorNum, tempId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo_error.log", "[CS:GO Clans] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Clans] SQL Error: %s (%d)", error, errorNum);
 
 		return PLUGIN_HANDLED;
 	}
@@ -1329,7 +1329,7 @@ public declare_war_menu_handle(id, menu, item)
 public declare_war_select(failState, Handle:query, error[], errorNum, tempId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo_error.log", "[CS:GO Clans] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Clans] SQL Error: %s (%d)", error, errorNum);
 
 		return PLUGIN_HANDLED;
 	}
@@ -1452,7 +1452,7 @@ public accept_war_menu(id)
 public accept_war_menu_handle(failState, Handle:query, error[], errorNum, tempId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo_error.log", "[CS:GO Clans] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Clans] SQL Error: %s (%d)", error, errorNum);
 
 		return PLUGIN_HANDLED;
 	}
@@ -1596,7 +1596,7 @@ public remove_war_menu(id)
 public remove_war_menu_handle(failState, Handle:query, error[], errorNum, tempId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo_error.log", "[CS:GO Clans] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Clans] SQL Error: %s (%d)", error, errorNum);
 
 		return PLUGIN_HANDLED;
 	}
@@ -1838,7 +1838,7 @@ public payments_list(id)
 public show_payments_list(failState, Handle:query, error[], errorNum, tempId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo_error.log", "[CS:GO Clans] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Clans] SQL Error: %s (%d)", error, errorNum);
 		
 		return PLUGIN_HANDLED;
 	}
@@ -1893,7 +1893,7 @@ public clans_top15(id)
 public show_clans_top15(failState, Handle:query, error[], errorNum, tempId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo_error.log", "[CS:GO Clans] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Clans] SQL Error: %s (%d)", error, errorNum);
 		
 		return PLUGIN_HANDLED;
 	}
@@ -2001,7 +2001,7 @@ public application_menu(id)
 public application_menu_handle(failState, Handle:query, error[], errorNum, tempId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo_error.log", "[CS:GO Clans] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Clans] SQL Error: %s (%d)", error, errorNum);
 		
 		return PLUGIN_HANDLED;
 	}
@@ -2183,7 +2183,7 @@ public sql_init()
 	connection = SQL_Connect(sql, errorNum, error, charsmax(error));
 	
 	if (errorNum) {
-		log_to_file("csgo_error.log", "[CS:GO Clans] Init SQL Error: %s", error);
+		log_to_file("csgo-error.log", "[CS:GO Clans] Init SQL Error: %s", error);
 
 		set_task(1.0, "sql_init");
 		
@@ -2225,8 +2225,8 @@ public sql_init()
 public ignore_handle(failState, Handle:query, error[], errorNum, data[], dataSize)
 {
 	if (failState) {
-		if (failState == TQUERY_CONNECT_FAILED) log_to_file("csgo_error.log", "[CS:GO Clans] Could not connect to SQL database. [%d] %s", errorNum, error);
-		else if (failState == TQUERY_QUERY_FAILED) log_to_file("csgo_error.log", "[CS:GO Clans] Query failed. [%d] %s", errorNum, error);
+		if (failState == TQUERY_CONNECT_FAILED) log_to_file("csgo-error.log", "[CS:GO Clans] Could not connect to SQL database. [%d] %s", errorNum, error);
+		else if (failState == TQUERY_QUERY_FAILED) log_to_file("csgo-error.log", "[CS:GO Clans] Query failed. [%d] %s", errorNum, error);
 	}
 	
 	return PLUGIN_CONTINUE;
@@ -2266,7 +2266,7 @@ public load_clan_data(id)
 public load_clan_data_handle(failState, Handle:query, error[], errorNum, tempId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo_error.log", "[CS:GO Clans] Data SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Clans] Data SQL Error: %s (%d)", error, errorNum);
 		
 		return;
 	}
@@ -2344,7 +2344,7 @@ public show_clan_info(id)
 public load_wars_data_handle(failState, Handle:query, error[], errorNum)
 {
 	if (failState) {
-		log_to_file("csgo_error.log", "[CS:GO Clans] Wars SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Clans] Wars SQL Error: %s (%d)", error, errorNum);
 		
 		return;
 	}
@@ -2458,7 +2458,7 @@ stock remove_war(warId, started = 0)
 	} else {
 		errorNum = SQL_QueryError(query, error, charsmax(error));
 			
-		log_to_file("csgo_error.log", "SQL Query Error. [%d] %s", errorNum, error);
+		log_to_file("csgo-error.log", "SQL Query Error. [%d] %s", errorNum, error);
 	}
 
 	SQL_FreeHandle(query);
@@ -2469,7 +2469,7 @@ stock remove_war(warId, started = 0)
 public remove_clan_wars(failState, Handle:query, error[], errorNum, tempId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo_error.log", "[CS:GO Clans] Remove Clan SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Clans] Remove Clan SQL Error: %s (%d)", error, errorNum);
 		
 		return;
 	}
@@ -2621,7 +2621,7 @@ stock check_applications(id, clanId)
 	} else {
 		errorNum = SQL_QueryError(query, error, charsmax(error));
 			
-		log_to_file("csgo_error.log", "SQL Query Error. [%d] %s", errorNum, error);
+		log_to_file("csgo-error.log", "SQL Query Error. [%d] %s", errorNum, error);
 	}
 
 	SQL_FreeHandle(query);
@@ -2698,7 +2698,7 @@ stock check_clan_name(const clanName[])
 	} else {
 		errorNum = SQL_QueryError(query, error, charsmax(error));
 			
-		log_to_file("csgo_error.log", "SQL Query Error. [%d] %s", errorNum, error);
+		log_to_file("csgo-error.log", "SQL Query Error. [%d] %s", errorNum, error);
 	}
 
 	SQL_FreeHandle(query);
@@ -2721,7 +2721,7 @@ stock check_user_clan(const userName[])
 	} else {
 		errorNum = SQL_QueryError(query, error, charsmax(error));
 			
-		log_to_file("csgo_error.log", "SQL Query Error. [%d] %s", errorNum, error);
+		log_to_file("csgo-error.log", "SQL Query Error. [%d] %s", errorNum, error);
 	}
 
 	SQL_FreeHandle(query);
@@ -2742,7 +2742,7 @@ stock create_clan(id, const clanName[])
 	if (!SQL_Execute(query)) {
 		errorNum = SQL_QueryError(query, error, charsmax(error));
 			
-		log_to_file("csgo_error.log", "SQL Query Error. [%d] %s", errorNum, error);
+		log_to_file("csgo-error.log", "SQL Query Error. [%d] %s", errorNum, error);
 	}
 
 	formatex(queryData, charsmax(queryData), "SELECT id FROM `csgo_clans` WHERE name = ^"%s^"", safeClanName);
@@ -2765,7 +2765,7 @@ stock create_clan(id, const clanName[])
 	} else {
 		errorNum = SQL_QueryError(query, error, charsmax(error));
 			
-		log_to_file("csgo_error.log", "SQL Query Error. [%d] %s", errorNum, error);
+		log_to_file("csgo-error.log", "SQL Query Error. [%d] %s", errorNum, error);
 	}
 
 	SQL_FreeHandle(query);
@@ -2834,7 +2834,7 @@ stock get_applications_count(clanId)
 	} else {
 		errorNum = SQL_QueryError(query, error, charsmax(error));
 			
-		log_to_file("csgo_error.log", "SQL Query Error. [%d] %s", errorNum, error);
+		log_to_file("csgo-error.log", "SQL Query Error. [%d] %s", errorNum, error);
 	}
 
 	SQL_FreeHandle(query);
@@ -2860,7 +2860,7 @@ stock get_wars_count(clanId, started = 1, iniciated = 0)
 	} else {
 		errorNum = SQL_QueryError(query, error, charsmax(error));
 			
-		log_to_file("csgo_error.log", "SQL Query Error. [%d] %s", errorNum, error);
+		log_to_file("csgo-error.log", "SQL Query Error. [%d] %s", errorNum, error);
 	}
 
 	SQL_FreeHandle(query);
@@ -2889,7 +2889,7 @@ stock Float:get_clan_money(clanId)
 	} else {
 		errorNum = SQL_QueryError(query, error, charsmax(error));
 			
-		log_to_file("csgo_error.log", "SQL Query Error. [%d] %s", errorNum, error);
+		log_to_file("csgo-error.log", "SQL Query Error. [%d] %s", errorNum, error);
 	}
 
 	SQL_FreeHandle(query);

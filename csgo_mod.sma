@@ -96,7 +96,7 @@ public plugin_init()
 
 	register_concmd("CENA_SKINA", "set_skin_price");
 
-	register_concmd("csgo_add_money", "cmd_add_money", ADMIN_ALL, "<player> <money>"); 
+	register_concmd("csgo_add_money", "cmd_add_money", ADMIN_ADMIN, "<player> <money>"); 
 
 	register_logevent("log_event_operation", 3, "1=triggered");
 
@@ -704,12 +704,14 @@ public random_weapon_skin_handle(id, menu, item)
 	new chance = (csgo_get_user_svip(id) ? skinChanceSVIP : skinChance) + floatround(csgo_get_clan_members(csgo_get_user_clan(id)) * skinChancePerMember, floatround_floor);
 
 	if (random_num(1, 100) < chance) {
-		new skin[skinsInfo], playerName[32], skinId, skinsCount = 0, skinNumber = random_num(1, multipleSkins ? ArraySize(skins) - 1 : get_missing_weapon_skins_count(id, weapon));
+		new skin[skinsInfo], playerName[32], skinId, skinsCount = 0, skinNumber = random_num(1, multipleSkins ? get_weapon_skins_count(weapon) : get_missing_weapon_skins_count(id, weapon));
 
 		for (new i = 0; i < ArraySize(skins); i++) {
 			ArrayGetArray(skins, i, skin);
 
-			if (equal(weapon, skin[SKIN_WEAPON]) && (!multipleSkins && !has_skin(id, i))) {
+			if (equali(weapon, skin[SKIN_WEAPON])) {
+				if (!multipleSkins && has_skin(id, i)) continue;
+
 				if (++skinsCount == skinNumber) {
 					skinId = i;
 
@@ -1644,9 +1646,9 @@ public market_withdraw_confirm_handle(id, menu, item)
 	return PLUGIN_CONTINUE;
 }
 
-public cmd_add_money(id, level, cid)
+public cmd_add_money(id)
 {
-	if (!cmd_access(id, level, cid, 3)) return PLUGIN_HANDLED;
+	if (!(get_user_flags(id) & ADMIN_ADMIN)) return PLUGIN_HANDLED;
 
 	new playerName[32], tempMoney[4];
 
