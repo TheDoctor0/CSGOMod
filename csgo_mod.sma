@@ -24,7 +24,7 @@ new const commandHelp[][] = { "pomoc", "say /pomoc", "say_team /pomoc", "say /he
 new const commandSet[][] = { "ustaw", "say /ustaw", "say_team /ustaw", "say /set", "say_team /set" };
 new const commandBuy[][] = { "kup", "say /kup", "say_team /kup", "say /buy", "say_team /buy", "say /sklep", "say_team /sklep", "say /shop", "say_team /shop" };
 new const commandRandom[][] = { "losuj", "say /los", "say_team /los", "say /losuj", "say_team /losuj" };
-new const commandExchange[][] = { "wymien", "say /exchange", "say_team /exchange", "say /zamien", "say_team /zamien", "say /wymien", "say_team /wymien" };
+new const commandExchange[][] = { "wymien", "say /exchange", "say_team /exchange", "say /zamien", "say_team /zamien", "say /wymien", "say_team /wymien", "say /wymiana", "say_team /wymiana" };
 new const commandGive[][] = { "daj", "say /give", "say_team /give", "say /oddaj", "say_team /oddaj", "say /daj", "say_team /daj" };
 new const commandMarket[][] = { "rynek", "say /market", "say_team /market", "say /rynek", "say_team /rynek" };
 new const commandSell[][] = { "wystaw", "say /wystaw", "say_team /wystaw" };
@@ -748,14 +748,16 @@ public exchange_skin_menu(id)
 		return PLUGIN_HANDLED;
 	}
 	
-	new menuData[128], playerName[32], playerId[3], players, menu = menu_create("\yWybierz \rGracza\y, z ktorym chcesz sie wymienic skinem\w:", "exchange_skin_menu_handle");
+	new menuData[128], playerName[32], playerId[3], skinsCount, players, menu = menu_create("\yWybierz \rGracza\y, z ktorym chcesz sie wymienic skinem\w:", "exchange_skin_menu_handle");
 
 	for (new player = 1; player <= MAX_PLAYERS; player++) {
 		if (!is_user_connected(player) || id == player || is_user_bot(player) || is_user_hltv(player) || !ArraySize(playerSkins[player]) || playerData[player][EXCHANGE_BLOCKED]) continue;
 
 		get_user_name(player, playerName, charsmax(playerName));
+
+		skinsCount = ArraySize(playerSkins[player]);
 		
-		formatex(menuData, charsmax(menuData), "%s \y(%i Skin%s)", playerName, ArraySize(playerSkins[player]), ArraySize(playerSkins[player]) % 10 == 0 ? "" : (ArraySize(playerSkins[player]) % 10 < 5 ? "y" : "ow"));
+		formatex(menuData, charsmax(menuData), "%s \y(%i Skin%s)", playerName, skinsCount, skinsCount % 10 == 0 ? "ow" : (skinsCount == 1 ? "" : ((skinsCount % 10 < 5 && (skinsCount < 10 || skinsCount > 20)) ? "y" : "ow")));
 
 		num_to_str(player, playerId, charsmax(playerId));
 		
@@ -815,18 +817,18 @@ public exchange_skin_menu_handle(id, menu, item)
 
 	playerData[id][TEMP][EXCHANGE_PLAYER] = player;
 
-	new menuData[64], skin[skinsInfo], tempId[5], skinId, skinCount, menu = menu_create("\yWybierz twoj \rSkin\y, ktory chcesz wymienic\w:", "exchange_skin_handle");
+	new menuData[64], skin[skinsInfo], tempId[5], skinId, skinsCount, menu = menu_create("\yWybierz twoj \rSkin\y, ktory chcesz wymienic\w:", "exchange_skin_handle");
 
 	for (new i = 0; i < ArraySize(playerSkins[id]); i++) {
-		skinId = get_player_skin_info(id, i, SKIN_ID), skinCount = get_player_skin_info(id, i, SKIN_COUNT);
+		skinId = get_player_skin_info(id, i, SKIN_ID), skinsCount = get_player_skin_info(id, i, SKIN_COUNT);
 
 		if (!multipleSkins && has_skin(player, skinId)) continue;
-		
+
 		ArrayGetArray(skins, skinId, skin);
 
 		num_to_str(skinId, tempId, charsmax(tempId));
 
-		if (multipleSkins && skinCount > 1) formatex(menuData, charsmax(menuData), "%s \y(%s) \r(%i)", skin[SKIN_NAME], skin[SKIN_WEAPON], skinCount);
+		if (multipleSkins && skinsCount > 1) formatex(menuData, charsmax(menuData), "%s \y(%s) \r(%i)", skin[SKIN_NAME], skin[SKIN_WEAPON], skinsCount);
 		else formatex(menuData, charsmax(menuData), "%s \y(%s)", skin[SKIN_NAME], skin[SKIN_WEAPON]);
 
 		menu_additem(menu, menuData, tempId);
@@ -948,8 +950,8 @@ public exchange_for_skin_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	if (has_skin(id, playerData[id][TEMP][EXCHANGE_FOR_SKIN], 1) == -1) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Wybrany gracz nie ma juz tegp skina.");
+	if (has_skin(player, playerData[id][TEMP][EXCHANGE_FOR_SKIN], 1) == -1) {
+		client_print_color(id, id, "^x04[CS:GO]^x01 Wybrany gracz nie ma juz tego skina.");
 
 		return PLUGIN_HANDLED;
 	}
@@ -981,13 +983,13 @@ public exchange_question_handle(id,key)
 		return PLUGIN_HANDLED;
 	}
 	
-	if (has_skin(player, exchangeSkin) == -1) {
+	if (has_skin(player, exchangeSkin, 1) == -1) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Gracz proponujacy wymiane nie ma juz tego skina.");
 
 		return PLUGIN_HANDLED;
 	}
 	
-	if (has_skin(id, exchangeForSkin) == -1) {
+	if (has_skin(id, exchangeForSkin, 1) == -1) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Nie masz juz zapronowanego w wymianie skina.");
 
 		return PLUGIN_HANDLED;
@@ -1029,14 +1031,16 @@ public give_skin_menu(id)
 		return PLUGIN_HANDLED;
 	}
 	
-	new menuData[128], playerName[32], playerId[3], players, menu = menu_create("\yWybierz \rGracza\y, ktoremu chcesz oddac skina\w:", "give_skin_menu_handle");
+	new menuData[128], playerName[32], playerId[3], skinsCount, players, menu = menu_create("\yWybierz \rGracza\y, ktoremu chcesz oddac skina\w:", "give_skin_menu_handle");
 
 	for (new player = 1; player <= MAX_PLAYERS; player++) {
 		if (!is_user_connected(player) || id == player || is_user_hltv(player) || is_user_bot(player)) continue;
 
+		skinsCount = ArraySize(playerSkins[player]);
+
 		get_user_name(player, playerName, charsmax(playerName));
 		
-		formatex(menuData, charsmax(menuData), "%s \y(%i Skin%s)", playerName, ArraySize(playerSkins[player]), ArraySize(playerSkins[player]) == 0 ? "" : (ArraySize(playerSkins[player]) < 5 ? "y" : "ow"));
+		formatex(menuData, charsmax(menuData), "%s \y(%i Skin%s)", playerName, skinsCount, skinsCount % 10 == 0 ? "ow" : (skinsCount == 1 ? "" : ((skinsCount % 10 < 5 && (skinsCount < 10 || skinsCount > 20)) ? "y" : "ow")));
 
 		num_to_str(player, playerId, charsmax(playerId));
 		
@@ -1254,16 +1258,16 @@ public market_sell_skin(id)
 		return PLUGIN_HANDLED;
 	}
 
-	new menuData[64], skin[skinsInfo], tempId[5], skinId, skinCount, menu = menu_create("\yWybierz \rSkin\y, ktory chcesz wystawic na rynek\w:", "market_sell_skin_handle");
+	new menuData[64], skin[skinsInfo], tempId[5], skinId, skinsCount, menu = menu_create("\yWybierz \rSkin\y, ktory chcesz wystawic na rynek\w:", "market_sell_skin_handle");
 
 	for (new i = 0; i < ArraySize(playerSkins[id]); i++) {
-		skinId = get_player_skin_info(id, i, SKIN_ID), skinCount = get_player_skin_info(id, i, SKIN_COUNT);
+		skinId = get_player_skin_info(id, i, SKIN_ID), skinsCount = get_player_skin_info(id, i, SKIN_COUNT);
 
 		ArrayGetArray(skins, skinId, skin);
 
 		num_to_str(skinId, tempId, charsmax(tempId));
 
-		if (multipleSkins && skinCount > 1) formatex(menuData, charsmax(menuData), "%s \y(%s) \r(%i)", skin[SKIN_NAME], skin[SKIN_WEAPON], skinCount);
+		if (multipleSkins && skinsCount > 1) formatex(menuData, charsmax(menuData), "%s \y(%s) \r(%i)", skin[SKIN_NAME], skin[SKIN_WEAPON], skinsCount);
 		else formatex(menuData, charsmax(menuData), "%s \y(%s)", skin[SKIN_NAME], skin[SKIN_WEAPON]);
 
 		menu_additem(menu, menuData, tempId);
@@ -1334,7 +1338,7 @@ public set_skin_price(id)
 
 	price = str_to_float(priceData);
 	
-	if (price < 0.01 || price > 1000) { 
+	if (price < 0.01 || price > 1000.0) { 
 		client_print_color(id, id, "^x04[CS:GO]^x01 Cena musi nalezec do przedzialu^x03 0.01 - 1000 Euro^x01!");
 
 		return PLUGIN_HANDLED;
@@ -1435,7 +1439,7 @@ public market_buy_skin_handle(id, menu, item)
 
 	get_user_name(marketSkin[MARKET_OWNER], playerName, charsmax(playerName));
 
-	length += formatex(menuData[length], maxLength - length, "Potwierdzenie kupna od: \y%s^n", playerName);
+	length += formatex(menuData[length], maxLength - length, "\yPotwierdzenie kupna od: \r%s^n", playerName);
 	length += formatex(menuData[length], maxLength - length, "\wSkin: \y%s (%s)^n", skin[SKIN_NAME], skin[SKIN_WEAPON]);
 	length += formatex(menuData[length], maxLength - length, "\wKoszt: \y%.2f Euro^n", marketSkin[MARKET_PRICE]);
 	length += formatex(menuData[length], maxLength - length, "\wCzy na pewno chcesz \rkupic\w tego skina?^n^n");
@@ -1491,6 +1495,8 @@ public market_buy_confirm_handle(id, menu, item)
 	new skin[skinsInfo], playerName[32], ownerName[32];
 
 	ArrayGetArray(skins, marketSkin[MARKET_SKIN], skin);
+
+	change_local_skin(marketSkin[MARKET_OWNER], marketSkin[MARKET_SKIN], 1);
 
 	get_user_name(id, playerName, charsmax(playerName));
 	get_user_name(marketSkin[MARKET_OWNER], ownerName, charsmax(ownerName));
@@ -2208,8 +2214,6 @@ public _csgo_add_money(id, Float:amount)
 
 	playerData[id][MONEY] = floatmax(0.0, playerData[id][MONEY] + amount);
 
-	log_to_file("csgo_money.log", "Gracz %s otrzymal/oddal %.2f euro. Teraz posiada teraz %.2f euro.", name, amount, playerData[id][MONEY]);
-
 	save_data(id);
 }
 
@@ -2220,8 +2224,6 @@ public _csgo_set_money(id, Float:amount)
 	get_user_name(id, name, charsmax(name));
 
 	playerData[id][MONEY] = floatmax(0.0, amount);
-
-	log_to_file("csgo_money.log", "Gracz %s posiada teraz %.2f euro.", name, playerData[id][MONEY]);
 
 	save_data(id);
 }
@@ -2301,27 +2303,27 @@ stock Float:get_multiplier(id)
 
 stock get_weapon_skins_count(weapon[])
 {
-	new skin[skinsInfo], weaponSkinsCount = 0;
+	new skin[skinsInfo], weaponskinsCount = 0;
 
 	for (new i = 0; i < ArraySize(skins); i++) {
 		ArrayGetArray(skins, i, skin);
 
-		if (equal(weapon, skin[SKIN_WEAPON])) weaponSkinsCount++;
+		if (equal(weapon, skin[SKIN_WEAPON])) weaponskinsCount++;
 	}
 
-	return weaponSkinsCount;
+	return weaponskinsCount;
 }
 
 stock get_missing_weapon_skins_count(id, weapon[])
 {
-	new skin[skinsInfo], marketSkin[marketInfo], playerSkinsCount = 0, skinId;
+	new skin[skinsInfo], marketSkin[marketInfo], playerskinsCount = 0, skinId;
 
 	for (new i = 0; i < ArraySize(playerSkins[id]); i++) {
 		skinId = get_player_skin_info(id, i, SKIN_ID);
 
 		ArrayGetArray(skins, skinId, skin);
 
-		if (equal(weapon, skin[SKIN_WEAPON])) playerSkinsCount++;
+		if (equal(weapon, skin[SKIN_WEAPON])) playerskinsCount++;
 	}
 
 	for (new i = 0; i < ArraySize(market); i++) {
@@ -2330,11 +2332,11 @@ stock get_missing_weapon_skins_count(id, weapon[])
 		if (marketSkin[MARKET_OWNER] == id) {
 			ArrayGetArray(skins, marketSkin[MARKET_SKIN], skin);
 
-			if (equal(weapon, skin[SKIN_WEAPON])) playerSkinsCount++;
+			if (equal(weapon, skin[SKIN_WEAPON])) playerskinsCount++;
 		}
 	}
 
-	return get_weapon_skins_count(weapon) - playerSkinsCount;
+	return get_weapon_skins_count(weapon) - playerskinsCount;
 }
 
 stock get_weapon_id(weapon[])
