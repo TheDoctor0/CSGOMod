@@ -52,7 +52,7 @@ enum _:skinsInfo { SKIN_NAME[64], SKIN_WEAPON[32], SKIN_MODEL[64], SKIN_PRICE };
 enum _:marketInfo { MARKET_ID, MARKET_SKIN, MARKET_OWNER, Float:MARKET_PRICE };
 
 new playerData[MAX_PLAYERS + 1][playerInfo], Array:playerSkins[MAX_PLAYERS + 1], Float:randomSkinPrice[CSW_P90 + 1], Array:skins, Array:weapons, Array:market, 
-	Handle:sql, marketSkins, multipleSkins, defaultSkins, skinChance, skinChanceSVIP, Float:skinChancePerMember, maxMarketSkins, Float:killReward, 
+	Handle:sql, Handle:connection, marketSkins, multipleSkins, defaultSkins, skinChance, skinChanceSVIP, Float:skinChancePerMember, maxMarketSkins, Float:killReward, 
 	Float:killHSReward, Float:bombReward, Float:defuseReward, Float:hostageReward, Float:winReward, minPlayers, bool:end, bool:sqlConnected;
 
 public plugin_init() 
@@ -236,7 +236,7 @@ public plugin_cfg()
 	
 	sql = SQL_MakeDbTuple(host, user, pass, db);
 
-	new Handle:connectHandle = SQL_Connect(sql, errorNum, error, charsmax(error));
+	connection = SQL_Connect(sql, errorNum, error, charsmax(error));
 	
 	if (errorNum) {
 		log_to_file("csgo-error.log", "Error: %s (%i)", error, errorNum);
@@ -259,7 +259,6 @@ public plugin_cfg()
 	SQL_Execute(query);
 	
 	SQL_FreeHandle(query);
-	SQL_FreeHandle(connectHandle);
 
 	sqlConnected = true;
 }
@@ -278,6 +277,7 @@ public plugin_natives()
 public plugin_end()
 {
 	SQL_FreeHandle(sql);
+	SQL_FreeHandle(connection);
 	
 	ArrayDestroy(skins);
 	
@@ -2110,13 +2110,9 @@ stock save_data(id, end = 0)
 	switch(end) {
 		case 0, 1: SQL_ThreadQuery(sql, "ignore_handle", queryData);
 		case 2: {
-			static error[128], errorNum, Handle:sqlConnection, Handle:query;
+			static error[128], errorNum, Handle:query;
 			
-			sqlConnection = SQL_Connect(sql, errorNum, error, charsmax(error));
-
-			if (!sqlConnection) return;
-			
-			query = SQL_PrepareQuery(sqlConnection, queryData);
+			query = SQL_PrepareQuery(connection, queryData);
 			
 			if (!SQL_Execute(query)) {
 				errorNum = SQL_QueryError(query, error, charsmax(error));
@@ -2130,7 +2126,6 @@ stock save_data(id, end = 0)
 			}
 
 			SQL_FreeHandle(query);
-			SQL_FreeHandle(sqlConnection);
 		}
 	}
 	
