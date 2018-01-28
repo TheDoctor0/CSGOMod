@@ -1,1 +1,0 @@
-Umozliwienie posiadania wielu tych samych skinow (dodatkowe pole w tabeli)

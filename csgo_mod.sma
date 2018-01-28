@@ -500,23 +500,25 @@ public choose_weapon_menu_handle(id, menu, item)
 
 public set_weapon_skin(id, weapon[])
 {
-	new menuData[32], skin[skinsInfo], tempId[5], skinId, count, menu = menu_create("\yWybierz \rSkin\w:", "set_weapon_skin_handle");
+	new menuData[64], tempId[5], skin[skinsInfo], skinId, skinsCount, menu = menu_create("\yWybierz \rSkin\w:", "set_weapon_skin_handle"), callback = menu_makecallback("set_weapon_skin_callback");
 
 	menu_additem(menu, "Domyslny", weapon);
 
-	for (new i = 0; i < ArraySize(playerSkins[id]); i++) {
-		skinId = get_player_skin_info(id, i, SKIN_ID);
-
-		ArrayGetArray(skins, skinId, skin);
+	for (new i = 0; i < ArraySize(skins); i++) {
+		ArrayGetArray(skins, i, skin);
 
 		if (equal(weapon, skin[SKIN_WEAPON])) {
-			num_to_str(skinId, tempId, charsmax(tempId));
+			skinId = has_skin(id, i, 1);
+			skinsCount = 0;
 
-			formatex(menuData, charsmax(menuData), skin[SKIN_NAME]);
+			if (multipleSkins && skinId != -1) skinsCount = get_player_skin_info(id, skinId, SKIN_COUNT);
 
-			menu_additem(menu, menuData, tempId);
+			if (skinsCount > 1) formatex(menuData, charsmax(menuData), "%s \y(%s) \r(%i)", skin[SKIN_NAME], skin[SKIN_WEAPON], skinsCount);
+			else formatex(menuData, charsmax(menuData), "%s \y(%s)", skin[SKIN_NAME], skin[SKIN_WEAPON]);
 
-			count++;
+			num_to_str(i, tempId, charsmax(tempId));
+
+			menu_additem(menu, menuData, tempId, _, callback);
 		}
 	}
 	
@@ -524,11 +526,18 @@ public set_weapon_skin(id, weapon[])
 	menu_setprop(menu, MPROP_NEXTNAME, "Dalej");
 	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
 	
-	if (!count) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Nie posiadasz^x03 zadnych^x01 skinow tej broni.");
+	menu_display(id, menu);
 
-		menu_destroy(menu);
-	} else menu_display(id, menu);
+	return PLUGIN_HANDLED;
+}
+
+public set_weapon_skin_callback(id, menu, item)
+{
+	static itemData[5], itemAccess, itemCallback;
+
+	menu_item_getinfo(menu, item, itemAccess, itemData, charsmax(itemData), _, _, itemCallback);
+
+	return has_skin(id, str_to_num(itemData), 1) > -1 ? ITEM_ENABLED : ITEM_DISABLED;
 }
 
 public set_weapon_skin_handle(id, menu, item)
@@ -540,29 +549,36 @@ public set_weapon_skin_handle(id, menu, item)
 
 		return PLUGIN_HANDLED;
 	}
-	
-	new itemData[32], itemAccess, itemCallback;
-
-	menu_item_getinfo(menu, item, itemAccess, itemData, charsmax(itemData), _, _, itemCallback);
-
-	new skin[skinsInfo], skinId = str_to_num(itemData);
-
-	ArrayGetArray(skins, skinId, skin);
-
-	menu_destroy(menu);
-
-	if (!skinId && strlen(itemData) > 3) remove_active_skin(id, itemData);
-	else remove_active_skin(id, skin[SKIN_WEAPON]);
 
 	if (item) {
+		new skin[skinsInfo], itemData[5], itemAccess, itemCallback;
+
+		menu_item_getinfo(menu, item, itemAccess, itemData, charsmax(itemData), _, _, itemCallback);
+
+		new skinId = str_to_num(itemData);
+
+		ArrayGetArray(skins, skinId, skin);
+
+		remove_active_skin(id, skin[SKIN_WEAPON]);
+
 		set_skin(id, skin[SKIN_WEAPON], skin[SKIN_NAME], skinId, 1);
 
 		client_print_color(id, id, "^x04[CS:GO]^x01 Twoj nowy skin^x03 %s^x01 to^x03 %s^x01.", skin[SKIN_WEAPON], skin[SKIN_NAME]);
+		client_print_color(id, id, "^x04[CS:GO]^x01 Wybrany skin zostanie^x03 od tego momentu^x01 ustawiony dla tej broni po kazdym zakupie^x01.");
 	} else {
+		new itemData[16], itemAccess, itemCallback;
+
+		menu_item_getinfo(menu, item, itemAccess, itemData, charsmax(itemData), _, _, itemCallback);
+
+		remove_active_skin(id, itemData);
+
 		set_skin(id, itemData);
 
 		client_print_color(id, id, "^x04[CS:GO]^x01 Przywrociles domyslny skin broni^x03 %s^x01.", itemData);
+		client_print_color(id, id, "^x04[CS:GO]^x01 Wybrany skin zostanie^x03 od tego momentu^x01 ustawiony dla tej broni po kazdym zakupie^x01.");
 	}
+
+	menu_destroy(menu);
 	
 	return PLUGIN_HANDLED;
 }
