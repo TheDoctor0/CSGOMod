@@ -9,9 +9,7 @@
 #define VERSION		"1.2"
 #define AUTHOR		"O'Zone"
 
-new playerTeam[MAX_PLAYERS + 1], playerRevenge[MAX_PLAYERS + 1], playerDamage[MAX_PLAYERS + 1][MAX_PLAYERS + 1];
-
-new bool:playerAlive[MAX_PLAYERS] = {false, ...}, bool:playerOnline[MAX_PLAYERS] = {false, ...};
+new playerRevenge[MAX_PLAYERS + 1], playerDamage[MAX_PLAYERS + 1][MAX_PLAYERS + 1];
 
 new assistEnabled, revengeEnabled, assistDamage, Float:assistReward, Float:revengeReward;
 
@@ -27,49 +25,20 @@ public plugin_init()
 	
 	register_event("Damage", "player_damage", "be", "2!0", "3=0", "4!0");
 	register_event("DeathMsg", "player_die", "ae");
-	register_event("TeamInfo", "player_joinTeam", "a");
 	
 	RegisterHam(Ham_Spawn, "player", "player_spawn", 1);
 }
 
 public client_putinserver(id)
 {
-	playerOnline[id] = true;
-	
 	playerRevenge[id] = 0;
 	
 	for (new i = 1; i <= MAX_PLAYERS; i++) playerDamage[id][i] = 0;
 }
 
-public client_disconnected(id)
-{
-	playerTeam[id] = 0;
-	playerAlive[id] = false;
-	playerOnline[id] = false;
-}
-
-public player_joinTeam()
-{
-	new id, teamName[2];
-
-	id = read_data(1);
-
-	read_data(2, teamName, charsmax(teamName));
-
-	switch(teamName[0]) {
-		case 'T': playerTeam[id] = 1;
-		case 'C': playerTeam[id] = 2;
-		default: playerTeam[id] = 3;
-	}
-
-	return PLUGIN_CONTINUE;
-}
-
 public player_spawn(id)
 {
 	if (!is_user_alive(id)) return HAM_IGNORED;
-
-	playerAlive[id] = true;
 
 	for (new i = 1; i <= MAX_PLAYERS; i++) playerDamage[id][i] = 0;
 
@@ -78,7 +47,7 @@ public player_spawn(id)
 
 public player_damage(victim)
 {
-	if (!assistEnabled || !is_user_connected(victim)) return PLUGIN_CONTINUE;
+	if (!assistEnabled) return PLUGIN_CONTINUE;
 
 	new attacker = get_user_attacker(victim);
 
@@ -99,10 +68,9 @@ public player_die()
 	
 	new victim = read_data(2), killer = read_data(1);
 	
-	playerAlive[victim] = false;
 	playerRevenge[victim] = killer;
 	
-	if (killer != victim && playerTeam[victim] != playerTeam[killer]) {
+	if (is_user_connected(killer) && killer != victim && get_user_team(victim) != get_user_team(killer)) {
 		if (playerRevenge[killer] == victim && revengeEnabled) {
 			set_user_frags(killer, get_user_frags(killer) + 1);
 
@@ -112,7 +80,7 @@ public player_die()
 
 			cs_set_user_money(killer, money);
 
-			if (playerAlive[killer]) {
+			if (is_user_alive(killer)) {
 				message_begin(MSG_ONE_UNRELIABLE, msgMoney, _, killer);
 				write_long(money);
 				write_byte(1);
@@ -133,7 +101,7 @@ public player_die()
 		new assistant = 0, damage = 0;
 
 		for (new i = 1; i <= MAX_PLAYERS; i++) {
-			if (i != killer && playerOnline[i] && playerTeam[killer] == playerTeam[i] && playerDamage[i][victim] >= assistDamage && playerDamage[i][victim] > damage) {
+			if (i != killer && is_user_connected(i) && get_user_team(i) == get_user_team(killer) && playerDamage[i][victim] >= assistDamage && playerDamage[i][victim] > damage) {
 				assistant = i;
 				damage = playerDamage[i][victim];
 			}
@@ -150,7 +118,7 @@ public player_die()
 
 			cs_set_user_money(assistant, money);
 
-			if(playerAlive[assistant]) {
+			if (is_user_alive(assistant)) {
 				message_begin(MSG_ONE_UNRELIABLE, msgMoney, _, assistant);
 				write_long(money);
 				write_byte(1);
