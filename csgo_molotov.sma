@@ -20,7 +20,7 @@ new molotovEnabled, molotovPrice;
 new Float:molotovRadius, Float:molotovFireTime, Float:molotovFireDamage;
 
 new bool:bMolotov[MAX_PLAYERS + 1], molotovOffset[MAX_PLAYERS + 1];
-new msgScoreInfo, msgDeathMsg, wpnMolotov, maxPlayers;
+new msgScoreInfo, msgDeathMsg, maxPlayers;
 new bool:bRestarted, bool:bReset;
 new fireSprite, smokeSprite[2];
 new Float:gameTime;
@@ -56,7 +56,6 @@ public plugin_init()
 
 	msgScoreInfo = get_user_msgid("ScoreInfo");
 	msgDeathMsg = get_user_msgid("DeathMsg");
-	wpnMolotov = custom_weapon_add("molotov", 0, "molotov");
 }
 
 public plugin_precache()
@@ -210,8 +209,6 @@ public grenade_throw(id, ent, wid)
 	engfunc(EngFunc_SetModel, ent, "models/csr_csgo/nades/w_molotov.mdl");
 	set_pev(ent, pev_nextthink, 99999.0);
 
-	custom_weapon_shot(wpnMolotov, id);
-
 	set_pev(ent, pev_team, get_user_team(id));
 
 	return PLUGIN_HANDLED;
@@ -334,8 +331,6 @@ stock radius_damage2(iAttacker, iAttackerTeam, Float:fOrigin[3], Float:fDamage, 
 
 		if (bCalc) fTmpDmg = fDamage - (fDamage / fRange) * fDist;
 		else fTmpDmg = fDamage;
-
-		if(floatround(fTmpDmg) > 0) custom_weapon_dmg(wpnMolotov, iAttacker, i, floatround(fTmpDmg), 0);
 
 		if(pev(i, pev_health) <= fTmpDmg) kill(iAttacker, i, iAttackerTeam);
 		else fm_fakedamage(i, "molotov", fTmpDmg, iDmgType);

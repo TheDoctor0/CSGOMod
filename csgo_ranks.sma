@@ -1012,7 +1012,13 @@ public show_icon(id)
 		if (flags && !defaultHUD) {
 			new weaponName[32], weapon = get_user_weapon(target);
 
-			if (weapon) xmod_get_wpnname(weapon, weaponName, charsmax(weaponName));
+			if (weapon) {
+				get_weaponname(weapon, weaponName, charsmax(weaponName));
+
+				replace_all(weaponName, charsmax(weaponName), "weapon_", "");
+
+				ucfirst(weaponName);
+			}
 
 			set_hudmessage(color[0], 50, color[1], -1.0, height, 1, 0.01, 3.0, 0.01, 0.01);
 
