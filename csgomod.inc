@@ -55,10 +55,23 @@ Zwraca ogolna liczbe jednostek wymagana do zakonczenia w wykonywanej opracji.
 native csgo_get_user_operation_need(id);
 
 /*------------------------------
+Zwraca typ menu kupowania gracza.
+0 - nowe.
+1 - standardowe.
+------------------------------*/
+native csgo_get_menu(id);
+
+/*------------------------------
 Zwraca id skina broni trzymanej przez gracza.
 -1 w przypadku braku skina.
 ------------------------------*/
 native csgo_get_skin(id);
+
+/*------------------------------
+Zwraca id skina gracza dla podanej broni.
+-1 w przypadku braku skina.
+------------------------------*/
+native csgo_get_weapon_skin(id, weapon);
 
 /*------------------------------
 Zwraca nazwe skina o podanym id - skin.
@@ -88,16 +101,6 @@ native csgo_get_clan_name(clan, dataReturn[], dataLength);
 Zwraca liczbe czlonkow klanu o podanym id - clan.
 ------------------------------*/
 native csgo_get_clan_members(clan);
-
-/*------------------------------
-Dodaje zabojstwo do zliczanych statystyk.
-------------------------------*/
-native csgo_add_kill(id);
-
-/*------------------------------
-Zwraca zabojstwa zliczane przez statystyki.
-------------------------------*/
-native csgo_get_kills(id);
 
 /*------------------------------
 Zwraca id rangi gracza.

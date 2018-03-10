@@ -31,7 +31,7 @@ public plugin_init()
 	for (new i = 0; i < sizeof grenadeNames; i++) RegisterHam(Ham_Item_Deploy, grenadeNames[i], "grenade_deploy_model", true);
 	for (new i = 0; i < sizeof grenadeNames; i++) RegisterHam(Ham_Weapon_SecondaryAttack, grenadeNames[i], "grenade_secondary_attack", false);
 	
-	register_forward(FM_SetModel, "grenade_world_model");
+	register_forward(FM_SetModel, "grenade_world_model", false);
 }
 
 public plugin_precache()

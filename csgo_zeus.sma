@@ -7,7 +7,7 @@
 
 #define PLUGIN "CS:GO Zeus"
 #define AUTHOR "wopox1337 & O'Zone"
-#define VERSION "1.0"
+#define VERSION "1.1"
 
 #define ZEUS_DISTANCE 230
 
@@ -43,6 +43,8 @@ new bool:bZeus[MAX_PLAYERS + 1];
 new zeusEnabled;
 new zeusPrice;
 
+new mapBuyBlock;
+
 const XO_PLAYER	= 5;
 const XO_WEAPON	= 4;
 
@@ -74,9 +76,11 @@ public plugin_init()
 	RegisterHam(Ham_Spawn, "player", "player_spawned", true);
 	
 	register_forward(FM_SetModel, "fw_SetModel", false);
+	register_forward(FM_KeyValue, "key_value", true);
 
 	register_event("DeathMsg", "event_deathmsg", "a", "2>0");
 	register_event("HLTV", "event_new_round", "a", "1=0", "2=0");
+	register_logevent("event_round_start", 2, "1=Round_Start");
 	register_event("TextMsg", "event_gamerestart", "a", "2=#Game_Commencing", "2=#Game_will_restart_in");
 
 	register_logevent("event_round_end", 2, "1=Round_End");
@@ -86,6 +90,8 @@ public plugin_precache()
 {
 	g_pBoltSprite = precache_model(gBeamSprite);
 
+	precache_sound("items/9mmclip1.wav");
+
 	new i, bWasFail;
 
 	for(i = 0; i < sizeof Models; i++)
@@ -93,7 +99,7 @@ public plugin_precache()
 		if(file_exists(Models[i])) precache_model(Models[i]);
 		else
 		{
-			log_amx("[Zeus Precache] File '%s' not exist. Skipped!", Models[i]);
+			log_amx("[CS:GO] Zeus file '%s' not exist. Skipped!", Models[i]);
 			
 			bWasFail = true;
 		}
@@ -108,13 +114,28 @@ public plugin_precache()
 		if(file_exists(szFile)) precache_sound(Sounds[i]);
 		else
 		{
-			log_amx("[Zeus Precache] File '%s' not exist. Skipped!", Sounds[i]);
+			log_amx("[CS:GO] Zeus file '%s' not exist. Skipped!", Sounds[i]);
 			
 			bWasFail = true;
 		}
 	}
 	
-	if(bWasFail) set_fail_state("[Zeus Precache] Not all files were precached. Check logs!");
+	if(bWasFail) set_fail_state("[CS:GO] Not all zeus files were precached. Check logs!");
+}
+
+public key_value(ent, keyValueId)
+{
+	if (pev_valid(ent)) {
+		new className[32], keyName[32], keyValue[32];
+
+		get_kvd(keyValueId, KV_ClassName, className, charsmax(className));
+		get_kvd(keyValueId, KV_KeyName, keyName, charsmax(keyName));
+		get_kvd(keyValueId, KV_Value, keyValue, charsmax(keyValue));
+
+		if (equali(className, "info_map_parameters") && equali(keyName, "buying")) {
+			if (str_to_num(keyValue) != 0) mapBuyBlock = str_to_num(keyValue);
+		}
+	}
 }
 
 public client_putinserver(id)
@@ -125,20 +146,32 @@ public client_disconnected(id)
 
 public buy_zeus(id) 
 {
-	if(!is_user_alive(id) || !zeusEnabled) return PLUGIN_HANDLED;
+	if(!is_user_alive(id) || !cs_get_user_buyzone(id) || !zeusEnabled) return PLUGIN_HANDLED;
 
-	if(!cs_get_user_buyzone(id))
-	{
-		client_print(id, print_center, "Nie mozesz kupic zeusa poza buyzone.");
+	new Float:cvarBuyTime = get_cvar_float("mp_buytime"), Float:buyTime;
+
+	if (cvarBuyTime != -1.0 && !(get_gametime() < gameTime + (buyTime = cvarBuyTime * 60.0))) {
+		new buyTimeText[8];
+
+		num_to_str(floatround(buyTime), buyTimeText, charsmax(buyTimeText));
+
+		message_begin(MSG_ONE, get_user_msgid("TextMsg"), .player = id);
+		write_byte(print_center);
+		write_string("#Cant_buy");
+		write_string(buyTimeText);
+		message_end();
 
 		return PLUGIN_HANDLED;
 	}
 
-	new Float:buytime = get_cvar_float("mp_buytime") * 60.0, Float:timepassed = get_gametime() - gameTime;
+	if ((mapBuyBlock == 1 && cs_get_user_team(id) == CS_TEAM_CT) || (mapBuyBlock == 2 && cs_get_user_team(id) == CS_TEAM_T) || mapBuyBlock == 3) {
+		message_begin(MSG_ONE, get_user_msgid("TextMsg"), .player = id);
+		write_byte(print_center);
 
-	if(floatcmp(timepassed, buytime) == 1)
-	{
-		client_print(id, print_center, "Czas na zakup juz minal!");
+		if (cs_get_user_team(id) == CS_TEAM_T) write_string("#Cstrike_TitlesTXT_Terrorist_cant_buy");
+		else if (cs_get_user_team(id) == CS_TEAM_CT) write_string("#Cstrike_TitlesTXT_CT_cant_buy");
+
+		message_end();
 
 		return PLUGIN_HANDLED;
 	}
@@ -147,14 +180,20 @@ public buy_zeus(id)
 
 	if(money < zeusPrice)
 	{
-		client_print(id, print_center, "Nie masz wystarczajaco duzo $, zeby kupic zeusa (%i$).", zeusPrice);
+		message_begin(MSG_ONE, get_user_msgid("TextMsg"), .player = id);
+		write_byte(print_center);
+		write_string("#Not_Enough_Money");
+		message_end();
 
 		return PLUGIN_HANDLED;
 	}
 
 	if(bZeus[id])
 	{
-		client_print(id, print_center, "Juz posiadasz zeusa!");
+		message_begin(MSG_ONE, get_user_msgid("TextMsg"), .player = id);
+		write_byte(print_center);
+		write_string("#Already_Have_One");
+		message_end();
 
 		return PLUGIN_HANDLED;
 	}
@@ -183,11 +222,12 @@ public event_gamerestart()
 public event_round_end()
 	if(!bReset) bReset = true;
 
+public event_round_start()
+	gameTime = get_gametime();
+
 public event_new_round()
 {
 	bReset = false;
-
-	gameTime = get_gametime();
 
 	if(bRestarted)
 	{

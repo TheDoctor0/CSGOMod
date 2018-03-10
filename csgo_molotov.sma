@@ -14,13 +14,32 @@
 
 #define PLUGIN "CS:GO Molotov"
 #define AUTHOR "DynamicBits & O'Zone"
-#define VERSION "3.5"
+#define VERSION "1.2"
+
+new const molotovWeaponName[] = "weapon_hegrenade";
+
+enum { ViewModel, PlayerModel, WorldModel, WorldModelBroken }
+new const Models[][] = {
+	"models/csr_csgo/nades/v_molotov.mdl",
+	"models/csr_csgo/nades/p_molotov.mdl",
+	"models/csr_csgo/nades/w_molotov.mdl",
+	"models/csr_csgo/nades/w_broken_molotov.mdl"
+}
+
+stock const OLDWORLD_MODEL[] = "models/w_hegrenade.mdl";
+
+enum { Fire, Explode, Extinguish }
+new const Sounds[][] = {
+	"molotov/fire.wav",
+	"molotov/explode.wav",
+	"molotov/extinguish.wav"
+}
 
 new molotovEnabled, molotovPrice;
 new Float:molotovRadius, Float:molotovFireTime, Float:molotovFireDamage;
 
 new bool:bMolotov[MAX_PLAYERS + 1], molotovOffset[MAX_PLAYERS + 1];
-new msgScoreInfo, msgDeathMsg, maxPlayers;
+new msgScoreInfo, msgDeathMsg, maxPlayers, mapBuyBlock;
 new bool:bRestarted, bool:bReset;
 new fireSprite, smokeSprite[2];
 new Float:gameTime;
@@ -47,10 +66,11 @@ public plugin_init()
 
 	register_logevent("event_round_end", 2, "1=Round_End");
 
-	RegisterHam(Ham_Item_Deploy, "weapon_hegrenade", "molotov_deploy_model", true);
+	RegisterHam(Ham_Item_Deploy, molotovWeaponName, "molotov_deploy_model", true);
 	RegisterHam(Ham_Spawn, "player", "player_spawned", true);
 
 	register_forward(FM_EmitSound, "fw_emitsound");
+	register_forward(FM_KeyValue, "key_value", true);
 
 	maxPlayers = get_maxplayers();
 
@@ -64,16 +84,52 @@ public plugin_precache()
 	smokeSprite[0] = precache_model("sprites/black_smoke3.spr");
 	smokeSprite[1] = precache_model("sprites/steam1.spr");
 
-	precache_model("models/csr_csgo/nades/p_molotov.mdl");
-	precache_model("models/csr_csgo/nades/v_molotov.mdl");
-	precache_model("models/csr_csgo/nades/w_molotov.mdl");
-	precache_model("models/csr_csgo/nades/w_broken_molotov.mdl");
-
-	precache_sound("molotov/fire.wav");
-	precache_sound("molotov/explode.wav");
-	precache_sound("molotov/extinguish.wav");
-
 	precache_sound("items/9mmclip1.wav");
+
+	new i, bWasFail;
+
+	for(i = 0; i < sizeof Models; i++)
+	{
+		if(file_exists(Models[i])) precache_model(Models[i]);
+		else
+		{
+			log_amx("[CS:GO] Molotov file '%s' not exist. Skipped!", Models[i]);
+			
+			bWasFail = true;
+		}
+	}
+	
+	new szFile[64];
+
+	for(i = 0; i < sizeof Sounds; i++) 
+	{
+		formatex(szFile, charsmax(szFile), "sound\%s", Sounds[i]);
+
+		if(file_exists(szFile)) precache_sound(Sounds[i]);
+		else
+		{
+			log_amx("[CS:GO] Molotov file '%s' not exist. Skipped!", Sounds[i]);
+			
+			bWasFail = true;
+		}
+	}
+	
+	if(bWasFail) set_fail_state("[CS:GO] Not all molotov files were precached. Check logs!");
+}
+
+public key_value(ent, keyValueId)
+{
+	if (pev_valid(ent)) {
+		new className[32], keyName[32], keyValue[32];
+
+		get_kvd(keyValueId, KV_ClassName, className, charsmax(className));
+		get_kvd(keyValueId, KV_KeyName, keyName, charsmax(keyName));
+		get_kvd(keyValueId, KV_Value, keyValue, charsmax(keyValue));
+
+		if (equali(className, "info_map_parameters") && equali(keyName, "buying")) {
+			if (str_to_num(keyValue) != 0) mapBuyBlock = str_to_num(keyValue);
+		}
+	}
 }
 
 public client_putinserver(id)
@@ -88,20 +144,32 @@ public client_disconnected(id)
 
 public buy_molotov(id) 
 {
-	if(!molotovEnabled || !is_user_alive(id)) return PLUGIN_HANDLED;
+	if(!molotovEnabled || !cs_get_user_buyzone(id) || !is_user_alive(id)) return PLUGIN_HANDLED;
 
-	if(!cs_get_user_buyzone(id))
-	{
-		client_print(id, print_center, "Nie mozesz kupic molotova poza buyzone.");
+	new Float:cvarBuyTime = get_cvar_float("mp_buytime"), Float:buyTime;
+
+	if (cvarBuyTime != -1.0 && !(get_gametime() < gameTime + (buyTime = cvarBuyTime * 60.0))) {
+		new buyTimeText[8];
+
+		num_to_str(floatround(buyTime), buyTimeText, charsmax(buyTimeText));
+
+		message_begin(MSG_ONE, get_user_msgid("TextMsg"), .player = id);
+		write_byte(print_center);
+		write_string("#Cant_buy");
+		write_string(buyTimeText);
+		message_end();
 
 		return PLUGIN_HANDLED;
 	}
 
-	new Float:buytime = get_cvar_float("mp_buytime") * 60.0, Float:timepassed = get_gametime() - gameTime;
+	if ((mapBuyBlock == 1 && cs_get_user_team(id) == CS_TEAM_CT) || (mapBuyBlock == 2 && cs_get_user_team(id) == CS_TEAM_T) || mapBuyBlock == 3) {
+		message_begin(MSG_ONE, get_user_msgid("TextMsg"), .player = id);
+		write_byte(print_center);
 
-	if(floatcmp(timepassed, buytime) == 1)
-	{
-		client_print(id, print_center, "Czas na zakup juz minal!");
+		if (cs_get_user_team(id) == CS_TEAM_T) write_string("#Cstrike_TitlesTXT_Terrorist_cant_buy");
+		else if (cs_get_user_team(id) == CS_TEAM_CT) write_string("#Cstrike_TitlesTXT_CT_cant_buy");
+
+		message_end();
 
 		return PLUGIN_HANDLED;
 	}
@@ -110,14 +178,20 @@ public buy_molotov(id)
 
 	if(money < molotovPrice)
 	{
-		client_print(id, print_center, "Nie masz wystarczajaco duzo $, zeby kupic molotova (%i$).", molotovPrice);
+		message_begin(MSG_ONE, get_user_msgid("TextMsg"), .player = id);
+		write_byte(print_center);
+		write_string("#Not_Enough_Money");
+		message_end();
 
 		return PLUGIN_HANDLED;
 	}
 
 	if(bMolotov[id])
 	{
-		client_print(id, print_center, "Juz posiadasz molotova!");
+		message_begin(MSG_ONE, get_user_msgid("TextMsg"), .player = id);
+		write_byte(print_center);
+		write_string("#Cannot_Carry_Anymore");
+		message_end();
 
 		return PLUGIN_HANDLED;
 	}
@@ -126,9 +200,9 @@ public buy_molotov(id)
 
 	cs_set_user_money(id, money - molotovPrice);
 
-	fm_give_item(id, "weapon_hegrenade");
+	fm_give_item(id, molotovWeaponName);
 
-	engclient_cmd(id, "weapon_hegrenade");
+	engclient_cmd(id, molotovWeaponName);
 
 	emit_sound(id, CHAN_AUTO, "items/9mmclip1.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
 
@@ -180,8 +254,8 @@ public molotov_deploy_model(weapon)
 
 	if(!is_user_alive(id) || !molotovEnabled || !bMolotov[id]) return HAM_IGNORED;
 
-	set_pev(id, pev_viewmodel2, "models/csr_csgo/nades/v_molotov.mdl");
-	set_pev(id, pev_weaponmodel2, "models/csr_csgo/nades/p_molotov.mdl");
+	set_pev(id, pev_viewmodel2, Models[ViewModel]);
+	set_pev(id, pev_weaponmodel2, Models[PlayerModel]);
 
 	return HAM_IGNORED;
 }
@@ -206,10 +280,10 @@ public grenade_throw(id, ent, wid)
 
 	bMolotov[id] = false;
 
-	engfunc(EngFunc_SetModel, ent, "models/csr_csgo/nades/w_molotov.mdl");
 	set_pev(ent, pev_nextthink, 99999.0);
-
 	set_pev(ent, pev_team, get_user_team(id));
+
+	engfunc(EngFunc_SetModel, ent, Models[WorldModel]);
 
 	return PLUGIN_HANDLED;
 }
@@ -265,7 +339,7 @@ stock molotov_explode(ent)
 	param[5] = iOrigin[1] = floatround(fOrigin[1]);
 	param[6] = iOrigin[2] = floatround(fOrigin[2]);
 
-	engfunc(EngFunc_SetModel, ent, "models/csr_csgo/nades/w_broken_molotov.mdl");
+	engfunc(EngFunc_SetModel, ent, Models[WorldModelBroken]);
 
 	if(bReset)
 	{
@@ -280,7 +354,7 @@ stock molotov_explode(ent)
 
 	if(++molotovOffset[iOwner] == 10) molotovOffset[iOwner] = 0;
 
-	emit_sound(param[1], CHAN_AUTO, "molotov/explode.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
+	emit_sound(param[1], CHAN_AUTO, Sounds[Explode], VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
 
 	set_task(0.1, "fire_damage", MOLOTOV_TASKID_BASE1 + (MOLOTOV_TASKID_OFFSET * (iOwner - 1)) + molotovOffset[iOwner], param, 7, "a", floatround(molotovFireTime / 0.1, floatround_floor));
 	set_task(1.0, "fire_sound", MOLOTOV_TASKID_BASE2 + (MOLOTOV_TASKID_OFFSET * (iOwner - 1)) + molotovOffset[iOwner], param, 7, "a", floatround(molotovFireTime) - 1);
@@ -291,7 +365,7 @@ stock molotov_explode(ent)
 }
 
 public fire_sound(param[])
-	if(pev_valid(param[1])) emit_sound(param[1], CHAN_AUTO, "molotov/fire.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
+	if(pev_valid(param[1])) emit_sound(param[1], CHAN_AUTO, Sounds[Fire], VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
 
 public fire_stop(param[]) 
 {
@@ -361,7 +435,7 @@ stock extinguish_molotov(param[])
 
 			if(pev_valid(param[1]))
 			{
-				emit_sound(param[1], CHAN_AUTO, "molotov/extinguish.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
+				emit_sound(param[1], CHAN_AUTO, Sounds[Extinguish], VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
 
 				set_pev(param[1], pev_flags, pev(param[1], pev_flags) | FL_KILLME);
 			}

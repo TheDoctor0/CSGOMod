@@ -2393,7 +2393,11 @@ stock save_member(id, status = 0, change = 0, const name[] = "")
 
 	SQL_ThreadQuery(sql, "ignore_handle", queryData);
 
-	if (change) remove_applications(id, safeName);
+	if (change) {
+		formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_clans_applications` WHERE name = ^"%s^"", safeName);
+
+		SQL_ThreadQuery(sql, "ignore_handle", queryData);
+	}
 }
 
 stock declare_war(id, clanId)
@@ -2667,18 +2671,6 @@ stock remove_application(id, const name[] = "")
 	else copy(safeName, charsmax(safeName), playerName[id]);
 
 	formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_clans_applications` WHERE name = ^"%s^" AND clan = '%i'", safeName, clan[id]);
-
-	SQL_ThreadQuery(sql, "ignore_handle", queryData);
-}
-
-stock remove_applications(id, const name[] = "")
-{
-	new queryData[192], safeName[64];
-
-	if (strlen(name)) mysql_escape_string(name, safeName, charsmax(safeName));
-	else copy(safeName, charsmax(safeName), playerName[id]);
-
-	formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_clans_applications` WHERE name = ^"%s^"", safeName);
 
 	SQL_ThreadQuery(sql, "ignore_handle", queryData);
 }

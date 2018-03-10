@@ -75,22 +75,11 @@ new const rankElo[MAX_RANKS + 1] = {
 new const commandRank[][] = { "ranga", "say /ranga", "say_team /ranga"};
 new const commandRanks[][] = { "rangi", "say /rangi", "say_team /rangi"};
 new const commandTopRanks[][] = { "toprangi", "say /toprangi", "say_team /toprangi", "say /rangitop15", "say_team /rangitop15", "say /rtop15", "say_team /rtop15"};
-new const commandTime[][] = { "czas", "say /czas", "say_team /czas"};
-new const commandTopTime[][] = { "topczas", "say /topczas", "say_team /topczas", "say /czastop15", "say_team /czastop15", "say /ctop15", "say_team /ctop15"};
-new const commandMedals[][] = { "medale", "say /medale", "say_team /medale"};
-new const commandTopMedals[][] = { "topmedale", "say /topmedale", "say_team /topmedale", "say /medaletop15", "say_team /medaletop15", "say /mtop15", "say_team /mtop15"};
-new const commandStats[][] = { "staty", "say /staty", "say_team /staty"};
-new const commandTopStats[][] = { "topstaty", "say /topstaty", "say_team /topstaty", "say /statytop15", "say_team /statytop15", "say /stop15", "say_team /stop15"};
-new const commandSounds[][] = { "dzwieki", "say /dzwieki", "say_team /dzwieki", "say /dzwiek", "say_team /dzwiek" };
 
-enum _:playerInfo { KILLS, RANK, TIME, FIRST_VISIT, LAST_VISIT, BRONZE, SILVER, GOLD, MEDALS, BEST_STATS, BEST_KILLS, BEST_DEATHS, 
-	BEST_HS, CURRENT_STATS, CURRENT_KILLS, CURRENT_DEATHS, CURRENT_HS, Float:ELO_RANK, PLAYER_NAME[32], SAFE_NAME[64] };
+enum _:playerInfo { KILLS, RANK, Float:ELO_RANK, PLAYER_NAME[32], SAFE_NAME[64] };
 
-enum _:winers { THIRD, SECOND, FIRST };
-
-new playerData[MAX_PLAYERS + 1][playerInfo], sprites[MAX_RANKS + 1], Handle:sql, bool:sqlConnected, bool:oneAndOnly, 
-	bool:mapChange,bool:block, loaded, visit, hud, aimHUD, defaultInfo, round, sounds, soundMayTheForce, soundOneAndOnly, 
-	soundPrepare, soundHumiliation, soundLastLeft, forum[64], iconFlags[8], unrankedKills, minPlayers;
+new playerData[MAX_PLAYERS + 1][playerInfo], sprites[MAX_RANKS + 1], Handle:sql, bool:sqlConnected,
+	bool:mapChange, bool:block, loaded, hud, aimHUD, defaultInfo, round, forum[64], iconFlags[8], unrankedKills, minPlayers;
 
 public plugin_init() 
 {
@@ -104,13 +93,6 @@ public plugin_init()
 	for (new i; i < sizeof commandRank; i++) register_clcmd(commandRank[i], "cmd_rank");
 	for (new i; i < sizeof commandRanks; i++) register_clcmd(commandRanks[i], "cmd_ranks");
 	for (new i; i < sizeof commandTopRanks; i++) register_clcmd(commandTopRanks[i], "cmd_topranks");
-	for (new i; i < sizeof commandTime; i++) register_clcmd(commandTime[i], "cmd_time");
-	for (new i; i < sizeof commandTopTime; i++) register_clcmd(commandTopTime[i], "cmd_toptime");
-	for (new i; i < sizeof commandMedals; i++) register_clcmd(commandMedals[i], "cmd_medals");
-	for (new i; i < sizeof commandTopMedals; i++) register_clcmd(commandTopMedals[i], "cmd_topmedals");
-	for (new i; i < sizeof commandStats; i++) register_clcmd(commandStats[i], "cmd_stats");
-	for (new i; i < sizeof commandTopStats; i++) register_clcmd(commandTopStats[i], "cmd_topstats");
-	for (new i; i < sizeof commandSounds; i++) register_clcmd(commandSounds[i], "cmd_sounds");
 
 	RegisterHam(Ham_Spawn, "player", "player_spawn", 1);
 	
@@ -128,8 +110,6 @@ public plugin_init()
 	
 	hud = CreateHudSyncObj();
 	aimHUD = CreateHudSyncObj();
-
-	sounds = nvault_open("stats_sound");
 }
 
 public plugin_cfg()
@@ -140,7 +120,6 @@ public plugin_end()
 	
 public plugin_natives()
 {
-	register_native("csgo_add_kill", "_csgo_add_kill", 1);
 	register_native("csgo_get_kills", "_csgo_get_kills", 1);
 	register_native("csgo_get_rank", "_csgo_get_rank", 1);
 	register_native("csgo_get_rank_name", "_csgo_get_rank_name", 1);
@@ -164,12 +143,6 @@ public plugin_precache()
 	}
 	
 	if (error) set_fail_state("Brakuje plikow sprite, zaladowanie pluginu niemozliwe! Sprawdz logi w pliku csgo/error.log!");
-
-	precache_sound("misc/csr/maytheforce.wav");
-	precache_sound("misc/csr/oneandonly.wav");
-	precache_sound("misc/csr/prepare.wav");
-	precache_sound("misc/csr/humiliation.wav");
-	precache_sound("misc/csr/lastleft.wav");
 }
 
 public sql_init()
@@ -718,279 +691,6 @@ public show_topranks(failState, Handle:query, error[], errorNum, playerId[], dat
 	return PLUGIN_HANDLED;
 }
 
-public cmd_time(id)
-{
-	new queryData[192], playerId[1];
-
-	playerId[0] = id;
-	
-	formatex(queryData, charsmax(queryData), "SELECT rank, count FROM (SELECT COUNT(*) as count FROM `csgo_ranks`) a CROSS JOIN (SELECT COUNT(*) as rank FROM `csgo_ranks` WHERE `time` > '%i' ORDER BY `time` DESC) b", playerData[id][TIME] + get_user_time(id));
-
-	SQL_ThreadQuery(sql, "show_time", queryData, playerId, sizeof(playerId));
-
-	return PLUGIN_HANDLED;
-}
-
-public show_time(failState, Handle:query, error[], errorNum, playerId[], dataSize)
-{
-	if (failState) {
-		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL Error: %s (%d)", error, errorNum);
-		
-		return PLUGIN_HANDLED;
-	}
-	
-	new id = playerId[0];
-	
-	new rank = SQL_ReadResult(query, 0) + 1, players = SQL_ReadResult(query, 1), seconds = (playerData[id][TIME] + get_user_time(id)), minutes, hours;
-	
-	while (seconds >= 60) {
-		seconds -= 60;
-		minutes++;
-	}
-
-	while (minutes >= 60) {
-		minutes -= 60;
-		hours++;
-	}
-	
-	client_print_color(id, id, "^x04[CS:GO]^x01 Spedziles na serwerze lacznie^x03 %i h %i min %i s^x01.", hours, minutes, seconds);
-	client_print_color(id, id, "^x04[CS:GO]^x01 Zajmujesz^x03 %i/%i^x01 miejsce w rankingu czasu gry.", rank, players);
-
-	return PLUGIN_HANDLED;
-}
-
-public cmd_toptime(id)
-{
-	new queryData[128], playerId[1];
-
-	playerId[0] = id;
-	
-	format(queryData, charsmax(queryData), "SELECT name, time FROM `csgo_ranks` ORDER BY time DESC LIMIT 15");
-
-	SQL_ThreadQuery(sql, "show_toptime", queryData, playerId, sizeof(playerId));
-}
-
-public show_toptime(failState, Handle:query, error[], errorNum, playerId[], dataSize)
-{
-	if (failState) {
-		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL Error: %s (%d)", error, errorNum);
-		
-		return PLUGIN_HANDLED;
-	}
-
-	static topData[2048], name[32], topLength, place, seconds, minutes, hours;
-
-	topLength = 0, place = 0;
-	
-	new id = playerId[0];
-	
-	topLength = format(topData, charsmax(topData), "<body bgcolor=#000000><font color=#FFB000><pre>");
-	topLength += format(topData[topLength], charsmax(topData) - topLength, "%1s %-22.22s %9s^n", "#", "Nick", "Czas Gry");
-	
-	while (SQL_MoreResults(query)) {
-		place++;
-
-		SQL_ReadResult(query, 0, name, charsmax(name));
-
-		replace_all(name, charsmax(name), "<", "");
-		replace_all(name, charsmax(name), ">", "");
-
-		seconds = SQL_ReadResult(query, 1);
-		minutes = 0;
-		hours = 0;
-		
-		while (seconds >= 60) {
-			seconds -= 60;
-			minutes++;
-		}
-
-		while (minutes >= 60) {
-			minutes -= 60;
-			hours++;
-		}
-		
-		if (place >= 10) topLength += format(topData[topLength], charsmax(topData) - topLength, "%1i %-22.22s %0ih %1imin %1is^n", place, name, hours, minutes, seconds);
-		else topLength += format(topData[topLength], charsmax(topData) - topLength, "%1i %-22.22s %1ih %1imin %1is^n", place, name, hours, minutes, seconds);
-		
-		SQL_NextRow(query);
-	}
-	
-	show_motd(id, topData, "Top15 Czasu Gry");
-	
-	return PLUGIN_HANDLED;
-}
-
-public cmd_medals(id)
-{
-	new queryData[192], playerId[1];
-
-	playerId[0] = id;
-	
-	formatex(queryData, charsmax(queryData), "SELECT rank, count FROM (SELECT COUNT(*) as count FROM `csgo_ranks`) a CROSS JOIN (SELECT COUNT(*) as rank FROM `csgo_ranks` WHERE `medals` > '%i' ORDER BY `medals` DESC) b", playerData[id][MEDALS]);
-
-	SQL_ThreadQuery(sql, "show_medals", queryData, playerId, sizeof(playerId));
-
-	return PLUGIN_HANDLED;
-}
-
-public show_medals(failState, Handle:query, error[], errorNum, playerId[], dataSize)
-{
-	if (failState) {
-		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL Error: %s (%d)", error, errorNum);
-		
-		return PLUGIN_HANDLED;
-	}
-	
-	new id = playerId[0], rank = SQL_ReadResult(query, 0) + 1, players = SQL_ReadResult(query, 1);
-	
-	client_print_color(id, id, "^x04[CS:GO]^x01 Twoje medale:^x03 %i Zlote^x01,^x03 %i Srebre^x01,^x03 %i Brazowe^x01.", playerData[id][GOLD], playerData[id][SILVER], playerData[id][BRONZE]);
-	client_print_color(id, id, "^x04[CS:GO]^x01 Zajmujesz^x03 %i/%i^x01 miejsce w rankingu medalowym.", rank, players);
-	
-	return PLUGIN_HANDLED;
-}
-
-public cmd_topmedals(id)
-{
-	new queryData[128], playerId[1];
-
-	playerId[0] = id;
-	
-	format(queryData, charsmax(queryData), "SELECT name, gold, silver, bronze, medals FROM `csgo_ranks` ORDER BY medals DESC LIMIT 15");
-
-	SQL_ThreadQuery(sql, "show_topmedals", queryData, playerId, sizeof(playerId));
-
-	return PLUGIN_HANDLED;
-}
-
-public show_topmedals(failState, Handle:query, error[], errorNum, playerId[], dataSize)
-{
-	if (failState) {
-		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL Error: %s (%d)", error, errorNum);
-		
-		return PLUGIN_HANDLED;
-	}
-
-	static topData[2048], name[32], topLength, place, gold, silver, bronze, medals;
-
-	topLength = 0, place = 0;
-	
-	new id = playerId[0];
-	
-	topLength = format(topData, charsmax(topData), "<body bgcolor=#000000><font color=#FFB000><pre>");
-	topLength += format(topData[topLength], charsmax(topData) - topLength, "%1s %-22.22s %6s %8s %8s %5s^n", "#", "Nick", "Zlote", "Srebrne", "Brazowe", "Suma");
-	
-	while (SQL_MoreResults(query)) {
-		place++;
-
-		SQL_ReadResult(query, 0, name, charsmax(name));
-
-		replace_all(name, charsmax(name), "<", "");
-		replace_all(name, charsmax(name), ">", "");
-
-		gold = SQL_ReadResult(query, 1);
-		silver = SQL_ReadResult(query, 2);
-		bronze = SQL_ReadResult(query, 3);
-		medals = SQL_ReadResult(query, 4);
-		
-		if (place >= 10) topLength += format(topData[topLength], charsmax(topData) - topLength, "%1i %-22.22s %2d %7d %8d %7d^n", place, name, gold, silver, bronze, medals);
-		else topLength += format(topData[topLength], charsmax(topData) - topLength, "%1i %-22.22s %3d %7d %8d %7d^n", place, name, gold, silver, bronze, medals);
-		
-		SQL_NextRow(query);
-	}
-	
-	show_motd(id, topData, "Top15 Medali");
-	
-	return PLUGIN_HANDLED;
-}
-
-public cmd_stats(id)
-{
-	new queryData[192], playerId[1];
-
-	playerId[0] = id;
-	
-	playerData[id][CURRENT_STATS] = playerData[id][CURRENT_KILLS]*2 + playerData[id][CURRENT_HS] - playerData[id][CURRENT_DEATHS]*2;
-	
-	formatex(queryData, charsmax(queryData), "SELECT rank, count FROM (SELECT COUNT(*) as count FROM `csgo_ranks`) a CROSS JOIN (SELECT COUNT(*) as rank FROM `csgo_ranks` WHERE `beststats` > '%i' ORDER BY `beststats` DESC) b", 
-	playerData[id][CURRENT_STATS] > playerData[id][BEST_STATS] ? playerData[id][CURRENT_STATS] : playerData[id][BEST_STATS]);
-
-	SQL_ThreadQuery(sql, "show_stats", queryData, playerId, sizeof(playerId));
-
-	return PLUGIN_HANDLED;
-}
-
-public show_stats(failState, Handle:query, error[], errorNum, playerId[], dataSize)
-{
-	if (failState) {
-		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL Error: %s (%d)", error, errorNum);
-		
-		return PLUGIN_HANDLED;
-	}
-	
-	new id = playerId[0], rank = SQL_ReadResult(query, 0) + 1, players = SQL_ReadResult(query, 1);
-	
-	if (playerData[id][CURRENT_STATS] > playerData[id][BEST_STATS]) client_print_color(id, id, "^x04[CS:GO]^x01 Twoje najlepsze staty to^x03 %i^x01 zabic (w tym^x03 %i^x01 z HS) i^x03 %i^x01 zgonow^x01.", playerData[id][CURRENT_KILLS], playerData[id][CURRENT_HS], playerData[id][CURRENT_DEATHS]);
-	else client_print_color(id, id, "^x04[CS:GO]^x01 Twoje najlepsze staty to^x03 %i^x01 zabic (w tym^x03 %i^x01 z HS) i^x03 %i^x01 zgonow^x01.", playerData[id][BEST_KILLS], playerData[id][BEST_HS], playerData[id][BEST_DEATHS]);
-		
-	client_print_color(id, id, "^x04[CS:GO]^x01 Zajmujesz^x03 %i/%i^x01 miejsce w rankingu najlepszych statystyk.", rank, players);
-	
-	return PLUGIN_HANDLED;
-}
-
-public cmd_topstats(id)
-{
-	new queryData[128], playerId[1];
-
-	playerId[0] = id;
-	
-	format(queryData, charsmax(queryData), "SELECT name, bestkills, besths, bestdeaths FROM `csgo_ranks` ORDER BY beststats DESC LIMIT 15");
-
-	SQL_ThreadQuery(sql, "show_topstats", queryData, playerId, sizeof(playerId));
-
-	return PLUGIN_HANDLED;
-}
-
-public show_topstats(failState, Handle:query, error[], errorNum, playerId[], dataSize)
-{
-	if (failState) {
-		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL Error: %s (%d)", error, errorNum);
-		
-		return PLUGIN_HANDLED;
-	}
-
-	static topData[2048], name[32], topLength, place, kills, headShots, deaths;
-
-	topLength = 0, place = 0;
-	
-	new id = playerId[0];
-	
-	topLength = format(topData, charsmax(topData), "<body bgcolor=#000000><font color=#FFB000><pre>");
-	topLength += format(topData[topLength], charsmax(topData) - topLength, "%1s %-22.22s %19s %4s^n", "#", "Nick", "Zabojstwa", "Zgony");
-	
-	while (SQL_MoreResults(query))
-	{
-		place++;
-
-		SQL_ReadResult(query, 0, name, charsmax(name));
-
-		replace_all(name, charsmax(name), "<", "");
-		replace_all(name, charsmax(name), ">", "");
-
-		kills = SQL_ReadResult(query, 1);
-		headShots = SQL_ReadResult(query, 2);
-		deaths = SQL_ReadResult(query, 3);
-		
-		if (place >= 10) topLength += format(topData[topLength], charsmax(topData) - topLength, "%1i %-22.22s %1d (%i HS) %12d^n", place, name, kills, headShots, deaths);
-		else topLength += format(topData[topLength], charsmax(topData) - topLength, "%1i %-22.22s %2d (%i HS) %12d^n", place, name, kills, headShots, deaths);
-		
-		SQL_NextRow(query);
-	}
-	
-	show_motd(id, topData, "Top15 Statystyk");
-	
-	return PLUGIN_HANDLED;
-}
-
 public hide_icon(id)
 {
 	if (get_xvar_num(defaultInfo)) return;
@@ -1043,61 +743,6 @@ public show_icon(id)
 public message_intermission() 
 {
 	mapChange = true;
-
-	new playerName[32], winnersId[3], winnersFrags[3], tempFrags, swapFrags, swapId;
-
-	for (new id = 1; id <= MAX_PLAYERS; id++) {
-		if (!is_user_connected(id) || is_user_hltv(id) || is_user_bot(id)) continue;
-		
-		tempFrags = get_user_frags(id);
-		
-		if (tempFrags > winnersFrags[THIRD]) {
-			winnersFrags[THIRD] = tempFrags;
-			winnersId[THIRD] = id;
-			
-			if (tempFrags > winnersFrags[SECOND]) {
-				swapFrags = winnersFrags[SECOND];
-				swapId = winnersId[SECOND];
-				winnersFrags[SECOND] = tempFrags;
-				winnersId[SECOND] = id;
-				winnersFrags[THIRD] = swapFrags;
-				winnersId[THIRD] = swapId;
-				
-				if (tempFrags > winnersFrags[FIRST]) {
-					swapFrags = winnersFrags[FIRST];
-					swapId = winnersId[FIRST];
-					winnersFrags[FIRST] = tempFrags;
-					winnersId[FIRST] = id;
-					winnersFrags[SECOND] = swapFrags;
-					winnersId[SECOND] = swapId;
-				}
-			}
-		}
-	}
-	
-	if (!winnersId[FIRST]) return PLUGIN_CONTINUE;
-
-	new const medals[][] = { "Brazowy", "Srebrny", "Zloty" };
-
-	client_print_color(0, 0, "^x04[CS:GO]^x01 Gratulacje dla^x03 Najlepszych Graczy^x01!");
-	
-	for (new i = 2; i >= 0; i--) {
-		switch(i) {
-			case THIRD: playerData[winnersId[i]][BRONZE]++;
-			case SECOND: playerData[winnersId[i]][SILVER]++;
-			case FIRST: {
-				playerData[winnersId[i]][GOLD]++;
-
-				csgo_add_money(winnersId[i], 10.0);
-			}
-		}
-
-		save_data(winnersId[i], 1);
-		
-		get_user_name(winnersId[i], playerName, charsmax(playerName));
-
-		client_print_color(0, 0, "^x04[CS:GO]^x03 %s^x01 -^x03 %i^x01 Zabojstw - %s Medal%s.", playerName, winnersFrags[i], medals[i], i == FIRST ? " (MVP)" : "");
-	}
 	
 	for (new id = 1; id <= MAX_PLAYERS; id++) {
 		if (!is_user_connected(id) || is_user_hltv(id) || is_user_bot(id)) continue;
@@ -1147,98 +792,6 @@ public say_text(msgId, msgDest, msgEnt)
 	}
 
 	return PLUGIN_CONTINUE;
-}
-
-public save_sounds(id)
-{
-	new vaultKey[64], vaultData[16];
-	
-	formatex(vaultKey, charsmax(vaultKey), "%s-sounds", playerData[id][PLAYER_NAME]);
-	formatex(vaultData, charsmax(vaultData), "%d %d %d %d %d", get_bit(id, soundMayTheForce), get_bit(id, soundOneAndOnly), get_bit(id, soundHumiliation), get_bit(id, soundPrepare), get_bit(id, soundLastLeft));
-	
-	nvault_set(sounds, vaultKey, vaultData);
-	
-	return PLUGIN_CONTINUE;
-}
-
-public load_sounds(id)
-{
-	new vaultKey[64], vaultData[16], soundsData[5][5];
-	
-	formatex(vaultKey, charsmax(vaultKey), "%s-sounds", playerData[id][PLAYER_NAME]);
-	
-	if (nvault_get(sounds, vaultKey, vaultData, charsmax(vaultData)))
-	{
-		parse(vaultData, soundsData[0], charsmax(soundsData), soundsData[1], charsmax(soundsData), soundsData[2], charsmax(soundsData), soundsData[3], charsmax(soundsData), soundsData[4], charsmax(soundsData));
-
-		if (str_to_num(soundsData[0])) set_bit(id, soundMayTheForce);
-		if (str_to_num(soundsData[1])) set_bit(id, soundOneAndOnly);
-		if (str_to_num(soundsData[2])) set_bit(id, soundHumiliation);
-		if (str_to_num(soundsData[3])) set_bit(id, soundPrepare);
-		if (str_to_num(soundsData[4])) set_bit(id, soundLastLeft);
-	}
-
-	return PLUGIN_CONTINUE;
-} 
-
-public cmd_sounds(id)
-{
-	new menuData[64], menu = menu_create("\yUstawienia \rDzwiekow\w:", "cmd_sounds_Handle");
-
-	formatex(menuData, charsmax(menuData), "\wThe Force Will Be With You \w[\r%s\w]", get_bit(id, soundMayTheForce) ? "Wlaczony" : "Wylaczony");
-	menu_additem(menu, menuData);
-
-	formatex(menuData, charsmax(menuData), "\wI Am The One And Only \w[\r%s\w]", get_bit(id, soundOneAndOnly) ? "Wlaczony" : "Wylaczony");
-	menu_additem(menu, menuData);
-
-	formatex(menuData, charsmax(menuData), "\wDziabnal Mnie \w[\r%s\w]", get_bit(id, soundHumiliation) ? "Wlaczony" : "Wylaczony");
-	menu_additem(menu, menuData);
-
-	formatex(menuData, charsmax(menuData), "\wKici Kici Tas Tas \w[\r%s\w]", get_bit(id, soundLastLeft) ? "Wlaczony" : "Wylaczony");
-	menu_additem(menu, menuData);
-
-	formatex(menuData, charsmax(menuData), "\wNie Obijac Sie \w[\r%s\w]", get_bit(id, soundPrepare) ? "Wlaczony" : "Wylaczony");
-	menu_additem(menu, menuData);
-	
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
-	
-	menu_display(id, menu);
-	
-	return PLUGIN_HANDLED;
-}
-
-public cmd_sounds_Handle(id, menu, item)
-{
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
-	
-	if (item == MENU_EXIT) {
-		menu_destroy(menu);
-
-		return PLUGIN_HANDLED;
-	}
-
-	
-	switch(item) {
-		case 0: get_bit(id, soundMayTheForce) ? rem_bit(id, soundMayTheForce) : set_bit(id, soundMayTheForce);
-		case 1: get_bit(id, soundOneAndOnly) ? rem_bit(id, soundOneAndOnly) : set_bit(id, soundOneAndOnly);
-		case 2: get_bit(id, soundHumiliation) ? rem_bit(id, soundHumiliation) : set_bit(id, soundHumiliation);
-		case 3: get_bit(id, soundLastLeft) ? rem_bit(id, soundLastLeft) : set_bit(id, soundLastLeft);
-		case 4: get_bit(id, soundPrepare) ? rem_bit(id, soundPrepare) : set_bit(id, soundPrepare);
-	}
-	
-	save_sounds(id);
-
-	cmd_sounds(id);
-
-	menu_destroy(menu);
-
-	return PLUGIN_HANDLED;
-}
-
-public _csgo_add_kill(id)
-{
-	playerData[id][CURRENT_KILLS]++;
-	playerData[id][KILLS]++;
 }
 
 public _csgo_get_kills(id)

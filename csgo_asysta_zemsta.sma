@@ -58,6 +58,13 @@ public player_damage(victim)
 	return PLUGIN_CONTINUE;
 }
 
+public client_assist(killer, victim, assistant)
+{
+	client_print_color(assistant, victim, "^x04[CS:GO]^x01 Asystowales^x03 %s^x01 w zabiciu^x03 %s^x01. Dostajesz fraga!", killerName, victimName);
+
+	csgo_add_money(assistant, assistReward);
+}
+
 public player_die()
 {
 	if (!assistEnabled) return PLUGIN_CONTINUE;
@@ -96,17 +103,6 @@ public player_die()
 			csgo_add_kill(killer);
 
 			csgo_add_money(killer, revengeReward);
-		}
-
-		new assistant = 0, damage = 0;
-
-		for (new i = 1; i <= MAX_PLAYERS; i++) {
-			if (i != killer && is_user_connected(i) && get_user_team(i) == get_user_team(killer) && playerDamage[i][victim] >= assistDamage && playerDamage[i][victim] > damage) {
-				assistant = i;
-				damage = playerDamage[i][victim];
-			}
-
-			playerDamage[i][victim] = 0;
 		}
 
 		if(assistant > 0 && damage > assistDamage) {
