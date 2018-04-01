@@ -586,7 +586,7 @@ public clcmd_buy_weapon_handle(id, menu, item)
 
 stock can_buy(id)
 {
-	if (!cs_get_user_buyzone(id) || !is_user_alive(id)) return false;
+	if (!is_user_alive(id) || !cs_get_user_buyzone(id)) return false;
 
 	new Float:buyTime;
 
