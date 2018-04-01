@@ -9,6 +9,8 @@
 #define VERSION		"1.2"
 #define AUTHOR		"O'Zone"
 
+native csgo_add_kill(id);
+
 new playerRevenge[MAX_PLAYERS + 1], playerDamage[MAX_PLAYERS + 1][MAX_PLAYERS + 1];
 
 new assistEnabled, revengeEnabled, assistDamage, Float:assistReward, Float:revengeReward;
@@ -58,13 +60,6 @@ public player_damage(victim)
 	return PLUGIN_CONTINUE;
 }
 
-public client_assist(killer, victim, assistant)
-{
-	client_print_color(assistant, victim, "^x04[CS:GO]^x01 Asystowales^x03 %s^x01 w zabiciu^x03 %s^x01. Dostajesz fraga!", killerName, victimName);
-
-	csgo_add_money(assistant, assistReward);
-}
-
 public player_die()
 {
 	if (!assistEnabled) return PLUGIN_CONTINUE;
@@ -100,9 +95,19 @@ public player_die()
 			
 			client_print_color(killer, victim, "^x04[CS:GO]^x01 Zemsciles sie na^x03 %s^x01. Dostajesz fraga!", victimName);
 
-			csgo_add_kill(killer);
-
 			csgo_add_money(killer, revengeReward);
+			csgo_add_kill(killer);
+		}
+
+		new assistant = 0, damage = 0;
+
+		for (new i = 1; i <= MAX_PLAYERS; i++) {
+			if (i != killer && is_user_connected(i) && get_user_team(i) == get_user_team(killer) && playerDamage[i][victim] >= assistDamage && playerDamage[i][victim] > damage) {
+				assistant = i;
+				damage = playerDamage[i][victim];
+			}
+
+			playerDamage[i][victim] = 0;
 		}
 
 		if(assistant > 0 && damage > assistDamage) {
@@ -131,10 +136,9 @@ public player_die()
 			show_hudmessage(0, "%s pomogl %s w  zabiciu %s", assistantName, killerName, victimName);
 			
 			client_print_color(assistant, victim, "^x04[CS:GO]^x01 Asystowales^x03 %s^x01 w zabiciu^x03 %s^x01. Dostajesz fraga!", killerName, victimName);
-			
-			csgo_add_kill(assistant);
 
 			csgo_add_money(assistant, assistReward);
+			csgo_add_kill(assistant);
 		}
 	}
 

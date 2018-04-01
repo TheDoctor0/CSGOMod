@@ -100,8 +100,8 @@ public grenade_secondary_attack(const ent)
 	{
 		new id = get_pdata_cbase(ent, 41, 4), buttons = pev(id, pev_button);
 
-		if (buttons & IN_ATTACK) grenadeThrow[id] = MEDIUM
-		else grenadeThrow[id] = SHORT
+		if (buttons & IN_ATTACK) grenadeThrow[id] = MEDIUM;
+		else grenadeThrow[id] = SHORT;
 		
 		ExecuteHamB(Ham_Weapon_PrimaryAttack, ent);
 	}
