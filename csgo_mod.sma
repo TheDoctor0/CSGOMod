@@ -10,7 +10,7 @@
 #include <csgomod>
 
 #define PLUGIN "CS:GO Mod"
-#define VERSION "1.6"
+#define VERSION "1.7"
 #define AUTHOR "O'Zone"
 
 #define TASK_SKINS 3045
@@ -19,6 +19,8 @@
 #define TASK_AD 6234
 
 #define WEAPON_ALL 31
+
+//#define DEBUG
 
 new const commandSkins[][] = { "skiny", "say /skins", "say_team /skins", "say /skin", "say_team /skin", "say /skiny",
 	"say_team /skiny", "say /modele", "say_team /modele", "say /model", "say_team /model", "say /jackpot", "say_team /jackpot" };
@@ -50,12 +52,12 @@ new const ammoType[][] = { "", "357sig", "", "762nato", "", "buckshot", "", "45a
 enum _:tempInfo { WEAPON, WEAPONS, WEAPON_ENT, EXCHANGE_PLAYER, EXCHANGE_SKIN, EXCHANGE_FOR_SKIN, GIVE_PLAYER, SALE_SKIN };
 enum _:playerInfo { ACTIVE[CSW_P90 + 1], Float:MONEY, SKIN, bool:SKINS_LOADED, bool:DATA_LOADED, bool:SKINS_DISABLED, bool:EXCHANGE_BLOCKED, bool:MENU_BLOCKED, TEMP[tempInfo], NAME[32], SAFE_NAME[64] };
 enum _:playerSkinsInfo { SKIN_ID, SKIN_COUNT };
-enum _:skinsInfo { SKIN_NAME[64], SKIN_WEAPON[32], SKIN_MODEL[64], SKIN_PRICE };
+enum _:skinsInfo { SKIN_NAME[64], SKIN_WEAPON[32], SKIN_MODEL[64], SKIN_PRICE, SKIN_CHANCE };
 enum _:marketInfo { MARKET_ID, MARKET_SKIN, MARKET_OWNER, Float:MARKET_PRICE };
 
-new playerData[MAX_PLAYERS + 1][playerInfo], Array:playerSkins[MAX_PLAYERS + 1], Float:randomSkinPrice[WEAPON_ALL + 1], Array:skins, Array:weapons, Array:market,
-	Handle:sql, Handle:connection, marketSkins, multipleSkins, defaultSkins, skinChance, skinChanceSVIP, Float:skinChancePerMember, maxMarketSkins, Float:killReward,
-	Float:killHSReward, Float:bombReward, Float:defuseReward, Float:hostageReward, Float:winReward, minPlayers, bool:end, bool:sqlConnected;
+new playerData[MAX_PLAYERS + 1][playerInfo], Array:playerSkins[MAX_PLAYERS + 1], Float:randomSkinPrice[WEAPON_ALL + 1], overallSkinChance[WEAPON_ALL + 1], Array:skins, Array:weapons, Array:market,
+	Handle:sql, Handle:connection, marketSkins, multipleSkins, defaultSkins, skinChance, skinChanceSVIP, Float:skinChancePerMember, maxMarketSkins, Float:marketCommision,
+	Float:killReward, Float:killHSReward, Float:bombReward, Float:defuseReward, Float:hostageReward, Float:winReward, minPlayers, bool:end, bool:sqlConnected;
 
 public plugin_init()
 {
@@ -72,15 +74,16 @@ public plugin_init()
 	bind_pcvar_num(create_cvar("csgo_default_skins", "1"), defaultSkins);
 	bind_pcvar_num(create_cvar("csgo_min_players", "4"), minPlayers);
 	bind_pcvar_num(create_cvar("csgo_max_market_skins", "5"), maxMarketSkins);
-	bind_pcvar_num(create_cvar("csgo_skin_chance", "15"), skinChance);
+	bind_pcvar_num(create_cvar("csgo_skin_chance", "20"), skinChance);
 	bind_pcvar_num(create_cvar("csgo_svip_skin_chance", "25"), skinChanceSVIP);
+	bind_pcvar_float(create_cvar("csgo_market_commision", "5"), marketCommision);
 	bind_pcvar_float(create_cvar("csgo_clan_skin_chance_per_member", "1"), skinChancePerMember);
-	bind_pcvar_float(create_cvar("csgo_kill_reward", "0.2"), killReward);
-	bind_pcvar_float(create_cvar("csgo_killhs_reward", "0.1"), killHSReward);
-	bind_pcvar_float(create_cvar("csgo_bomb_reward", "0.5"), bombReward);
-	bind_pcvar_float(create_cvar("csgo_defuse_reward", "0.5"), defuseReward);
-	bind_pcvar_float(create_cvar("csgo_hostages_reward", "0.5"), hostageReward);
-	bind_pcvar_float(create_cvar("csgo_round_reward", "0.25"), winReward);
+	bind_pcvar_float(create_cvar("csgo_kill_reward", "0.35"), killReward);
+	bind_pcvar_float(create_cvar("csgo_killhs_reward", "0.15"), killHSReward);
+	bind_pcvar_float(create_cvar("csgo_bomb_reward", "2.0"), bombReward);
+	bind_pcvar_float(create_cvar("csgo_defuse_reward", "2.0"), defuseReward);
+	bind_pcvar_float(create_cvar("csgo_hostages_reward", "2.0"), hostageReward);
+	bind_pcvar_float(create_cvar("csgo_round_reward", "0.5"), winReward);
 
 	for (new i; i < sizeof commandSkins; i++) register_clcmd(commandSkins[i], "skins_menu");
 	for (new i; i < sizeof commandHelp; i++) register_clcmd(commandHelp[i], "skins_help");
@@ -136,7 +139,7 @@ public plugin_precache()
 
 	if (!file_exists(file)) set_fail_state("[CS:GO] Brak pliku csgo_skins.ini!");
 
-	new skin[skinsInfo], lineData[256], tempValue[3][64], bool:error, fileOpen = fopen(file, "r");
+	new skin[skinsInfo], lineData[256], tempValue[4][64], bool:error, fileOpen = fopen(file, "r");
 
 	while (!feof(fileOpen)) {
 		fgets(fileOpen, lineData, charsmax(lineData)); trim(lineData);
@@ -153,12 +156,13 @@ public plugin_precache()
 
 			continue;
 		} else {
-			parse(lineData, tempValue[0], charsmax(tempValue[]), tempValue[1], charsmax(tempValue[]), tempValue[2], charsmax(tempValue[]));
+			parse(lineData, tempValue[0], charsmax(tempValue[]), tempValue[1], charsmax(tempValue[]), tempValue[2], charsmax(tempValue[]), tempValue[3], charsmax(tempValue[]));
 
 			formatex(skin[SKIN_NAME], charsmax(skin[SKIN_NAME]), tempValue[0]);
 			formatex(skin[SKIN_MODEL], charsmax(skin[SKIN_MODEL]), tempValue[1]);
 
 			skin[SKIN_PRICE] = str_to_num(tempValue[2]);
+			skin[SKIN_CHANCE] = (str_to_num(tempValue[3]) > 1 ? str_to_num(tempValue[3]) : 1);
 
 			if (!file_exists(skin[SKIN_MODEL])) {
 				log_to_file("csgo-error.log", "[CS:GO] Plik %s nie istnieje!", skin[SKIN_MODEL]);
@@ -190,10 +194,10 @@ public plugin_precache()
 
 	if (error) set_fail_state("[CS:GO] Nie zaladowano wszystkich standardowych skinow. Sprawdz logi bledow!");
 
-	set_task(0.1, "load_prices");
+	set_task(0.1, "load_skins_details");
 }
 
-public load_prices()
+public load_skins_details()
 {
 	new file[128];
 
@@ -202,7 +206,7 @@ public load_prices()
 
 	if (!file_exists(file)) set_fail_state("[CS:GO] Brak pliku csgo_skins.ini!");
 
-	new skin[skinsInfo], lineData[256], tempPrice[16], fileOpen = fopen(file, "r");
+	new skin[skinsInfo], lineData[256], tempValue[4][64], tempPrice[16], fileOpen = fopen(file, "r");
 
 	while (!feof(fileOpen)) {
 		fgets(fileOpen, lineData, charsmax(lineData)); trim(lineData);
@@ -218,6 +222,10 @@ public load_prices()
 			randomSkinPrice[equal(skin[SKIN_WEAPON], "Wszystkie") ? WEAPON_ALL : get_weapon_id(skin[SKIN_WEAPON])] = str_to_float(tempPrice);
 
 			continue;
+		} else {
+			parse(lineData, tempValue[0], charsmax(tempValue[]), tempValue[1], charsmax(tempValue[]), tempValue[2], charsmax(tempValue[]), tempValue[3], charsmax(tempValue[]));
+
+			overallSkinChance[get_weapon_id(skin[SKIN_WEAPON])] += (str_to_num(tempValue[3]) > 1 ? str_to_num(tempValue[3]) : 1);
 		}
 	}
 }
@@ -695,7 +703,7 @@ public random_weapon_skin(id, weapon[])
 	menu_additem(menu, "\yTak", weapon);
 	menu_additem(menu, "Nie^n");
 
-	formatex(menuData, charsmax(menuData), "\wAby zwiekszyc szanse wylosowania kup \ySVIPa \r(+%i%%)^n\wlub \ydolacz do klanu \r(+%.0f%% za kazdego czlonka)\w.", skinChanceSVIP - skinChance, skinChancePerMember);
+	formatex(menuData, charsmax(menuData), "\wAby zwiekszyc szanse wylosowania kup \ySVIPa \r(+%i%%)^n\wlub \ydolacz do klanu \r(+%.2f%% za kazdego czlonka)\w.", skinChanceSVIP - skinChance, skinChancePerMember);
 
 	menu_addtext(menu, menuData);
 
@@ -739,9 +747,18 @@ public random_weapon_skin_handle(id, menu, item)
 	} else playerData[id][MONEY] -= price;
 
 	new chance = (csgo_get_user_svip(id) ? skinChanceSVIP : skinChance) + floatround(csgo_get_clan_members(csgo_get_user_clan(id)) * skinChancePerMember, floatround_floor);
+	#if defined DEBUG
+	new number = random_num(1, 100);
+	client_print_color(id, id, "^x03[DEBUG]^x01 Wylosowana szansa:^x04 %i/%i", number, chance);
 
-	if (random_num(1, 100) < chance) {
-		new skin[skinsInfo], skinId, skinsCount = 0, skinNumber = random_num(1, multipleSkins ? get_weapon_skins_count(weapon) : get_missing_weapon_skins_count(id, weapon));
+	if (number <= chance) {
+	#else
+	if (random_num(1, 100) <= chance) {
+	#endif
+		new skin[skinsInfo], skinId, skinsChance = 0, skinChance = random_num(1, multipleSkins ? get_weapon_skins_count(weapon, 1) : get_missing_weapon_skins_count(id, weapon, 1));
+		#if defined DEBUG
+		client_print_color(id, id, "^x03[DEBUG]^x01 Wylosowana szansa skina:^x04 %i/%i", skinChance, get_weapon_skins_count(weapon, 1));
+		#endif
 
 		for (new i = 0; i < ArraySize(skins); i++) {
 			ArrayGetArray(skins, i, skin);
@@ -749,7 +766,9 @@ public random_weapon_skin_handle(id, menu, item)
 			if (equali(weapon, skin[SKIN_WEAPON]) || equal(weapon, "Wszystkie")) {
 				if (!multipleSkins && has_skin(id, i)) continue;
 
-				if (++skinsCount == skinNumber) {
+				skinsChance += skin[SKIN_CHANCE];
+
+				if (skinsChance >= skinChance) {
 					skinId = i;
 
 					break;
@@ -1281,7 +1300,12 @@ public market_sell_skin(id)
 		return PLUGIN_HANDLED;
 	}
 
-	new menuData[64], skin[skinsInfo], tempId[5], skinId, skinsCount, menu = menu_create("\yWybierz \rSkin\y, ktory chcesz wystawic na rynek\w:", "market_sell_skin_handle");
+	new menuTitle[128], menuData[64], skin[skinsInfo], tempId[5], skinId, skinsCount;
+
+	if (marketCommision > 0.0) formatex(menuTitle, charsmax(menuTitle), "\yWybierz \rSkin\y, ktory chcesz wystawic na rynek\w:^n\yOd kazdej sprzedazy pobierana jest prowizja w wysokosci\r %.2f%%\y.^n", marketCommision);
+	else  formatex(menuTitle, charsmax(menuTitle), "\yWybierz \rSkin\y, ktory chcesz wystawic na rynek\w:");
+
+	new menu = menu_create(menuTitle, "market_sell_skin_handle");
 
 	for (new i = 0; i < ArraySize(playerSkins[id]); i++) {
 		skinId = get_player_skin_info(id, i, SKIN_ID), skinsCount = get_player_skin_info(id, i, SKIN_COUNT);
@@ -1361,8 +1385,8 @@ public set_skin_price(id)
 
 	price = str_to_float(priceData);
 
-	if (price < 0.01 || price > 1000.0) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Cena musi nalezec do przedzialu^x03 0.01 - 1000 Euro^x01!");
+	if (price < 1.0 || price > 9999.0) {
+		client_print_color(id, id, "^x04[CS:GO]^x01 Cena musi nalezec do przedzialu^x03 1 - 9999 Euro^x01!");
 
 		return PLUGIN_HANDLED;
 	}
@@ -1511,24 +1535,24 @@ public market_buy_confirm_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	new skin[skinsInfo];
-
-	ArrayGetArray(skins, marketSkin[MARKET_SKIN], skin);
+	new skin[skinsInfo], Float:priceAfterCommision = marketSkin[MARKET_PRICE] * ((100.0 - marketCommision) / 100.0);
 
 	change_local_skin(marketSkin[MARKET_OWNER], marketSkin[MARKET_SKIN], 1);
 
-	playerData[marketSkin[MARKET_OWNER]][MONEY] += marketSkin[MARKET_PRICE];
+	ArrayDeleteItem(market, skinId);
+
+	ArrayGetArray(skins, marketSkin[MARKET_SKIN], skin);
+
+	playerData[marketSkin[MARKET_OWNER]][MONEY] += priceAfterCommision;
 	playerData[id][MONEY] -= marketSkin[MARKET_PRICE];
 
 	add_skin(id, marketSkin[MARKET_SKIN], skin[SKIN_WEAPON], skin[SKIN_NAME]);
 	remove_skin(marketSkin[MARKET_OWNER], marketSkin[MARKET_SKIN], skin[SKIN_WEAPON], skin[SKIN_NAME]);
 
-	ArrayDeleteItem(market, skinId);
-
 	client_print_color(id, id, "^x04[CS:GO]^x01 Skin^x03 %s (%s)^x01 zostal pomyslnie zakupiony.", skin[SKIN_NAME], skin[SKIN_WEAPON]);
 
 	client_print_color(marketSkin[MARKET_OWNER], marketSkin[MARKET_OWNER], "^x04[CS:GO]^x01 Twoj skin^x03 %s (%s)^x01 zostal zakupiony przez^x03 %s^x01.", skin[SKIN_NAME], skin[SKIN_WEAPON], playerData[id][NAME]);
-	client_print_color(marketSkin[MARKET_OWNER], marketSkin[MARKET_OWNER], "^x04[CS:GO]^x01 Za sprzedaz otrzymujesz^x03 %.2f Euro^x01.", marketSkin[MARKET_PRICE]);
+	client_print_color(marketSkin[MARKET_OWNER], marketSkin[MARKET_OWNER], "^x04[CS:GO]^x01 Za sprzedaz otrzymujesz^x03 %.2f Euro^x01.", priceAfterCommision);
 
 	log_to_file("csgo-sell.log", "Gracz %s sprzedal skina %s (%s) graczowi %s za %.2f Euro", playerData[marketSkin[MARKET_OWNER]][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON], playerData[id][NAME], marketSkin[MARKET_PRICE]);
 
@@ -1653,7 +1677,6 @@ public market_withdraw_confirm_handle(id, menu, item)
 	new marketSkin[marketInfo], skin[skinsInfo];
 
 	ArrayGetArray(market, skinId, marketSkin);
-
 	ArrayGetArray(skins, marketSkin[MARKET_SKIN], skin);
 
 	change_local_skin(id, marketSkin[MARKET_SKIN], 1);
@@ -2097,9 +2120,13 @@ public load_data_handle(failState, Handle:query, error[], errorNum, playerId[], 
 		if (SQL_ReadResult(query, SQL_FieldNameToNum(query, "exchange"))) playerData[id][EXCHANGE_BLOCKED] = true;
 		if (SQL_ReadResult(query, SQL_FieldNameToNum(query, "menu"))) playerData[id][MENU_BLOCKED] = true;
 	} else {
-		static queryData[192];
+		new queryData[192];
 
 		formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_data` (`name`, `money`, `disabled`, `exchange`, `menu`, `online`) VALUES (^"%s^", '0', '0', '0', '0', '0');", playerData[id][SAFE_NAME]);
+
+		#if defined DEBUG
+		playerData[id][MONEY] = 99999.9;
+		#endif
 
 		SQL_ThreadQuery(sql, "ignore_handle", queryData);
 	}
@@ -2304,29 +2331,29 @@ stock Float:get_multiplier(id)
 	else return 1.0;
 }
 
-stock get_weapon_skins_count(weapon[])
+stock get_weapon_skins_count(weapon[], chance = 0)
 {
-	new skin[skinsInfo], weaponskinsCount = 0;
+	new skin[skinsInfo], weaponSkinsCount = 0;
 
 	for (new i = 0; i < ArraySize(skins); i++) {
 		ArrayGetArray(skins, i, skin);
 
-		if (equal(weapon, skin[SKIN_WEAPON]) || equal(weapon, "Wszystkie")) weaponskinsCount++;
+		if (equal(weapon, skin[SKIN_WEAPON]) || equal(weapon, "Wszystkie")) weaponSkinsCount += chance ? skin[SKIN_CHANCE] : 1;
 	}
 
-	return weaponskinsCount;
+	return weaponSkinsCount;
 }
 
-stock get_missing_weapon_skins_count(id, weapon[])
+stock get_missing_weapon_skins_count(id, weapon[], chance = 0)
 {
-	new skin[skinsInfo], marketSkin[marketInfo], playerskinsCount = 0, skinId;
+	new skin[skinsInfo], marketSkin[marketInfo], playerSkinsCount = 0, skinId;
 
 	for (new i = 0; i < ArraySize(playerSkins[id]); i++) {
 		skinId = get_player_skin_info(id, i, SKIN_ID);
 
 		ArrayGetArray(skins, skinId, skin);
 
-		if (equal(weapon, skin[SKIN_WEAPON]) || equal(weapon, "Wszystkie")) playerskinsCount++;
+		if (equal(weapon, skin[SKIN_WEAPON]) || equal(weapon, "Wszystkie")) playerSkinsCount += chance ? skin[SKIN_CHANCE] : 1;
 	}
 
 	for (new i = 0; i < ArraySize(market); i++) {
@@ -2335,11 +2362,11 @@ stock get_missing_weapon_skins_count(id, weapon[])
 		if (marketSkin[MARKET_OWNER] == id) {
 			ArrayGetArray(skins, marketSkin[MARKET_SKIN], skin);
 
-			if (equal(weapon, skin[SKIN_WEAPON]) || equal(weapon, "Wszystkie")) playerskinsCount++;
+			if (equal(weapon, skin[SKIN_WEAPON]) || equal(weapon, "Wszystkie")) playerSkinsCount += chance ? skin[SKIN_CHANCE] : 1;
 		}
 	}
 
-	return get_weapon_skins_count(weapon) - playerskinsCount;
+	return get_weapon_skins_count(weapon) - playerSkinsCount;
 }
 
 stock get_weapon_id(weapon[])
@@ -2382,12 +2409,14 @@ stock change_local_skin(id, skinId, add = 0)
 		if (!add) {
 			playerSkin[SKIN_COUNT]--;
 
-			if (!playerSkin[SKIN_COUNT]) {
+			if (playerSkin[SKIN_COUNT] <= 0) {
 				ArrayDeleteItem(playerSkins[id], skinIndex);
 
 				return false;
 			}
 		} else playerSkin[SKIN_COUNT]++;
+
+		log_to_file("csgo-debug.log", "%s: %i (%i)", playerData[id][NAME], playerSkin[SKIN_ID], playerSkin[SKIN_COUNT]);
 
 		ArraySetArray(playerSkins[id], skinIndex, playerSkin);
 	} else if (add) {
@@ -2410,6 +2439,8 @@ stock remove_skin(id, skinId, weapon[], skin[])
 
 	if (!change_local_skin(id, skinId)) formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_skins` WHERE name = ^"%s^" AND weapon = '%s' AND skin = '%s'", playerData[id][SAFE_NAME], weapon, skinSafeName);
 	else formatex(queryData, charsmax(queryData), "UPDATE `csgo_skins` SET count = count - 1 WHERE name = ^"%s^" AND weapon = '%s' AND skin = '%s'", playerData[id][SAFE_NAME], weapon, skinSafeName);
+
+	log_to_file("csgo-debug.log", queryData);
 
 	if (playerData[id][ACTIVE][get_weapon_id(weapon)] == skinId) {
 		set_skin(id, weapon);
