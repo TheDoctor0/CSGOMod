@@ -10,10 +10,6 @@
 #define TASK_PASSWORD   1945
 #define TASK_LOAD       2491
 
-#define PASSWORD_TIME   60
-#define PASSWORD_FAILS  3
-#define PASSWORD_LENGTH 5
-
 enum _:playerInfo { STATUS, FAILS, PASSWORD[32], TEMP_PASSWORD[32], NAME[32], SAFE_NAME[64] };
 enum _:status { NOT_REGISTERED, NOT_LOGGED, LOGGED, GUEST };
 enum _:queries { UPDATE, INSERT, DELETE };
@@ -23,7 +19,7 @@ new const accountStatus[status][] = { "Niezarejestrowany", "Niezalogowany", "Zal
 new const commandAccount[][] = { "say /haslo", "say_team /haslo", "say /password", "say_team /password",
 	"say /konto", "say_team /konto", "say /account", "say_team /account", "konto" };
 
-new playerData[MAX_PLAYERS + 1][playerInfo], setinfo[16], Handle:sql, bool:sqlConnected, dataLoaded, autoLogin;
+new playerData[MAX_PLAYERS + 1][playerInfo], setinfo[16], Handle:sql, bool:sqlConnected, dataLoaded, autoLogin, loginMaxTime, passwordMaxFails, passwordMinLength;
 
 public plugin_init()
 {
@@ -31,6 +27,9 @@ public plugin_init()
 
 	for (new i; i < sizeof commandAccount; i++) register_clcmd(commandAccount[i], "account_menu");
 
+	bind_pcvar_num(create_cvar("csgo_accounts_login_max_time", "60"), loginMaxTime);
+	bind_pcvar_num(create_cvar("csgo_accounts_password_max_fails", "3"), passwordMaxFails);
+	bind_pcvar_num(create_cvar("csgo_accounts_password_min_length", "5"), passwordMinLength);
 	bind_pcvar_string(create_cvar("csgo_accounts_setinfo", "csrpass"), setinfo, charsmax(setinfo));
 
 	register_clcmd("WPROWADZ_SWOJE_HASLO", "login_account");
@@ -75,7 +74,7 @@ public client_connect(id)
 
 	mysql_escape_string(playerData[id][NAME], playerData[id][SAFE_NAME], charsmax(playerData[][SAFE_NAME]));
 
-	set_task(1.0, "load_account", id + TASK_LOAD);
+	set_task(0.1, "load_account", id + TASK_LOAD);
 }
 
 public client_disconnected(id)
@@ -92,7 +91,7 @@ public message_show_menu(msgId, dest, id)
 
 	get_msg_arg_string(4, menuData, charsmax(menuData));
 
-	if (equal(menuData, Team_Select) && playerData[id][STATUS] < LOGGED && sql != Empty_Handle) {
+	if (equal(menuData, Team_Select) && get_bit(id, dataLoaded) && playerData[id][STATUS] < LOGGED && sql != Empty_Handle) {
 		set_pdata_int(id, 205, 0, 5);
 
 		set_task(0.1, "account_menu", id);
@@ -105,7 +104,7 @@ public message_show_menu(msgId, dest, id)
 
 public message_vgui_menu(msgId, dest, id)
 {
-	if (get_msg_arg_int(1) == 2 && playerData[id][STATUS] < LOGGED && sql != Empty_Handle) {
+	if (get_msg_arg_int(1) == 2 && get_bit(id, dataLoaded) && playerData[id][STATUS] < LOGGED && sql != Empty_Handle) {
 		set_task(0.1, "account_menu", id);
 
 		return PLUGIN_HANDLED;
@@ -116,7 +115,7 @@ public message_vgui_menu(msgId, dest, id)
 
 public player_prethink(id)
 {
-	if (is_user_connected(id) && get_bit(id, dataLoaded) && !is_user_bot(id) && !is_user_hltv(id) && playerData[id][STATUS] < LOGGED) {
+	if (is_user_connected(id) && get_bit(id, dataLoaded) && !is_user_bot(id) && !is_user_hltv(id) && !is_user_alive(id) && playerData[id][STATUS] < LOGGED) {
 		static msgScreenFade;
 
 		if (!msgScreenFade) msgScreenFade = get_user_msgid("ScreenFade");
@@ -148,7 +147,7 @@ public kick_player(id)
 {
 	id -= TASK_PASSWORD;
 
-	if (is_user_connected(id)) server_cmd("kick #%d ^"Nie zalogowales sie w ciagu %is!^"", get_user_userid(id), PASSWORD_TIME);
+	if (is_user_connected(id)) server_cmd("kick #%d ^"Nie zalogowales sie w ciagu %is!^"", get_user_userid(id), loginMaxTime);
 }
 
 public account_menu(id)
@@ -170,7 +169,7 @@ public account_menu(id)
 		return PLUGIN_HANDLED;
 	}
 
-	if (playerData[id][STATUS] <= NOT_LOGGED && !task_exists(id + TASK_PASSWORD)) set_task(float(PASSWORD_TIME), "kick_player", id + TASK_PASSWORD);
+	if (playerData[id][STATUS] <= NOT_LOGGED && !task_exists(id + TASK_PASSWORD)) set_task(float(loginMaxTime), "kick_player", id + TASK_PASSWORD);
 
 	static menuData[256];
 
@@ -285,9 +284,9 @@ public login_account(id)
 	remove_quotes(password);
 
 	if (!equal(playerData[id][PASSWORD], password)) {
-		if (++playerData[id][FAILS] >= PASSWORD_FAILS) server_cmd("kick #%d ^"Nieprawidlowe haslo!^"", get_user_userid(id));
+		if (++playerData[id][FAILS] >= passwordMaxFails) server_cmd("kick #%d ^"Nieprawidlowe haslo!^"", get_user_userid(id));
 
-		client_print_color(id, id, "^x04[CS:GO]^x01 Podane haslo jest^x04 nieprawidlowe^x01. (Bledne haslo^x04 %i/%i^x01)", playerData[id][FAILS], PASSWORD_FAILS);
+		client_print_color(id, id, "^x04[CS:GO]^x01 Podane haslo jest^x04 nieprawidlowe^x01. (Bledne haslo^x04 %i/%i^x01)", playerData[id][FAILS], passwordMaxFails);
 
 		set_hudmessage(255, 0, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
 
@@ -324,11 +323,11 @@ public register_step_one(id)
 	read_args(password, charsmax(password));
 	remove_quotes(password);
 
-	if (strlen(password) < PASSWORD_LENGTH) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Haslo musi miec co najmniej^x04 %i znakow^x01.", PASSWORD_LENGTH);
+	if (strlen(password) < passwordMinLength) {
+		client_print_color(id, id, "^x04[CS:GO]^x01 Haslo musi miec co najmniej^x04 %i znakow^x01.", passwordMinLength);
 
 		set_hudmessage(255, 0, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
-		show_hudmessage(id, "Haslo musi miec co najmniej %i znakow.", PASSWORD_LENGTH);
+		show_hudmessage(id, "Haslo musi miec co najmniej %i znakow.", passwordMinLength);
 
 		account_menu(id);
 
@@ -438,9 +437,9 @@ public change_step_one(id)
 	remove_quotes(password);
 
 	if (!equal(playerData[id][PASSWORD], password)) {
-		if (++playerData[id][FAILS] >= PASSWORD_FAILS) server_cmd("kick #%d ^"Nieprawidlowe haslo!^"", get_user_userid(id));
+		if (++playerData[id][FAILS] >= passwordMaxFails) server_cmd("kick #%d ^"Nieprawidlowe haslo!^"", get_user_userid(id));
 
-		client_print_color(id, id, "^x04[CS:GO]^x01 Podane haslo jest^x04 nieprawidlowe^x01. (Bledne haslo^x04 %i/%i^x01)", playerData[id][FAILS], PASSWORD_FAILS);
+		client_print_color(id, id, "^x04[CS:GO]^x01 Podane haslo jest^x04 nieprawidlowe^x01. (Bledne haslo^x04 %i/%i^x01)", playerData[id][FAILS], passwordMaxFails);
 
 		set_hudmessage(255, 0, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
 		show_hudmessage(id, "Podane haslo jest nieprawidlowe.");
@@ -480,11 +479,11 @@ public change_step_two(id)
 		return PLUGIN_HANDLED;
 	}
 
-	if (strlen(password) < PASSWORD_LENGTH) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Nowe haslo musi miec co najmniej^x04 %i znakow^x01.", PASSWORD_LENGTH);
+	if (strlen(password) < passwordMinLength) {
+		client_print_color(id, id, "^x04[CS:GO]^x01 Nowe haslo musi miec co najmniej^x04 %i znakow^x01.", passwordMinLength);
 
 		set_hudmessage(255, 0, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
-		show_hudmessage(id, "Nowe haslo musi miec co najmniej %i znakow.", PASSWORD_LENGTH);
+		show_hudmessage(id, "Nowe haslo musi miec co najmniej %i znakow.", passwordMinLength);
 
 		account_menu(id);
 
@@ -549,9 +548,9 @@ public delete_account(id)
 	remove_quotes(password);
 
 	if (!equal(playerData[id][PASSWORD], password)) {
-		if (++playerData[id][FAILS] >= PASSWORD_FAILS) server_cmd("kick #%d ^"Nieprawidlowe haslo!^"", get_user_userid(id));
+		if (++playerData[id][FAILS] >= passwordMaxFails) server_cmd("kick #%d ^"Nieprawidlowe haslo!^"", get_user_userid(id));
 
-		client_print_color(id, id, "^x04[CS:GO]^x01 Podane haslo jest^x04 nieprawidlowe^x01. (Bledne haslo^x04 %i/%i^x01)", playerData[id][FAILS], PASSWORD_FAILS);
+		client_print_color(id, id, "^x04[CS:GO]^x01 Podane haslo jest^x04 nieprawidlowe^x01. (Bledne haslo^x04 %i/%i^x01)", playerData[id][FAILS], passwordMaxFails);
 
 		set_hudmessage(255, 0, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
 		show_hudmessage(id, "Podane haslo jest nieprawidlowe.");
@@ -636,7 +635,7 @@ public load_account(id)
 	id -= TASK_LOAD;
 
 	if (!sqlConnected) {
-		set_task(1.0, "load_account", id + TASK_LOAD);
+		set_task(0.25, "load_account", id + TASK_LOAD);
 
 		return;
 	}
@@ -655,8 +654,6 @@ public load_account_handle(failState, Handle:query, error[], errorNum, tempId[],
 
 	if (failState) {
 		log_to_file("csgo-error.log", "[CS:GO Accounts] SQL Error: %s (%d)", error, errorNum);
-
-		set_task(1.0, "load_account", id + TASK_LOAD);
 
 		return;
 	}
@@ -677,7 +674,13 @@ public load_account_handle(failState, Handle:query, error[], errorNum, tempId[],
 				playerData[id][STATUS] = LOGGED;
 
 				set_bit(id, autoLogin);
-			} else playerData[id][STATUS] = NOT_LOGGED;
+			} else {
+				playerData[id][STATUS] = NOT_LOGGED;
+
+				client_print_color(id, id, "^x04[CS:GO]^x01 Musisz sie^x03 zalogowac^x01, aby miec dostep do glownych funkcji!");
+
+				account_menu(id);
+			}
 
 			cmd_execute(id, "exec config.cfg");
 		}
