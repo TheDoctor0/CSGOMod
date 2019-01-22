@@ -4,7 +4,7 @@
 #include <engine>
 
 #define PLUGIN  "CS:GO C4"
-#define VERSION "1.0"
+#define VERSION "1.1"
 #define AUTHOR  "O'Zone"
 
 new const modelsC4[][] = { "models/csr_csgo/c4/p_c4.mdl", "models/csr_csgo/c4/v_c4.mdl", "models/csr_csgo/c4/w_c4.mdl" };
@@ -14,10 +14,10 @@ public plugin_init()
 	register_plugin(PLUGIN, VERSION, AUTHOR);
 
 	register_event("HLTV", "remove_c4", "a", "1=0", "2=0");
-	register_logevent("remove_c4", 2, "1=Round_Start")  
+	register_logevent("remove_c4", 2, "1=Round_Start")
 
 	RegisterHam(Ham_Item_Deploy, "weapon_c4", "weapon_deploy", 1);
-	
+
 	register_forward(FM_SetModel, "set_model");
 }
 

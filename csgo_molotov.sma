@@ -14,7 +14,7 @@
 
 #define PLUGIN "CS:GO Molotov"
 #define AUTHOR "DynamicBits & O'Zone"
-#define VERSION "1.2"
+#define VERSION "1.3"
 
 new const molotovWeaponName[] = "weapon_hegrenade";
 
@@ -94,14 +94,14 @@ public plugin_precache()
 		else
 		{
 			log_amx("[CS:GO] Molotov file '%s' not exist. Skipped!", Models[i]);
-			
+
 			bWasFail = true;
 		}
 	}
-	
+
 	new szFile[64];
 
-	for(i = 0; i < sizeof Sounds; i++) 
+	for(i = 0; i < sizeof Sounds; i++)
 	{
 		formatex(szFile, charsmax(szFile), "sound\%s", Sounds[i]);
 
@@ -109,11 +109,11 @@ public plugin_precache()
 		else
 		{
 			log_amx("[CS:GO] Molotov file '%s' not exist. Skipped!", Sounds[i]);
-			
+
 			bWasFail = true;
 		}
 	}
-	
+
 	if(bWasFail) set_fail_state("[CS:GO] Not all molotov files were precached. Check logs!");
 }
 
@@ -142,7 +142,7 @@ public client_disconnected(id)
 	remove_molotovs(id);
 }
 
-public buy_molotov(id) 
+public buy_molotov(id)
 {
 	if(!molotovEnabled || !cs_get_user_buyzone(id) || !is_user_alive(id)) return PLUGIN_HANDLED;
 
@@ -212,7 +212,7 @@ public buy_molotov(id)
 public event_deathmsg()
 	bMolotov[read_data(2)] = false;
 
-public event_gamerestart() 
+public event_gamerestart()
 	bRestarted = true;
 
 public event_round_end()
@@ -270,7 +270,7 @@ public player_spawned_post(id)
 	get_user_weapons(id, weapons, weaponsNum);
 
 	for(new i; i < weaponsNum; i++) if(weapons[i] == CSW_HEGRENADE) molotov = true;
-	
+
 	bMolotov[id] = molotov;
 }
 
@@ -317,11 +317,11 @@ public fw_emitsound(ent, channel, sample[])
 		}
 		else if(contain(sModel, "w_broken_molotov.mdl") != -1) return FMRES_SUPERCEDE;
 	}
-	
+
 	return FMRES_IGNORED;
 }
 
-stock molotov_explode(ent) 
+stock molotov_explode(ent)
 {
 	new Float:fOrigin[3], iOrigin[3], param[7], iOwner = pev(ent, pev_owner);
 	new ent2 = engfunc(EngFunc_CreateNamedEntity, engfunc(EngFunc_AllocString, "info_target"));
@@ -367,13 +367,13 @@ stock molotov_explode(ent)
 public fire_sound(param[])
 	if(pev_valid(param[1])) emit_sound(param[1], CHAN_AUTO, Sounds[Fire], VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
 
-public fire_stop(param[]) 
+public fire_stop(param[])
 {
 	if(pev_valid(param[0])) set_pev(param[0], pev_flags, pev(param[0], pev_flags) | FL_KILLME);
 	if(pev_valid(param[1])) set_pev(param[1], pev_flags, pev(param[1], pev_flags) | FL_KILLME);
 }
 
-public fire_damage(param[]) 
+public fire_damage(param[])
 {
 	if(extinguish_molotov(param)) return;
 
@@ -597,13 +597,13 @@ stock ground_z(iOrigin[3], ent, skip = 0, iRecursion = 0)
 stock grenade_is_smoke(ent)
 {
 	if(!is_valid_ent(ent)) return false;
-	
+
 	new entModel[32];
 
 	pev(ent, pev_model, entModel, charsmax(entModel));
-	
+
 	if(equal(entModel, "models/w_smokegrenade.mdl")) return true;
-	
+
 	return false;
 }
 
