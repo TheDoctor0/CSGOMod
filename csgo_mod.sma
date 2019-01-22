@@ -20,8 +20,6 @@
 
 #define WEAPON_ALL 31
 
-//#define DEBUG
-
 new const commandSkins[][] = { "skiny", "say /skins", "say_team /skins", "say /skin", "say_team /skin", "say /skiny",
 	"say_team /skiny", "say /modele", "say_team /modele", "say /model", "say_team /model", "say /jackpot", "say_team /jackpot" };
 new const commandHelp[][] = { "pomoc", "say /pomoc", "say_team /pomoc", "say /help", "say_team /help" };
@@ -107,7 +105,7 @@ public plugin_init()
 
 	register_event("TextMsg", "hostages_rescued", "a", "2&#All_Hostages_R");
 	register_event("SendAudio", "t_win_round" , "a", "2&%!MRAD_terwin");
-	register_event("SendAudio", "ct_win_round", "a", "2&%!MRAD_ct_win_round");
+	register_event("SendAudio", "ct_win_round", "a", "2=%!MRAD_ctwin");
 	register_event("SetFOV", "set_fov" , "be");
 	register_event("Money", "event_money", "be");
 
@@ -341,7 +339,7 @@ public show_advertisement(id)
 
 public skins_menu(id)
 {
-	if (!csgo_check_account(id)) return PLUGIN_HANDLED;
+	if (!csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	if (!playerData[id][SKINS_LOADED]) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Trwa ladowanie twoich skinow...");
@@ -380,7 +378,7 @@ public skins_menu(id)
 
 public skins_menu_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -388,7 +386,7 @@ public skins_menu_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	switch(item) {
+	switch (item) {
 		case 0, 1, 2: choose_weapon_menu(id, item);
 		case 3: market_menu(id);
 		case 4: client_cmd(id, "say /sklepsms");
@@ -403,8 +401,7 @@ public skins_menu_handle(id, menu, item)
 			save_data(id);
 
 			skins_menu(id);
-		}
-		case 9: {
+		} case 9: {
 			playerData[id][EXCHANGE_BLOCKED] = !playerData[id][EXCHANGE_BLOCKED];
 
 			client_print_color(id, id, "^x04[CS:GO]^x01 Mozliwosc wysylania ci ofert wymiany zostala^x03 %s^x01.", playerData[id][EXCHANGE_BLOCKED] ? "wylaczona" : "wlaczona");
@@ -412,8 +409,7 @@ public skins_menu_handle(id, menu, item)
 			save_data(id);
 
 			skins_menu(id);
-		}
-		case 10: {
+		} case 10: {
 			playerData[id][SKINS_DISABLED] = !playerData[id][SKINS_DISABLED];
 
 			client_print_color(id, id, "^x04[CS:GO]^x01 Wyswietlanie skinow zostalo^x03 %s^x01.", playerData[id][SKINS_DISABLED] ? "wylaczone" : "wlaczone");
@@ -500,7 +496,7 @@ public choose_weapon_menu(id, type)
 
 public choose_weapon_menu_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -512,7 +508,7 @@ public choose_weapon_menu_handle(id, menu, item)
 
 	menu_item_getinfo(menu, item, itemAccess, itemType, charsmax(itemType), itemData, charsmax(itemData), itemCallback);
 
-	switch(str_to_num(itemType)) {
+	switch (str_to_num(itemType)) {
 		case 0: set_weapon_skin(id, itemData);
 		case 1: buy_weapon_skin(id, itemData);
 		case 2: random_weapon_skin(id, itemData);
@@ -567,7 +563,7 @@ public set_weapon_skin_callback(id, menu, item)
 
 public set_weapon_skin_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -641,7 +637,7 @@ public buy_weapon_skin(id, weapon[])
 
 public buy_weapon_skin_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -716,7 +712,7 @@ public random_weapon_skin(id, weapon[])
 
 public random_weapon_skin_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT || item) {
 		menu_destroy(menu);
@@ -747,18 +743,9 @@ public random_weapon_skin_handle(id, menu, item)
 	} else playerData[id][MONEY] -= price;
 
 	new chance = (csgo_get_user_svip(id) ? skinChanceSVIP : skinChance) + floatround(csgo_get_clan_members(csgo_get_user_clan(id)) * skinChancePerMember, floatround_floor);
-	#if defined DEBUG
-	new number = random_num(1, 100);
-	client_print_color(id, id, "^x03[DEBUG]^x01 Wylosowana szansa:^x04 %i/%i", number, chance);
 
-	if (number <= chance) {
-	#else
 	if (random_num(1, 100) <= chance) {
-	#endif
 		new skin[skinsInfo], skinId, skinsChance = 0, skinChance = random_num(1, multipleSkins ? get_weapon_skins_count(weapon, 1) : get_missing_weapon_skins_count(id, weapon, 1));
-		#if defined DEBUG
-		client_print_color(id, id, "^x03[DEBUG]^x01 Wylosowana szansa skina:^x04 %i/%i", skinChance, get_weapon_skins_count(weapon, 1));
-		#endif
 
 		for (new i = 0; i < ArraySize(skins); i++) {
 			ArrayGetArray(skins, i, skin);
@@ -794,7 +781,7 @@ public random_weapon_skin_handle(id, menu, item)
 
 public exchange_skin_menu(id)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (!playerData[id][SKINS_LOADED]) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Trwa ladowanie twoich skinow...");
@@ -833,7 +820,7 @@ public exchange_skin_menu(id)
 
 public exchange_skin_menu_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -897,7 +884,7 @@ public exchange_skin_menu_handle(id, menu, item)
 
 public exchange_skin_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -966,7 +953,7 @@ public exchange_skin_handle(id, menu, item)
 
 public exchange_for_skin_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -1021,9 +1008,9 @@ public exchange_for_skin_handle(id, menu, item)
 	return PLUGIN_HANDLED;
 }
 
-public exchange_question_handle(id,key)
+public exchange_question_handle(id, key)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	new player = playerData[id][TEMP][EXCHANGE_PLAYER], exchangeSkin = playerData[player][TEMP][EXCHANGE_SKIN], exchangeForSkin = playerData[player][TEMP][EXCHANGE_FOR_SKIN];
 
@@ -1045,7 +1032,7 @@ public exchange_question_handle(id,key)
 		return PLUGIN_HANDLED;
 	}
 
-	switch(key + 1) {
+	switch (key + 1) {
 		case 8: {
 			new skin[skinsInfo], playerSkin[skinsInfo];
 
@@ -1070,7 +1057,7 @@ public exchange_question_handle(id,key)
 
 public give_skin_menu(id)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (!playerData[id][SKINS_LOADED]) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Trwa ladowanie twoich skinow...");
@@ -1109,7 +1096,7 @@ public give_skin_menu(id)
 
 public give_skin_menu_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -1173,7 +1160,7 @@ public give_skin_menu_handle(id, menu, item)
 
 public give_skin_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -1227,7 +1214,7 @@ public give_skin_handle(id, menu, item)
 
 public market_menu(id)
 {
-	if (!csgo_check_account(id)) return PLUGIN_HANDLED;
+	if (!csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	if (!playerData[id][SKINS_LOADED]) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Trwa ladowanie twoich skinow...");
@@ -1250,7 +1237,7 @@ public market_menu(id)
 
 public market_menu_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -1258,7 +1245,7 @@ public market_menu_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	switch(item) {
+	switch (item) {
 		case 0: market_sell_skin(id);
 		case 1: market_buy_skin(id);
 		case 2: market_withdraw_skin(id);
@@ -1269,7 +1256,7 @@ public market_menu_handle(id, menu, item)
 
 public market_menu_callback(id, menu, item)
 {
-	switch(item) {
+	switch (item) {
 		case 0: if (!ArraySize(playerSkins[id]) || get_market_skins(id) >= maxMarketSkins) return ITEM_DISABLED;
 		case 1: if (!ArraySize(market)) return ITEM_DISABLED;
 		case 2: if (!get_market_skins(id)) return ITEM_DISABLED;
@@ -1280,7 +1267,7 @@ public market_menu_callback(id, menu, item)
 
 public market_sell_skin(id)
 {
-	if (!is_user_connected(id) || !csgo_check_account(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	if (!playerData[id][SKINS_LOADED]) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Trwa ladowanie twoich skinow...");
@@ -1331,7 +1318,7 @@ public market_sell_skin(id)
 
 public market_sell_skin_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -1347,7 +1334,7 @@ public market_sell_skin_handle(id, menu, item)
 
 	menu_destroy(menu);
 
-	if (!has_skin(id, playerData[id][SALE_SKIN])) {
+	if (has_skin(id, playerData[id][SALE_SKIN], 1) == -1) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Nie masz juz tego skina.");
 
 		return PLUGIN_HANDLED;
@@ -1364,9 +1351,9 @@ public market_sell_skin_handle(id, menu, item)
 
 public set_skin_price(id)
 {
-	if (!csgo_check_account(id)) return PLUGIN_HANDLED;
+	if (!csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
-	if (!has_skin(id, playerData[id][SALE_SKIN])) {
+	if (has_skin(id, playerData[id][SALE_SKIN], 1) == -1) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Nie masz juz tego skina.");
 
 		return PLUGIN_HANDLED;
@@ -1411,7 +1398,7 @@ public set_skin_price(id)
 
 public market_buy_skin(id)
 {
-	if (!is_user_connected(id) || !csgo_check_account(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	if (!playerData[id][SKINS_LOADED]) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Trwa ladowanie twoich skinow...");
@@ -1452,7 +1439,7 @@ public market_buy_skin(id)
 
 public market_buy_skin_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -1501,7 +1488,7 @@ public market_buy_skin_handle(id, menu, item)
 
 public market_buy_confirm_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT || item) {
 		menu_destroy(menu);
@@ -1561,7 +1548,7 @@ public market_buy_confirm_handle(id, menu, item)
 
 public market_withdraw_skin(id)
 {
-	if (!is_user_connected(id) || !csgo_check_account(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	if (!playerData[id][SKINS_LOADED]) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Trwa ladowanie twoich skinow...");
@@ -1602,7 +1589,7 @@ public market_withdraw_skin(id)
 
 public market_withdraw_skin_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -1650,7 +1637,7 @@ public market_withdraw_skin_handle(id, menu, item)
 
 public market_withdraw_confirm_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT || item) {
 		menu_destroy(menu);
@@ -1841,12 +1828,11 @@ public message_intermission()
 public set_fov(id)
 {
 	if (playerData[id][SKIN] > -1 && (!playerData[id][TEMP][WEAPON_ENT] || is_valid_ent(playerData[id][TEMP][WEAPON_ENT])) && (playerData[id][TEMP][WEAPON] == CSW_AWP || playerData[id][TEMP][WEAPON] == CSW_SCOUT)) {
-		switch(read_data(1)) {
+		switch (read_data(1)) {
 			case 10..55: {
 				if (playerData[id][TEMP][WEAPON] == CSW_AWP) set_pev(id, pev_viewmodel2, "models/v_awp.mdl");
 				else set_pev(id, pev_viewmodel2, "models/v_scout.mdl");
-			}
-			case 90: {
+			} case 90: {
 				if (is_valid_ent(playerData[id][TEMP][WEAPON_ENT])) change_skin(id, playerData[id][TEMP][WEAPON], playerData[id][TEMP][WEAPON_ENT]);
 				else change_skin(id, playerData[id][TEMP][WEAPON]);
 			}
@@ -2124,10 +2110,6 @@ public load_data_handle(failState, Handle:query, error[], errorNum, playerId[], 
 
 		formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_data` (`name`, `money`, `disabled`, `exchange`, `menu`, `online`) VALUES (^"%s^", '0', '0', '0', '0', '0');", playerData[id][SAFE_NAME]);
 
-		#if defined DEBUG
-		playerData[id][MONEY] = 99999.9;
-		#endif
-
 		SQL_ThreadQuery(sql, "ignore_handle", queryData);
 	}
 
@@ -2145,7 +2127,7 @@ stock save_data(id, end = 0)
 	formatex(queryData, charsmax(queryData), "UPDATE `csgo_data` SET `money` = %f, `disabled` = %i, `exchange` = %i, `menu` = %i, `online` = %i WHERE name = ^"%s^"",
 		playerData[id][MONEY], playerData[id][SKINS_DISABLED], playerData[id][EXCHANGE_BLOCKED], playerData[id][MENU_BLOCKED], end ? 0 : 1, playerData[id][SAFE_NAME]);
 
-	switch(end) {
+	switch (end) {
 		case 0, 1: SQL_ThreadQuery(sql, "ignore_handle", queryData);
 		case 2: {
 			static error[128], errorNum, Handle:query;
@@ -2416,8 +2398,6 @@ stock change_local_skin(id, skinId, add = 0)
 			}
 		} else playerSkin[SKIN_COUNT]++;
 
-		log_to_file("csgo-debug.log", "%s: %i (%i)", playerData[id][NAME], playerSkin[SKIN_ID], playerSkin[SKIN_COUNT]);
-
 		ArraySetArray(playerSkins[id], skinIndex, playerSkin);
 	} else if (add) {
 		playerSkin[SKIN_ID] = skinId;
@@ -2439,8 +2419,6 @@ stock remove_skin(id, skinId, weapon[], skin[])
 
 	if (!change_local_skin(id, skinId)) formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_skins` WHERE name = ^"%s^" AND weapon = '%s' AND skin = '%s'", playerData[id][SAFE_NAME], weapon, skinSafeName);
 	else formatex(queryData, charsmax(queryData), "UPDATE `csgo_skins` SET count = count - 1 WHERE name = ^"%s^" AND weapon = '%s' AND skin = '%s'", playerData[id][SAFE_NAME], weapon, skinSafeName);
-
-	log_to_file("csgo-debug.log", queryData);
 
 	if (playerData[id][ACTIVE][get_weapon_id(weapon)] == skinId) {
 		set_skin(id, weapon);
