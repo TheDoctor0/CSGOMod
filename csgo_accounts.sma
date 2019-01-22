@@ -613,7 +613,7 @@ public sql_init()
 
 		sql = Empty_Handle;
 
-		set_task(30.0, "sql_init");
+		set_task(5.0, "sql_init");
 
 		return;
 	}
@@ -635,7 +635,7 @@ public load_account(id)
 	id -= TASK_LOAD;
 
 	if (!sqlConnected) {
-		set_task(0.25, "load_account", id + TASK_LOAD);
+		set_task(1.0, "load_account", id + TASK_LOAD);
 
 		return;
 	}
