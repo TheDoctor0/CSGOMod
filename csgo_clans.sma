@@ -19,7 +19,7 @@ enum _:statusInfo { STATUS_NONE, STATUS_MEMBER, STATUS_DEPUTY, STATUS_LEADER };
 new Float:cvarCreateFee, Float:cvarJoinFee, cvarMembersStart, cvarLevelMax, cvarChatPrefix, Float:cvarLevelCost, Float:cvarNextLevelCost, cvarMembersPerLevel;
 
 new playerName[MAX_PLAYERS + 1][64], chosenName[MAX_PLAYERS + 1][64], clan[MAX_PLAYERS + 1], chosenId[MAX_PLAYERS + 1], warFrags[MAX_PLAYERS + 1],
-	warReward[MAX_PLAYERS + 1], Handle:sql, bool:sqlConnected, Array:csgoClans, Array:csgoWars, Handle:connection, info, loaded;
+	warReward[MAX_PLAYERS + 1], Handle:sql, bool:sqlConnected, Array:csgoClans, Array:csgoWars, Handle:connection, bool:end, info, loaded;
 
 public plugin_init()
 {
@@ -49,6 +49,7 @@ public plugin_init()
 	RegisterHam(Ham_Spawn, "player", "player_spawn", 1);
 
 	register_message(get_user_msgid("SayText"), "say_text");
+	register_message(SVC_INTERMISSION, "message_intermission");
 
 	register_forward(FM_AddToFullPack, "add_to_full_pack", 1);
 }
@@ -119,7 +120,7 @@ public client_death(killer, victim, weaponId, hitPlace, teamKill)
 
 public show_clan_menu(id)
 {
-	if (!is_user_connected(id) || !csgo_check_account(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	new csgoClan[clanInfo], menuData[128], menu, callback = menu_makecallback("show_clan_menu_callback");
 
@@ -170,7 +171,7 @@ public show_clan_menu_callback(id, menu, item)
 
 public show_clan_menu_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -219,7 +220,7 @@ public show_clan_menu_handle(id, menu, item)
 
 public create_clan_handle(id)
 {
-	if (!is_user_connected(id) || !csgo_check_account(id) || clan[id]) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !csgo_check_account(id) || clan[id] || end) return PLUGIN_HANDLED;
 
 	if (csgo_get_money(id) < cvarCreateFee) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Nie masz wystarczajaco duzo Euro, aby zalozyc klan (Wymagane^x03 %i Euro^x01)!", floatround(cvarCreateFee));
@@ -268,7 +269,7 @@ public create_clan_handle(id)
 
 public leave_confim_menu(id)
 {
-	if (!is_user_connected(id) || !clan[id]) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
 
 	new menu = menu_create("\wJestes \ypewien\w, ze chcesz \ropuscic \wklan?", "leave_confim_menu_handle");
 
@@ -284,7 +285,7 @@ public leave_confim_menu(id)
 
 public leave_confim_menu_handle(id, menu, item)
 {
-	if (!is_user_connected(id) || !clan[id]) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -316,7 +317,7 @@ public leave_confim_menu_handle(id, menu, item)
 
 public members_online_menu(id)
 {
-	if (!is_user_connected(id) || !clan[id]) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
 
 	new clanName[32], playersAvailable = 0;
 
@@ -334,6 +335,7 @@ public members_online_menu(id)
 			case STATUS_DEPUTY: add(clanName, charsmax(clanName), " \y[Zastepca]");
 			case STATUS_LEADER: add(clanName, charsmax(clanName), " \y[Przywodca]");
 		}
+
 		menu_additem(menu, clanName);
 	}
 
@@ -349,7 +351,7 @@ public members_online_menu(id)
 
 public members_online_menu_handle(id, menu, item)
 {
-	if (!is_user_connected(id) || !clan[id]) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
 
 	menu_destroy(menu);
 
@@ -361,7 +363,7 @@ public members_online_menu_handle(id, menu, item)
 
 public bank_menu(id)
 {
-	if (!is_user_connected(id) || !csgo_check_account(id) || !clan[id]) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !csgo_check_account(id) || !clan[id] || end) return PLUGIN_HANDLED;
 
 	new menuData[128], menu, callback = menu_makecallback("bank_menu_callback");
 
@@ -382,14 +384,14 @@ public bank_menu(id)
 
 public bank_menu_callback(id, menu, item)
 {
-	if(item == 2) return get_user_status(id) > STATUS_MEMBER ? ITEM_ENABLED : ITEM_DISABLED;
+	if (item == 2) return get_user_status(id) > STATUS_MEMBER ? ITEM_ENABLED : ITEM_DISABLED;
 
 	return ITEM_ENABLED;
 }
 
 public bank_menu_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -397,7 +399,7 @@ public bank_menu_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	switch(item) {
+	switch (item) {
 		case 0: payments_list(id);
 		case 1: {
 			client_cmd(id, "messagemode PODAJ_ILOSC_WPLACANEGO_EURO");
@@ -405,8 +407,7 @@ public bank_menu_handle(id, menu, item)
 			client_print(id, print_center, "Wpisz ilosc Euro, ktora chcesz wplacic");
 
 			client_print_color(id, id, "^x04[CS:GO]^x01 Wpisz ilosc Euro, ktora chcesz^x03 wplacic^x01.");
-		}
-		case 2: {
+		} case 2: {
 			client_cmd(id, "messagemode PODAJ_ILOSC_WYPLACANEGO_EURO");
 
 			client_print(id, print_center, "Wpisz ilosc Euro, ktora chcesz wyplacic");
@@ -420,7 +421,7 @@ public bank_menu_handle(id, menu, item)
 
 public leader_menu(id)
 {
-	if (!is_user_connected(id) || !clan[id]) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
 
 	new csgoClan[clanInfo], menuData[128];
 
@@ -461,7 +462,7 @@ public leader_menu_callback(id, menu, item)
 
 public leader_menu_handle(id, menu, item)
 {
-	if (!is_user_connected(id) || !clan[id]) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -515,8 +516,7 @@ public leader_menu_handle(id, menu, item)
 			save_clan(clan[id]);
 
 			leader_menu(id);
-		}
-		case 1: disband_menu(id);
+		} case 1: disband_menu(id);
 		case 2: invite_menu(id);
 		case 3: members_menu(id);
 		case 4: applications_menu(id);
@@ -529,7 +529,7 @@ public leader_menu_handle(id, menu, item)
 
 public disband_menu(id)
 {
-	if (!is_user_connected(id) || !clan[id]) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
 
 	new menu = menu_create("\wJestes \ypewien\w, ze chcesz \rrozwiazac\w klan?", "disband_menu_handle");
 
@@ -545,7 +545,7 @@ public disband_menu(id)
 
 public disband_menu_handle(id, menu, item)
 {
-	if (!is_user_connected(id) || !clan[id]) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -571,7 +571,7 @@ public disband_menu_handle(id, menu, item)
 
 public invite_menu(id)
 {
-	if (!is_user_connected(id) || !clan[id]) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
 
 	new userName[32], userId[6], playersAvailable = 0;
 
@@ -597,7 +597,7 @@ public invite_menu(id)
 
 public invite_menu_handle(id, menu, item)
 {
-	if (!is_user_connected(id)  || !clan[id]) return PLUGIN_HANDLED;
+	if (!is_user_connected(id)  || !clan[id] || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -636,7 +636,7 @@ public invite_menu_handle(id, menu, item)
 
 public invite_confirm_menu(id, player)
 {
-	if (!is_user_connected(id) || !clan[id]) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
 
 	new menuData[128], clanName[32], userName[32], userId[6];
 
@@ -660,7 +660,7 @@ public invite_confirm_menu(id, player)
 
 public invite_confirm_menu_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT || item) {
 		menu_destroy(menu);
@@ -713,7 +713,7 @@ public invite_confirm_menu_handle(id, menu, item)
 
 public change_name_handle(id)
 {
-	if (!is_user_connected(id) || !csgo_check_account(id) || get_user_status(id) != STATUS_LEADER) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !csgo_check_account(id) || get_user_status(id) != STATUS_LEADER || end) return PLUGIN_HANDLED;
 
 	new clanName[32];
 
@@ -754,7 +754,7 @@ public change_name_handle(id)
 
 public members_menu(id)
 {
-	if (!is_user_connected(id) || !clan[id]) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
 
 	new queryData[128], tempId[1];
 
@@ -810,7 +810,7 @@ public members_menu_handle(failState, Handle:query, error[], errorNum, tempId[],
 
 public member_menu_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -868,7 +868,7 @@ public member_menu_handle(id, menu, item)
 
 public member_options_menu_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -953,7 +953,7 @@ public update_member(id, status)
 
 public applications_menu(id)
 {
-	if (!is_user_connected(id) || !clan[id]) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
 
 	new queryData[256], tempId[1];
 
@@ -1012,7 +1012,7 @@ public applications_menu_handle(failState, Handle:query, error[], errorNum, temp
 
 public applications_confirm_menu(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -1045,7 +1045,7 @@ public applications_confirm_menu(id, menu, item)
 
 public applications_confirm_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -1148,7 +1148,7 @@ public applications_confirm_handle(id, menu, item)
 
 public wars_menu(id)
 {
-	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	new menu = menu_create("\yWojny \rKlanow\w", "wars_menu_handle"), callback = menu_makecallback("wars_menu_callback");
 
@@ -1177,7 +1177,7 @@ public wars_menu_callback(id, menu, item)
 
 public wars_menu_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -1197,7 +1197,7 @@ public wars_menu_handle(id, menu, item)
 
 public war_list_menu(id)
 {
-	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	new queryData[256], tempId[1];
 
@@ -1269,7 +1269,7 @@ public show_war_list_menu(failState, Handle:query, error[], errorNum, tempId[], 
 
 public show_war_list_menu_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	menu_destroy(menu);
 
@@ -1280,7 +1280,7 @@ public show_war_list_menu_handle(id, menu, item)
 
 public declare_war_menu(id)
 {
-	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	new itemData[64], menu = menu_create("\yUstaw parametry \rwojny\w:", "declare_war_menu_handle");
 
@@ -1303,7 +1303,7 @@ public declare_war_menu(id)
 
 public declare_war_menu_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	menu_destroy(menu);
 
@@ -1373,7 +1373,7 @@ public declare_war_select(failState, Handle:query, error[], errorNum, tempId[], 
 
 public declare_war_confirm(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -1403,7 +1403,7 @@ public declare_war_confirm(id, menu, item)
 
 public declare_war_confirm_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -1436,7 +1436,7 @@ public declare_war_confirm_handle(id, menu, item)
 
 public accept_war_menu(id)
 {
-	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	new queryData[256], tempId[1];
 
@@ -1499,7 +1499,7 @@ public accept_war_menu_handle(failState, Handle:query, error[], errorNum, tempId
 
 public accept_war_confirm(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -1529,7 +1529,7 @@ public accept_war_confirm(id, menu, item)
 
 public accept_war_confirm_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -1580,7 +1580,7 @@ public accept_war_confirm_handle(id, menu, item)
 
 public remove_war_menu(id)
 {
-	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	new queryData[256], tempId[1];
 
@@ -1642,7 +1642,7 @@ public remove_war_menu_handle(failState, Handle:query, error[], errorNum, tempId
 
 public remove_war_confirm(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -1672,7 +1672,7 @@ public remove_war_confirm(id, menu, item)
 
 public remove_war_confirm_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -1704,7 +1704,7 @@ public remove_war_confirm_handle(id, menu, item)
 
 public deposit_money_handle(id)
 {
-	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	new moneyData[32], Float:moneyAmount;
 
@@ -1739,7 +1739,7 @@ public deposit_money_handle(id)
 
 public withdraw_money_handle(id)
 {
-	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id) || get_user_status(id) <= STATUS_MEMBER) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id) || get_user_status(id) <= STATUS_MEMBER || end) return PLUGIN_HANDLED;
 
 	new moneyData[32], Float:moneyAmount;
 
@@ -1774,7 +1774,7 @@ public withdraw_money_handle(id)
 
 public set_war_frags_handle(id)
 {
-	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id) || get_user_status(id) <= STATUS_MEMBER) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id) || get_user_status(id) <= STATUS_MEMBER || end) return PLUGIN_HANDLED;
 
 	new fragsData[16], frags;
 
@@ -1798,7 +1798,7 @@ public set_war_frags_handle(id)
 
 public set_war_reward_handle(id)
 {
-	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id) || get_user_status(id) <= STATUS_MEMBER) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id) || get_user_status(id) <= STATUS_MEMBER || end) return PLUGIN_HANDLED;
 
 	new rewardData[16], reward;
 
@@ -1822,7 +1822,7 @@ public set_war_reward_handle(id)
 
 public payments_list(id)
 {
-	if (!is_user_connected(id) || !clan[id]) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
 
 	new queryData[192], tempId[1];
 
@@ -1877,7 +1877,7 @@ public show_payments_list(failState, Handle:query, error[], errorNum, tempId[], 
 
 public clans_top15(id)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	new queryData[192], tempId[1];
 
@@ -1973,6 +1973,9 @@ public say_text(msgId, msgDest, msgEnt)
 	return PLUGIN_CONTINUE;
 }
 
+public message_intermission()
+	end = true;
+
 public add_to_full_pack(esHandle, e, ent, host, hostFlags, player, pSet)
 {
 	if (!is_user_alive(host) || !is_user_alive(ent) || !clan[host] || !clan[ent] || !check_war_enemy(host, ent)) return;
@@ -1985,7 +1988,7 @@ public add_to_full_pack(esHandle, e, ent, host, hostFlags, player, pSet)
 
 public application_menu(id)
 {
-	if (!is_user_connected(id) || clan[id]) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || clan[id] || end) return PLUGIN_HANDLED;
 
 	new queryData[512], tempId[1];
 
@@ -2045,7 +2048,7 @@ public application_menu_handle(failState, Handle:query, error[], errorNum, tempI
 
 public application_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -2093,7 +2096,7 @@ public application_handle(id, menu, item)
 
 public application_confirm_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT || item) {
 		menu_destroy(menu);
@@ -2128,7 +2131,7 @@ public application_confirm_handle(id, menu, item)
 
 stock set_user_clan(id, playerClan = 0, owner = 0)
 {
-	if (!is_user_connected(id)) return;
+	if (!is_user_connected(id) || end) return;
 
 	if (playerClan == 0) {
 		set_clan_info(clan[id], CLAN_MEMBERS, -1);
@@ -2151,7 +2154,7 @@ stock set_user_clan(id, playerClan = 0, owner = 0)
 
 stock set_user_status(id, status)
 {
-	if (!is_user_connected(id) || !clan[id]) return;
+	if (!is_user_connected(id) || !clan[id] || end) return;
 
 	TrieSetCell(Trie:get_clan_info(clan[id], CLAN_STATUS), playerName[id], status);
 
@@ -2160,7 +2163,7 @@ stock set_user_status(id, status)
 
 stock get_user_status(id)
 {
-	if (!is_user_connected(id) || !clan[id]) return STATUS_NONE;
+	if (!is_user_connected(id) || !clan[id] || end) return STATUS_NONE;
 
 	new status;
 
