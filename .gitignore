@@ -45,12 +45,11 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
-
-*.sublime-workspace
 include
 compiled
 compile.dat
 amxxpc.exe
 amxxpc32.dll
 compile.exe
-csgo.sublime-workspace
+*.sublime-workspace
+*.sublime-project
