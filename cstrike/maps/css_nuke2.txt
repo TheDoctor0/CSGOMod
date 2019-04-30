@@ -1,0 +1,26 @@
+CSS_NUKE2 (Bomb/Defuse)
+
+Map created by Tatu Eugen - www.tatueugen.info
+
+This map is a remake from de_nuke (First version) of CS:GO.
+
+Any ideas and bugs please report at mail adress:
+contact@tatueugen.info
+
+Counter-Terrorists: Prevent Terrorists
+from bombing the nuclear missile. The 
+mission can be targeted from above and
+below. Team members must defuse any 
+bombs that threaten targeted areas.
+
+Terrorists: The Terrorist carrying the
+C4 must destroy the nuclear missile.
+
+Other Notes: There are 2 bomb targets
+in the mission. 
+
+Textures:
+Valve
+
+Original Nuke Author:
+Jo Bieg

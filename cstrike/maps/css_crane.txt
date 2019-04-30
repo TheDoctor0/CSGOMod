@@ -1,0 +1,23 @@
+CSS_CRANE (Bomb/Defuse)
+
+Map created by Tatu Eugen - www.tatueugen.info
+
+Map is an remake for CS 1.6 after de_crane from CS: Source
+this map have some other improved parts not like orignal version.
+
+Any ideas and bugs please report at mail adress:
+contact@tatueugen.info
+
+Counter-Terrorists: Prevent Terrorists
+from bombing explosive crates or the nuclear rocket.
+Team members must defuse any bombs 
+that threaten targeted areas.
+
+Terrorists: The Terrorist carrying the
+C4 must destroy one of the explosive areas.
+
+Other Notes: There are 2 bomb targets
+in the mission.
+
+Textures by Valve
+Original map by Luke Reznick

@@ -1,0 +1,15 @@
+css_kabul2 (Bomb/Defuse)
+
+by Tatu Eugen (www.tatueugen.info)
+
+A map from CS:Source, remade for CS 1.6
+Original version made by 7thgraal (gralak@o2.pl)
+Counter-Strike 1.5 orginal de_kabul map by Oli 
+CS:Source conversion of de_kabul by Mindshifter
+
+A good map for public servers, can be played very good.
+Fun and balanced map. New towers from CS:S was added,
+some things keep from original map.
+
+Have fun!
+Write to me: contact@tatueugen.info

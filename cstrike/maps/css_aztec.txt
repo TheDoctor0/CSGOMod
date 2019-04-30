@@ -1,0 +1,25 @@
+CSS_AZTEC (Bomb/Defuse)
+
+Map created by Tatu Eugen - www.tatueugen.info
+
+This map is a remake from de_aztec of CS:S & CS:GO games,
+map is recreated with all buildings, and some stuff from css/go,
+and keep some things from original de_aztec of CS: 1.6
+
+Any ideas and bugs please report at mail adress:
+contact@tatueugen.info 
+
+Counter-Terrorists: Prevent the Terrorists
+bombing the archeological site.
+
+Terrorists: Destroy the valuable Aztec ruins.
+
+Other Notes: There are 2 bomb sites in this 
+mission.
+
+Textures:
+Valve (CS:S Game)
+Tatu Eugen
+
+Original Aztec Author:
+by Chris Auty (Barney)

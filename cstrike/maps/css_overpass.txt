@@ -1,0 +1,29 @@
+CSS_OVERPASS (Bomb/Defuse)
+
+Map created by Tatu Eugen - www.tatueugen.info
+
+This map is a remake from de_overpass from CS:GO
+Any ideas and bugs please report at mail adress:
+contact@tatueugen.info
+
+Mission
+--------
+Counter-Terrorists: Prevent Terrorists
+from bombing bomb sites.
+Team members must defuse any bombs 
+that threaten targeted area.
+
+Terrorists: The Terrorist carrying the
+C4 must destroy one of the bomb sites. 
+
+Other Notes: There are 2 chemical 
+weapon stashes in the mission.
+
+Credits
+--------
+Textures:
+Valve
+Tatu Eugen
+
+Original Overpass Author:
+Valve

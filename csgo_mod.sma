@@ -55,7 +55,8 @@ enum _:marketInfo { MARKET_ID, MARKET_SKIN, MARKET_OWNER, Float:MARKET_PRICE };
 
 new playerData[MAX_PLAYERS + 1][playerInfo], Array:playerSkins[MAX_PLAYERS + 1], Float:randomSkinPrice[WEAPON_ALL + 1], overallSkinChance[WEAPON_ALL + 1], Array:skins, Array:weapons, Array:market,
 	Handle:sql, Handle:connection, marketSkins, multipleSkins, defaultSkins, skinChance, skinChanceSVIP, Float:skinChancePerMember, maxMarketSkins, Float:marketCommision,
-	Float:killReward, Float:killHSReward, Float:bombReward, Float:defuseReward, Float:hostageReward, Float:winReward, minPlayers, bool:end, bool:sqlConnected;
+	Float:killReward, Float:killHSReward, Float:bombReward, Float:defuseReward, Float:hostageReward, Float:winReward, minPlayers, bool:end, bool:sqlConnected,
+	sqlHost[64], sqlUser[64], sqlPassword[64], sqlDatabase[64];
 
 public plugin_init()
 {
@@ -63,10 +64,10 @@ public plugin_init()
 
 	register_cvar("csgo_version", VERSION, FCVAR_SERVER);
 
-	register_cvar("csgo_sql_host", "localhost", FCVAR_SPONLY|FCVAR_PROTECTED);
-	register_cvar("csgo_sql_user", "user", FCVAR_SPONLY|FCVAR_PROTECTED);
-	register_cvar("csgo_sql_pass", "password", FCVAR_SPONLY|FCVAR_PROTECTED);
-	register_cvar("csgo_sql_db", "database", FCVAR_SPONLY|FCVAR_PROTECTED);
+	bind_pcvar_string(create_cvar("csgo_sql_host", "localhost", FCVAR_SPONLY | FCVAR_PROTECTED), sqlHost, charsmax(sqlHost));
+	bind_pcvar_string(create_cvar("csgo_sql_user", "user", FCVAR_SPONLY | FCVAR_PROTECTED), sqlUser, charsmax(sqlUser));
+	bind_pcvar_string(create_cvar("csgo_sql_pass", "password", FCVAR_SPONLY | FCVAR_PROTECTED), sqlPassword, charsmax(sqlPassword));
+	bind_pcvar_string(create_cvar("csgo_sql_db", "database", FCVAR_SPONLY | FCVAR_PROTECTED), sqlDatabase, charsmax(sqlDatabase));
 
 	bind_pcvar_num(create_cvar("csgo_multiple_skins", "1"), multipleSkins);
 	bind_pcvar_num(create_cvar("csgo_default_skins", "1"), defaultSkins);

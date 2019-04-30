@@ -30,7 +30,7 @@ public plugin_init()
 	bind_pcvar_num(create_cvar("csgo_accounts_login_max_time", "60"), loginMaxTime);
 	bind_pcvar_num(create_cvar("csgo_accounts_password_max_fails", "3"), passwordMaxFails);
 	bind_pcvar_num(create_cvar("csgo_accounts_password_min_length", "5"), passwordMinLength);
-	bind_pcvar_string(create_cvar("csgo_accounts_setinfo", "csrpass"), setinfo, charsmax(setinfo));
+	bind_pcvar_string(create_cvar("csgo_accounts_setinfo", "csgopass"), setinfo, charsmax(setinfo));
 
 	register_clcmd("WPROWADZ_SWOJE_HASLO", "login_account");
 	register_clcmd("WPROWADZ_WYBRANE_HASLO", "register_step_one");

@@ -49,10 +49,8 @@ Temporary Items
 *.sublime-workspace
 include
 compiled
-files
 compile.dat
 amxxpc.exe
 amxxpc32.dll
 compile.exe
 csgo.sublime-workspace
-sale

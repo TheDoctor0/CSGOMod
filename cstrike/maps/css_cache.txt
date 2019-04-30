@@ -1,0 +1,27 @@
+CSS_CACHE (Bomb/Defuse)
+
+Map created by Tatu Eugen - www.tatueugen.info
+
+This map is a remake from de_cache of CS:GO
+map is recreated with all buildings, 
+and with original plan.
+
+Any ideas and bugs please report at mail adress:
+contact@tatueugen.info 
+
+Counter-Terrorists: Prevent the Terrorists
+bombing the massive weapons-cache.
+
+Terrorists: Destroy the massive weapons-cache.
+
+Other Notes: There are 2 bomb sites in this 
+mission.
+
+Textures:
+Valve (CS:S Game)
+Tatu Eugen
+
+Original Cache Author(s):
+Salvatore Garozzo (Volcano)
+Lenz Monath (penE)
+Shawn Snelling (FMPONE)

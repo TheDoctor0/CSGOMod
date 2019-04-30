@@ -1,0 +1,46 @@
+CSS_DUST2NIGHT_GO (Bomb/Defuse)
+by Tatu Eugen - www.tatueugen.info
+*** Special version night time ***
+
+Map remake from CSGO to CS 1.6
+Bug reports: contact@tatueugen.info
+
+History
+--------
+Dust II (de_dust2) is a Bomb Defusal map 
+featured in the Counter-Strike series. 
+It is the successor to the original Dust.
+
+Dust 2 takes place in a Middle Eastern zone.
+
+The Counter-Terrorists have two objectives: 
+to prevent the Terrorists from planting the C-4 
+at either of the two chemical weapon stashes 
+(Bombsites A or B), or to defuse the bomb 
+after the Terrorists plant. The map appears to 
+be based in the Middle East, similar to its 
+predecessor Dust. Dust2 is arguably the most 
+popular and played Counter-Strike map and 
+perhaps the iconic map of the franchise.
+
+Mission
+--------
+Counter-Terrorists: Prevent Terrorists
+from bombing chemical weapon crates.
+Team members must defuse any bombs 
+that threaten targeted areas.
+
+Terrorists: The Terrorist carrying the
+C4 must destroy one of the chemical 
+weapon stashes. 
+
+Other Notes: There are 2 chemical 
+weapon stashes in the mission.
+
+Credits
+--------
+David Johnston: Original Map Author
+Valve: CSGO Version, Textures
+
+--> www.tatueugen.info <--
+E  X  C  L  U  S  I  V  E
