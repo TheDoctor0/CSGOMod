@@ -5,7 +5,7 @@
 #include <csgomod>
 
 #define PLUGIN "CS:GO Clans"
-#define VERSION "1.4"
+#define VERSION "1.0"
 #define AUTHOR "O'Zone"
 
 #define TASK_INFO 9843

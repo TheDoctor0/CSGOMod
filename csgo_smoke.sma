@@ -16,7 +16,7 @@
 #include <hamsandwich>
 
 #define PLUGIN_NAME	"CS:GO Smoke"
-#define PLUGIN_VERSION	"1.5"
+#define PLUGIN_VERSION	"1.0"
 #define PLUGIN_AUTHOR	"Numb & O'Zone"
 
 #define SGF1 ADMIN_CVAR
@@ -32,16 +32,16 @@ new g_iSpriteWhite;
 public plugin_init()
 {
 	register_plugin(PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR);
-	
+
 	register_forward(FM_SetModel, "FM_SetModel_Pre", 0);
-	
+
 	RegisterHam(Ham_Think, "grenade", "Ham_Think_grenade_Pre", 0);
 }
 
 public plugin_precache()
 {
 	new integer28Cells[28];
-	
+
 	integer28Cells[0]  = (SGF7|SGF6|SGF3|SGF2|SGF1);
 	integer28Cells[1]  = (SGF3|SGF2|SGF1);
 	integer28Cells[2]  = (SGF6|SGF3|SGF2|SGF1);
@@ -68,7 +68,7 @@ public plugin_precache()
 	integer28Cells[23] = (SGF7|SGF6|SGF3|SGF2|SGF1);
 	integer28Cells[24] = (SGF3|SGF2|SGF1);
 	integer28Cells[25] = (SGF6|SGF3|SGF2|SGF1);
-	
+
 	if(contain(integer28Cells, "sprites/smoke_csgo.spr"))
 	{
 		g_iSpriteWhite = precache_model(integer28Cells);
@@ -87,7 +87,7 @@ public FM_SetModel_Pre(iEnt, iModel[])
 	{
 		static s_iClassName[9];
 		pev(iEnt, pev_classname, s_iClassName, 8);
-		
+
 		if(equal(s_iClassName, "grenade") && equal(iModel, "models/w_smokegrenade.mdl")) set_pev(iEnt, pev_iuser3, 678);
 	}
 }
@@ -100,7 +100,7 @@ public Ham_Think_grenade_Pre(iEnt)
 
 		pev(iEnt, pev_dmgtime, s_fDmgTime);
 		global_get(glb_time, s_fGameTime);
-		
+
 		if(s_fGameTime>=s_fDmgTime)
 		{
 			set_pev(iEnt, pev_dmgtime, (s_fGameTime+SMOKE_LIFE_TIME));
@@ -112,21 +112,21 @@ public Ham_Think_grenade_Pre(iEnt)
 			else set_pev(iEnt, pev_flags, (pev(iEnt, pev_flags)|FL_KILLME));
 		}
 		else if(!pev(iEnt, pev_iuser4)) return HAM_IGNORED;
-		
+
 		static Float:s_fOrigin[3], Float:s_fEndOrigin[3];
 
 		pev(iEnt, pev_origin, s_fOrigin);
 		s_fEndOrigin = s_fOrigin;
 		s_fEndOrigin[2] += random_float(8.0, 32.0);
-		
+
 		static Float:s_fFraction;
 
 		engfunc(EngFunc_TraceLine, s_fOrigin, s_fEndOrigin, IGNORE_MONSTERS, iEnt, 0);
 		get_tr2(0, TR_flFraction, s_fFraction);
-		
+
 		if(s_fFraction!=1.0) get_tr2(0, TR_pHit, s_fOrigin);
 		else s_fOrigin = s_fEndOrigin;
-		
+
 		static s_iLoopId, Float:s_fDistance;
 
 		for(s_iLoopId = 0; s_iLoopId < SMOKE_PUFFS_PER_THINK; s_iLoopId++)
@@ -136,7 +136,7 @@ public Ham_Think_grenade_Pre(iEnt)
 			s_fEndOrigin[2] = -20.0;
 
 			while(s_fEndOrigin[1] > 180.0) s_fEndOrigin[1] -= 360.0;
-			
+
 			engfunc(EngFunc_MakeVectors, s_fEndOrigin);
 			global_get(glb_v_forward, s_fEndOrigin);
 
@@ -146,14 +146,14 @@ public Ham_Think_grenade_Pre(iEnt)
 			s_fEndOrigin[0] += s_fOrigin[0];
 			s_fEndOrigin[1] += s_fOrigin[1];
 			s_fEndOrigin[2] += s_fOrigin[2];
-			
+
 			engfunc(EngFunc_TraceLine, s_fOrigin, s_fEndOrigin, IGNORE_MONSTERS, iEnt, 0);
 			get_tr2(0, TR_vecEndPos, s_fEndOrigin);
-			
+
 			if((s_fDistance=get_distance_f(s_fOrigin, s_fEndOrigin)) > (s_fFraction = (random(3) ? random_float((SMOKE_MAX_RADIUS * 0.5), SMOKE_MAX_RADIUS) : random_float(16.0, SMOKE_MAX_RADIUS))))
 			{
 				s_fFraction /= s_fDistance;
-				
+
 				if(s_fEndOrigin[0]!=s_fOrigin[0])
 				{
 					s_fDistance = (s_fEndOrigin[0]-s_fOrigin[0])*s_fFraction;
@@ -170,7 +170,7 @@ public Ham_Think_grenade_Pre(iEnt)
 					s_fEndOrigin[2] = (s_fOrigin[2]+s_fDistance);
 				}
 			}
-			
+
 			message_begin(MSG_BROADCAST, SVC_TEMPENTITY);
 
 			write_byte(TE_SPRITE);
@@ -183,6 +183,6 @@ public Ham_Think_grenade_Pre(iEnt)
 			message_end();
 		}
 	}
-	
+
 	return HAM_IGNORED;
 }
