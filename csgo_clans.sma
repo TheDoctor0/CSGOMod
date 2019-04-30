@@ -1365,7 +1365,7 @@ public declare_war_select(failState, Handle:query, error[], errorNum, tempId[], 
 	if (!clansCount) {
 		menu_destroy(menu);
 
-		client_print_color(id, id, "^x04[CS:GO]^x01 Twoj klan aktualnie nie prowadzi zadnych wojen!");
+		client_print_color(id, id, "^x04[CS:GO]^x01 Nie ma klanu, ktoremu mozna by wypowiedziec wojne!");
 	} else menu_display(id, menu);
 
 	return PLUGIN_HANDLED;
@@ -1808,7 +1808,7 @@ public set_war_reward_handle(id)
 	reward = str_to_num(rewardData);
 
 	if (reward <= 0) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Liczba fragow w wojnie nie moze byc mniejsza od^x03 1 Euro^x01!");
+		client_print_color(id, id, "^x04[CS:GO]^x01 Nagroda za wygrana nie moze byc mniejsza od^x03 1 Euro^x01!");
 
 		return PLUGIN_HANDLED;
 	}
@@ -1907,7 +1907,7 @@ public show_clans_top15(failState, Handle:query, error[], errorNum, tempId[], da
 	rank = 0;
 
 	motdLength = format(motdData, charsmax(motdData), "<body bgcolor=#000000><font color=#FFB000><pre>");
-	motdLength += format(motdData[motdLength], charsmax(motdData) - motdLength, "%1s %-22.22s %4s %8s %6s %8s^n", "#", "Nazwa", "Czlonkowie", "Poziom", "Zabicia", "Wygrane Wojny", "Pieniadze");
+	motdLength += format(motdData[motdLength], charsmax(motdData) - motdLength, "%1s %-22.22s %4s %8s %6s %8s %s^n", "#", "Nazwa", "Czlonkowie", "Poziom", "Zabicia", "Wygrane Wojny", "Pieniadze");
 
 	while (SQL_MoreResults(query)) {
 		rank++;
@@ -2489,7 +2489,7 @@ public remove_clan_wars(failState, Handle:query, error[], errorNum, tempId[], da
 		clanId[0] = SQL_ReadResult(query, SQL_FieldNameToNum(query, "clan"));
 		clanId[1] = SQL_ReadResult(query, SQL_FieldNameToNum(query, "clan2"));
 
-		reward = float(SQL_ReadResult(query, SQL_FieldNameToNum(query, "reward")));
+		SQL_ReadResult(query, SQL_FieldNameToNum(query, "reward"), reward);
 
 		enemyClan = id == clanId[0] ? clanId[1] : clanId[0];
 
