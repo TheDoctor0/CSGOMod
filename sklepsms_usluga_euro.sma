@@ -1,5 +1,5 @@
 #include <amxmodx>
-#include <shop_sms>
+#include <sklep_sms>
 
 #define PLUGIN "Sklep-SMS: Usluga CS:GO Euro"
 #define AUTHOR "O'Zone"
@@ -20,9 +20,9 @@ public plugin_natives()
 public ss_service_bought(id, amount)
 	csgo_add_money(id, float(amount));
 
-public native_filter(const native_name[], index, trap) 
+public native_filter(const native_name[], index, trap)
 {
-	if(trap == 0) {
+	if (trap == 0) {
 		register_plugin(PLUGIN, VERSION, AUTHOR);
 
 		pause_plugin();
