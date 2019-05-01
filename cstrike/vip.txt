@@ -1,0 +1,30 @@
+<html>
+<head>
+<style type="text/css">
+body {
+background-color: #161616;
+font-family:Verdana,Tahoma;
+}
+</style>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1257">
+</head>
+<font size="2" color="#008000"><b><center>Co daje VIP? :</center></b></font><br />
+<font size="1" color="#dadada">
+<UL>
+<LI TYPE=square>25% Wiecej zdobywanych EURO</LI><br>
+<LI TYPE=square>Darmowy Deagle</LI><br>
+<LI TYPE=square>Od 2 rundy HE + kamizelka</LI><br>
+<LI TYPE=square>10 hp za zabicie</LI><br>
+<LI TYPE=square>15 hp za zabicie z HS</LI><br>
+<LI TYPE=square>200$ za zabicie</LI><br>
+<LI TYPE=square>350$ za zabicie z HS</LI><br>
+<LI TYPE=square>Do wyboru dwa zestawy broni:</LI><br>
+<LI TYPE=square>* M4A1+Deagle</LI><br>
+<LI TYPE=square>* AK47+Deagle</LI><br>
+<LI TYPE=square>Jako CT dostaje darmowe Defuse Kit</LI><br>
+<LI TYPE=square>Status VIP w tabeli wynikow</LI><br>
+<LI TYPE=square>Chat VIPow: u* (alternatywa dla u@)</LI><br>
+<LI TYPE=square>Obecnosc na liscie VIPow (/vips)</LI><br>
+<font size="2" color="#FF0000"><b>VIPa mozesz zakupic pod komenda: /sklepsms<br>lub na stronie: sklepsms.cs-reload.pl</b>
+</body>
+</html>
