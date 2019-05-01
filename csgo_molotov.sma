@@ -20,10 +20,10 @@ new const molotovWeaponName[] = "weapon_hegrenade";
 
 enum { ViewModel, PlayerModel, WorldModel, WorldModelBroken }
 new const Models[][] = {
-	"models/csr_csgo/nades/v_molotov.mdl",
-	"models/csr_csgo/nades/p_molotov.mdl",
-	"models/csr_csgo/nades/w_molotov.mdl",
-	"models/csr_csgo/nades/w_broken_molotov.mdl"
+	"models/ozone_csgo/nades/v_molotov.mdl",
+	"models/ozone_csgo/nades/p_molotov.mdl",
+	"models/ozone_csgo/nades/w_molotov.mdl",
+	"models/ozone_csgo/nades/w_broken_molotov.mdl"
 }
 
 stock const OLDWORLD_MODEL[] = "models/w_hegrenade.mdl";

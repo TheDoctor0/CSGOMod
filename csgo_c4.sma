@@ -7,7 +7,7 @@
 #define VERSION "1.0"
 #define AUTHOR  "O'Zone"
 
-new const modelsC4[][] = { "models/csr_csgo/c4/p_c4.mdl", "models/csr_csgo/c4/v_c4.mdl", "models/csr_csgo/c4/w_c4.mdl" };
+new const modelsC4[][] = { "models/ozone_csgo/c4/p_c4.mdl", "models/ozone_csgo/c4/v_c4.mdl", "models/ozone_csgo/c4/w_c4.mdl" };
 
 public plugin_init()
 {

@@ -33,13 +33,13 @@ new const commandSell[][] = { "wystaw", "say /wystaw", "say_team /wystaw" };
 new const commandPurchase[][] = { "wykup", "say /wykup", "say_team /wykup" };
 new const commandWithdraw[][] = { "wycofaj", "say /wycofaj", "say_team /wycofaj" };
 
-new const defaultSkin[][] = { "", "models/csr_csgo/default/v_p228.mdl", "", "models/csr_csgo/default/v_scout.mdl", "", "models/csr_csgo/default/v_xm1014.mdl", "",
-	"models/csr_csgo/default/v_mac10.mdl", "models/csr_csgo/default/v_aug2.mdl", "", "models/csr_csgo/default/v_elite.mdl", "models/csr_csgo/default/v_fiveseven2.mdl",
-	"models/csr_csgo/default/v_ump45.mdl", "models/csr_csgo/default/v_sg5502.mdl", "models/csr_csgo/default/v_galil.mdl", "models/csr_csgo/default/v_famas2.mdl",
-	"models/csr_csgo/default/v_usp2.mdl","models/csr_csgo/default/v_glock18.mdl", "models/csr_csgo/default/v_awp.mdl", "models/csr_csgo/default/v_mp5navy.mdl",
-	"models/csr_csgo/default/v_m249.mdl", "models/csr_csgo/default/v_m3.mdl", "models/csr_csgo/default/v_m4a12.mdl", "models/csr_csgo/default/v_tmp2.mdl",
-	"models/csr_csgo/default/v_g3sg1.mdl", "", "models/csr_csgo/default/v_deagle.mdl", "models/csr_csgo/default/v_sg552.mdl",
-	"models/csr_csgo/default/v_ak47.mdl", "models/csr_csgo/default/v_knife.mdl", "models/csr_csgo/default/v_p90.mdl", "models/csr_csgo/default/v_knife_t.mdl"
+new const defaultSkin[][] = { "", "models/ozone_csgo/default/v_p228.mdl", "", "models/ozone_csgo/default/v_scout.mdl", "", "models/ozone_csgo/default/v_xm1014.mdl", "",
+	"models/ozone_csgo/default/v_mac10.mdl", "models/ozone_csgo/default/v_aug2.mdl", "", "models/ozone_csgo/default/v_elite.mdl", "models/ozone_csgo/default/v_fiveseven2.mdl",
+	"models/ozone_csgo/default/v_ump45.mdl", "models/ozone_csgo/default/v_sg5502.mdl", "models/ozone_csgo/default/v_galil.mdl", "models/ozone_csgo/default/v_famas2.mdl",
+	"models/ozone_csgo/default/v_usp2.mdl","models/ozone_csgo/default/v_glock18.mdl", "models/ozone_csgo/default/v_awp.mdl", "models/ozone_csgo/default/v_mp5navy.mdl",
+	"models/ozone_csgo/default/v_m249.mdl", "models/ozone_csgo/default/v_m3.mdl", "models/ozone_csgo/default/v_m4a12.mdl", "models/ozone_csgo/default/v_tmp2.mdl",
+	"models/ozone_csgo/default/v_g3sg1.mdl", "", "models/ozone_csgo/default/v_deagle.mdl", "models/ozone_csgo/default/v_sg552.mdl",
+	"models/ozone_csgo/default/v_ak47.mdl", "models/ozone_csgo/default/v_knife.mdl", "models/ozone_csgo/default/v_p90.mdl", "models/ozone_csgo/default/v_knife_t.mdl"
 };
 
 new const weaponSlots[] = { -1, 2, -1, 1, 4, 1, 5, 1, 1, 4, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 4, 2, 1, 1, 3, 1 };

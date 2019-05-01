@@ -17,9 +17,9 @@ new const gBeamSprite[] = "sprites/laserbeam.spr";
 
 enum { ViewModel, PlayerModel, WorldModel }
 new const Models[][] = {
-	"models/csr_csgo/zeus/v_zeus.mdl",
-	"models/csr_csgo/zeus/p_zeus.mdl",
-	"models/csr_csgo/zeus/w_zeus.mdl"
+	"models/ozone_csgo/zeus/v_zeus.mdl",
+	"models/ozone_csgo/zeus/p_zeus.mdl",
+	"models/ozone_csgo/zeus/w_zeus.mdl"
 }
 
 stock const OLDWORLD_MODEL[] = "models/w_p228.mdl";
