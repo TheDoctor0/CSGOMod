@@ -437,6 +437,8 @@ public skins_help(id)
 
 public set_skin_menu(id)
 {
+	if (!csgo_check_account(id)) return PLUGIN_HANDLED;
+
 	if (!playerData[id][SKINS_LOADED]) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Trwa ladowanie twoich skinow...");
 
@@ -450,6 +452,8 @@ public set_skin_menu(id)
 
 public buy_skin_menu(id)
 {
+	if (!csgo_check_account(id)) return PLUGIN_HANDLED;
+
 	if (!playerData[id][SKINS_LOADED]) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Trwa ladowanie twoich skinow...");
 
@@ -463,6 +467,8 @@ public buy_skin_menu(id)
 
 public random_skin_menu(id)
 {
+	if (!csgo_check_account(id)) return PLUGIN_HANDLED;
+
 	if (!playerData[id][SKINS_LOADED]) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Trwa ladowanie twoich skinow...");
 
@@ -782,7 +788,7 @@ public random_weapon_skin_handle(id, menu, item)
 
 public exchange_skin_menu(id)
 {
-	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	if (!playerData[id][SKINS_LOADED]) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Trwa ladowanie twoich skinow...");
@@ -1011,7 +1017,7 @@ public exchange_for_skin_handle(id, menu, item)
 
 public exchange_question_handle(id, key)
 {
-	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	new player = playerData[id][TEMP][EXCHANGE_PLAYER], exchangeSkin = playerData[player][TEMP][EXCHANGE_SKIN], exchangeForSkin = playerData[player][TEMP][EXCHANGE_FOR_SKIN];
 
@@ -1058,7 +1064,7 @@ public exchange_question_handle(id, key)
 
 public give_skin_menu(id)
 {
-	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	if (!playerData[id][SKINS_LOADED]) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Trwa ladowanie twoich skinow...");
