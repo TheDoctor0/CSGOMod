@@ -7,7 +7,7 @@
 
 #define PLUGIN "CS:GO Zeus"
 #define AUTHOR "wopox1337 & O'Zone"
-#define VERSION "1.0"
+#define VERSION "1.1"
 
 #define ZEUS_DISTANCE 230
 

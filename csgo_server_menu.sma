@@ -1,7 +1,7 @@
 #include <amxmodx>
 
 #define PLUGIN "CS:GO Server Menu"
-#define VERSION "1.0"
+#define VERSION "1.1"
 #define AUTHOR "O'Zone"
 
 new Array:aTitles, Array:aCommands;

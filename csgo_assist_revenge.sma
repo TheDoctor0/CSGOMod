@@ -6,7 +6,7 @@
 #include <csgomod>
 
 #define PLUGIN		"CS:GO Assist and Revenge"
-#define VERSION		"1.0"
+#define VERSION		"1.1"
 #define AUTHOR		"O'Zone"
 
 native csgo_add_kill(id);

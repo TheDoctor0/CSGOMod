@@ -5,7 +5,7 @@
 #include <xs>
 
 #define PLUGIN "CS:GO Nades"
-#define VERSION "1.0"
+#define VERSION "1.1"
 #define AUTHOR "O'Zone"
 
 new const grenadeModels[][][] = {

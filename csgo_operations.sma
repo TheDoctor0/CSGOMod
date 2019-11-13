@@ -5,7 +5,7 @@
 #include <csgomod>
 
 #define PLUGIN "CS:GO Operations"
-#define VERSION "1.0"
+#define VERSION "1.1"
 #define AUTHOR "O'Zone"
 
 #define get_bit(%2,%1) (%1 & (1<<(%2&31)))

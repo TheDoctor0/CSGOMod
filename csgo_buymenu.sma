@@ -4,7 +4,7 @@
 #include <csgomod>
 
 #define PLUGIN "CS:GO Buy Menu"
-#define VERSION "1.0"
+#define VERSION "1.1"
 #define AUTHOR "O'Zone"
 
 #define CSW_NIGHTVISION 0
@@ -13,14 +13,14 @@
 #define CSW_MOLOTOV 34
 #define CSW_ZEUS 35
 
-new const weaponCommands[][] = { "nvgs", "p228", "defuser", "scout", "hegren", "xm1014", "", "mac10", "aug", "sgren", 
-	"elites", "fn57", "ump45", "sg550", "galil", "famas", "usp", "glock", "awp", "mp5", "m249", "m3", "m4a1", "tmp", 
+new const weaponCommands[][] = { "nvgs", "p228", "defuser", "scout", "hegren", "xm1014", "", "mac10", "aug", "sgren",
+	"elites", "fn57", "ump45", "sg550", "galil", "famas", "usp", "glock", "awp", "mp5", "m249", "m3", "m4a1", "tmp",
 	"g3sg1", "flash", "deagle", "sg552", "ak47", "", "p90", "vest", "vesthelm", "shield", "molotov", "zeus"
 };
 
 new Float:cvarBuyTime, Float:roundStartTime, mapBuyBlock;
 
-public plugin_init() 
+public plugin_init()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR);
 
@@ -62,16 +62,16 @@ public clcmd_client_buy_open(id)
 {
 	if (csgo_get_menu(id)) return PLUGIN_CONTINUE;
 
-	static msgBuyClose; 
+	static msgBuyClose;
 
 	if (!msgBuyClose) msgBuyClose = get_user_msgid( "BuyClose");
 
-	message_begin(MSG_ONE, msgBuyClose, _, id), 
+	message_begin(MSG_ONE, msgBuyClose, _, id),
 	message_end();
 
 	clcmd_buy(id);
 
-	return PLUGIN_HANDLED; 
+	return PLUGIN_HANDLED;
 }
 
 public clcmd_buy(id)
@@ -131,11 +131,11 @@ public clcmd_buyequip(id)
 {
 	if (csgo_get_menu(id)) return PLUGIN_CONTINUE;
 
-	if (!can_buy(id)) return PLUGIN_HANDLED; 
+	if (!can_buy(id)) return PLUGIN_HANDLED;
 
 	clcmd_equipment(id);
 
-	return PLUGIN_HANDLED; 
+	return PLUGIN_HANDLED;
 }
 
 public clcmd_handgun(id)

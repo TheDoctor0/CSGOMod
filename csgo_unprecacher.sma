@@ -1,21 +1,21 @@
-#include <amxmodx>  
-#include <cstrike>  
-#include <fakemeta>  
+#include <amxmodx>
+#include <cstrike>
+#include <fakemeta>
 
 #define PLUGIN "CS:GO Unprecacher"
-#define VERSION "1.0"
+#define VERSION "1.1"
 #define AUTHOR "O'Zone"
 
-public plugin_precache()  
-{   
+public plugin_precache()
+{
 	register_plugin(PLUGIN, VERSION, AUTHOR);
-	
-	register_forward(FM_PrecacheModel, "PrecacheModel"); 
-	register_forward(FM_PrecacheSound, "PrecacheSound");      
-}  
 
-new const g_Sounds[][] =  
-{ 
+	register_forward(FM_PrecacheModel, "PrecacheModel");
+	register_forward(FM_PrecacheSound, "PrecacheSound");
+}
+
+new const g_Sounds[][] =
+{
 	"ambience\3dmbridge.wav",
 	"ambience\3dmeagle.wav",
 	"ambience\3dmstart.wav",
@@ -330,7 +330,7 @@ new const g_Sounds[][] =
 	"weapons/usp_sliderelease.wav",
 	"weapons/usp_unsil-1.wav",
 	"weapons/xm1014-1.wav",
-	"weapons/scout_clipin.wav", 
+	"weapons/scout_clipin.wav",
 	"weapons/scout_bolt.wav",
 	"weapons/scout_clipout.wav",
 	"weapons/scout_fire-1.wav",
@@ -596,10 +596,10 @@ new const g_Sounds[][] =
 	"weapons/ric_metal-2.wav",
 	"weapons/ric_conc-1.wav",
 	"weapons/ric_conc-2.wav"
-} 
+}
 
-new const g_Models[][] =  
-{ 
+new const g_Models[][] =
+{
 	"bag.mdl",
 	"bigtree.mdl",
 	"bush.mdl",
@@ -611,33 +611,33 @@ new const g_Models[][] =
 	"pshell.mdl",
 	"rshell.mdl",
 	"rshell_big.mdl",
-} 
+}
 
-public PrecacheModel(const szModel[])  
-{  
-	for(new i = 0; i < sizeof(g_Models); i++) 
-	{ 
-		if( containi(szModel, g_Models[i]) != -1 )  
-		{  
-			forward_return(FMV_CELL, 0); 
-			return FMRES_SUPERCEDE ; 
-		}  
-	} 
-	
-	return FMRES_IGNORED;  
-}  
+public PrecacheModel(const szModel[])
+{
+	for(new i = 0; i < sizeof(g_Models); i++)
+	{
+		if( containi(szModel, g_Models[i]) != -1 )
+		{
+			forward_return(FMV_CELL, 0);
+			return FMRES_SUPERCEDE ;
+		}
+	}
 
-public PrecacheSound(const szSound[])  
-{  
-	for(new i = 0; i < sizeof(g_Sounds); i++) 
-	{ 
-		if(containi(szSound, g_Sounds[i]) != -1)  
-		{  
-			forward_return(FMV_CELL, 0); 
-			
-			return FMRES_SUPERCEDE;  
-		}  
-	} 
-	
-	return FMRES_IGNORED; 
-} 
+	return FMRES_IGNORED;
+}
+
+public PrecacheSound(const szSound[])
+{
+	for(new i = 0; i < sizeof(g_Sounds); i++)
+	{
+		if(containi(szSound, g_Sounds[i]) != -1)
+		{
+			forward_return(FMV_CELL, 0);
+
+			return FMRES_SUPERCEDE;
+		}
+	}
+
+	return FMRES_IGNORED;
+}

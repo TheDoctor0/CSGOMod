@@ -14,7 +14,7 @@
 
 #define PLUGIN "CS:GO Molotov"
 #define AUTHOR "DynamicBits & O'Zone"
-#define VERSION "1.0"
+#define VERSION "1.1"
 
 new const molotovWeaponName[] = "weapon_hegrenade";
 

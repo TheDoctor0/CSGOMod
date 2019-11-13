@@ -4,7 +4,7 @@
 #include <csgomod>
 
 #define PLUGIN "CS:GO Accounts"
-#define VERSION "1.0"
+#define VERSION "1.1"
 #define AUTHOR "O'Zone"
 
 #define TASK_PASSWORD   1945

@@ -16,7 +16,7 @@
 #include <hamsandwich>
 
 #define PLUGIN_NAME	"CS:GO Smoke"
-#define PLUGIN_VERSION	"1.0"
+#define PLUGIN_VERSION	"1.1"
 #define PLUGIN_AUTHOR	"Numb & O'Zone"
 
 #define SGF1 ADMIN_CVAR

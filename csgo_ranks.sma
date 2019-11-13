@@ -8,7 +8,7 @@
 #include <csgomod>
 
 #define PLUGIN "CS:GO Rank System"
-#define VERSION "1.0"
+#define VERSION "1.1"
 #define AUTHOR "O'Zone"
 
 #define get_elo(%1,%2) (1.0 / (1.0 + floatpower(10.0, ((%1 - %2) / 400.0))))
