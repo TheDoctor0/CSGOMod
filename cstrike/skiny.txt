@@ -1,0 +1,49 @@
+﻿
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta charset="UTF-8">
+</head>
+<body style="color: #fff" bgcolor="black">
+<font size="4" color="orange"><b>Po wejściu na serwer należy się zalogować.<br>
+Aby to zrobic wpisz <font color="#f00">/konto</font>.</b></font><br>
+<br>
+Po zalogowaniu w prawym górnym rogu pojawią się wszystkie niezbędne informacje.<br>
+<br>
+<b><font color ="#ff0000">Za każde zabójstwo i wykonanie celu mapy dostaniesz Euro, za które możesz zdobyć skiny!</font></b><br>
+<br>
+Będąc zalogowany możesz korzystać z komendy <font color="#f00">/jackpot</font>.<br>
+<br>
+<font size="4" color="orange"><b>1. Ustaw Skin (/ustaw)</b></font><br>
+W tej zakładce możemy wybierać swoje skiny i zakładać je na wybrane bronie.<br>
+<br>
+<font size="4" color="orange"><b>2. Kup Skin (/kup)</b></font><br>
+Jest to sklep, w którym możesz kupić skiny po wyższej cenie.<br>
+<br>
+<font size="4" color="orange"><b>3. Wylosuj Skin</b></font><br>
+Jest to miejsce losowania skinów. Pamiętaj, że nie każde losowanie da ci skina :)<br>
+<br>
+<font size="4" color="orange"><b>4. Rynek Skinów</b></font><br>
+W tej zakładce możesz wystawić na sprzedaż swoje skiny lub kupić jakieś od innych graczy. <br>
+<br>
+<font size="4" color="orange"><b>5. Operacje</b></font><br>
+Tu możesz wykonywać różne operacje - zadania, za które otrzymasz dodatkowe fundusze.<br>
+<br>
+<font size="4" color="orange"><b>6. Doładuj Pieniądze</b></font><br>
+SklepSMS, w którym możesz kupić sporo Euro, jeśli ci ich brakuje.<br>
+<br>
+<font size="4" color="orange"><b>7. Transferuj Pieniądze</b></font><br>
+Opcja, dzięki której możesz przetransferować dolary innym graczom.<br>
+<br>
+<font size="4" color="orange"><b>8. Wymień Skin</b></font><br>
+Ktoś ma skin, na którym Ci zależy? To właśnie w tej zakładce możesz się z nim wymienić.<br>
+<br>
+<font size="4" color="orange"><b>9. Oddaj Skin</b></font><br>
+Jeśli masz dobre serce, możesz oddać komuś zbędnego skina.<br>
+<br>
+<font size="4" color="orange"><b>10. Propozycje Wymiany</b></font><br>
+Możesz wyłączyć lub włączyć tu możliwość wysyłania ci ofert wymiany.<br>
+<br>
+<font size="4" color="orange"><b>11. Wyświetlanie Skinów</b></font><br>
+Tutaj wyłączysz lub włączysz wyświetlanie skinów.<br>
+<br>
+</body></html>
