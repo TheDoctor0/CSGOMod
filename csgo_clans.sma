@@ -1022,7 +1022,7 @@ public applications_confirm_menu(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	new menuData[128], userName[32], itemAccess, itemCallback;
+	new menuData[128], userName[64], itemAccess, itemCallback;
 
 	menu_item_getinfo(menu, item, itemAccess, userName, charsmax(userName), _, _, itemCallback);
 
@@ -1034,7 +1034,7 @@ public applications_confirm_menu(id, menu, item)
 
 	menu_additem(menu, "Przymij - \rWpisowe z banku klanu", userName);
 	menu_additem(menu, "Przymij - \yWpisowe z konta gracza", userName);
-	menu_additem(menu, "Odrzuc");
+	menu_additem(menu, "Odrzuc", userName);
 
 	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
 
@@ -1053,7 +1053,7 @@ public applications_confirm_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	new userName[32], itemAccess, itemCallback;
+	new userName[64], itemAccess, itemCallback;
 
 	menu_item_getinfo(menu, item, itemAccess, userName, charsmax(userName), _, _, itemCallback);
 

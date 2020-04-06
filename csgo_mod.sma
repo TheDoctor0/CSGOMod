@@ -10,7 +10,7 @@
 #include <csgomod>
 
 #define PLUGIN "CS:GO Mod"
-#define VERSION "1.1"
+#define VERSION "1.2"
 #define AUTHOR "O'Zone"
 
 #define TASK_SKINS 3045
