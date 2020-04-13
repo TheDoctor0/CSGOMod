@@ -1,10 +1,15 @@
 # CSGOMod
-Counter-Strike: Global Offensive mod for Counter-Strike 1.6 (AMXX 1.8.3 / 1.9).
+Counter-Strike: Global Offensive mod for Counter-Strike 1.6 (AMXX 1.8.3 / 1.9 / 1.10).
 
 [Release pack](https://github.com/TheDoctor0/CSGOMod/releases/latest) contains configuration and plugins with all needed resources: skins, maps, sounds, sprites etc.
 
 ## Compatibility
-Mod was tested on AMXX build 1.9-dev+5235 with latest ReHLDS and ReGameDLL.
+Mod was tested on AMXX builds:
+- 1.8.3-dev+5142
+- 1.9-dev+5235
+- 1.10-dev+5392
+
+In both cases with ReHLDS and ReGameDLL also installed.
 
 ## Configuration
 Main configuration can be changed by cvars loaded from [csgo_mod.cfg](https://github.com/TheDoctor0/CSGOMod/blob/master/cstrike/addons/amxmodx/configs/csgo_mod.cfg).
