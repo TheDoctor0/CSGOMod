@@ -379,7 +379,7 @@ public display_hud(id)
 
 	remove_task(id + 768, 1);
 
-	static clan[64], operation[64], skin[64], target;
+	static clan[64], operation[64], skin[64], statTrak[64], weaponStatTrak, target;
 
 	target = id;
 
@@ -415,12 +415,20 @@ public display_hud(id)
 	format(operation, charsmax(operation), "^n[Operacja : %s]", operation);
 	format(clan, charsmax(clan), "^n[Klan : %s]", clan);
 
-	if (!playerData[target][RANK]) ShowSyncHudMsg(id, hud, "[Forum : %s]^n[Konto : %s]%s^n[Ranga : %s (%i / %i)]%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]",
-		forum, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), clan, rankName[playerData[target][RANK]], playerData[target][KILLS], unrankedKills, skin, csgo_get_money(target), operation, hours, minutes, seconds);
-	else if (playerData[target][RANK] < MAX_RANKS) ShowSyncHudMsg(id, hud, "[Forum : %s]^n[Konto : %s]%s^n[Ranga : %s]^n[Punkty Elo : %.2f / %d]%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]",
-		forum, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), clan, rankName[playerData[target][RANK]], playerData[target][ELO_RANK], rankElo[playerData[target][RANK] + 1], skin, csgo_get_money(target), operation, hours, minutes, seconds);
-	else ShowSyncHudMsg(id, hud, "[Forum : %s]^n[Konto : %s]%s^n[Ranga : %s]^n[Punkty Elo : %.2f]%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]",
-		forum, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), clan, rankName[playerData[target][RANK]], playerData[target][ELO_RANK], skin, csgo_get_money(target), operation, hours, minutes, seconds);
+	weaponStatTrak = csgo_get_weapon_stattrak(target, get_user_weapon(target));
+
+	if (weaponStatTrak > -1) {
+		format(statTrak, charsmax(statTrak), "^n[StatTrak : %i]", weaponStatTrak);
+	} else {
+		statTrak = "";
+	}
+
+	if (!playerData[target][RANK]) ShowSyncHudMsg(id, hud, "[Forum : %s]^n[Konto : %s]%s^n[Ranga : %s (%i / %i)]%s%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]",
+		forum, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), clan, rankName[playerData[target][RANK]], playerData[target][KILLS], unrankedKills, skin, statTrak, csgo_get_money(target), operation, hours, minutes, seconds);
+	else if (playerData[target][RANK] < MAX_RANKS) ShowSyncHudMsg(id, hud, "[Forum : %s]^n[Konto : %s]%s^n[Ranga : %s]^n[Punkty Elo : %.2f / %d]%s%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]",
+		forum, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), clan, rankName[playerData[target][RANK]], playerData[target][ELO_RANK], rankElo[playerData[target][RANK] + 1], skin, statTrak, csgo_get_money(target), operation, hours, minutes, seconds);
+	else ShowSyncHudMsg(id, hud, "[Forum : %s]^n[Konto : %s]%s^n[Ranga : %s]^n[Punkty Elo : %.2f]%s%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]",
+		forum, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), clan, rankName[playerData[target][RANK]], playerData[target][ELO_RANK], skin, statTrak, csgo_get_money(target), operation, hours, minutes, seconds);
 
 	return PLUGIN_CONTINUE;
 }
