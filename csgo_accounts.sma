@@ -597,7 +597,7 @@ public delete_account_handle(id, menu, item)
 
 public sql_init()
 {
-	new host[32], user[32], pass[32], db[32], queryData[128], error[128], errorNum;
+	new host[64], user[64], pass[64], db[64], queryData[128], error[128], errorNum;
 
 	get_cvar_string("csgo_sql_host", host, charsmax(host));
 	get_cvar_string("csgo_sql_user", user, charsmax(user));

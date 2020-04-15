@@ -232,7 +232,7 @@ public load_skins_details()
 
 public plugin_cfg()
 {
-	new configPath[64], host[32], user[32], pass[32], db[32], error[128], errorNum;
+	new configPath[64], host[64], user[64], pass[64], db[64], error[128], errorNum;
 
 	get_localinfo("amxx_configsdir", configPath, charsmax(configPath));
 
