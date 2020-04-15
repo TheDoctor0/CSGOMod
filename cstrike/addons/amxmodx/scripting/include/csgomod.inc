@@ -118,6 +118,12 @@ Zwraca nazwe aktualnej rangi gracza.
 native csgo_get_current_rank_name(id, dataReturn[], dataLength);
 
 /*------------------------------
+Zwraca StaTtrak dla danej broni.
+-1 jesli StaTtrak jest wylaczony lub gdy bron go nie posiada.
+------------------------------*/
+native csgo_get_weapon_stattrak(id, weapon);
+
+/*------------------------------
 Zwraca czy gracz posiada konto VIP.
 ------------------------------*/
 native csgo_get_user_vip(id);
@@ -140,7 +146,7 @@ native csgo_get_user_svip(id);
 stock mysql_escape_string(const source[], dest[], length)
 {
 	copy(dest, length, source);
-	
+
 	replace_all(dest, length, "\\", "\\\\");
 	replace_all(dest, length, "\0", "\\0");
 	replace_all(dest, length, "\n", "\\n");
@@ -151,7 +157,7 @@ stock mysql_escape_string(const source[], dest[], length)
 	replace_all(dest, length, "^"", "\^"");
 }
 
-stock cmd_execute(id, const text[], any:...) 
+stock cmd_execute(id, const text[], any:...)
 {
 	#pragma unused text
 
