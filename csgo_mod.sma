@@ -10,7 +10,7 @@
 #include <csgomod>
 
 #define PLUGIN "CS:GO Mod"
-#define VERSION "1.2"
+#define VERSION "1.3"
 #define AUTHOR "O'Zone"
 
 #define TASK_SKINS 3045
@@ -334,7 +334,7 @@ public show_advertisement(id)
 {
 	id -= TASK_AD;
 
-	client_print_color(id, id, "^x04[CS:GO]^x01 Grasz na serwerze^x03 %s^x01 stworzonym przez^x03 %s^x01.", PLUGIN, AUTHOR);
+	client_print_color(id, id, "^x04[CS:GO]^x01 Grasz na serwerze^x03 %s (v%s)^x01 stworzonym przez^x03 %s^x01.", PLUGIN, VERSION, AUTHOR);
 	client_print_color(id, id, "W celu uzyskania informacji o komendach wpisz^x03 /menu^x01 (klawisz^x03 ^"v^"^x01).");
 }
 
