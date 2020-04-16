@@ -5,7 +5,7 @@
 #include <hamsandwich>
 
 #define PLUGIN  "CS:GO Inspect"
-#define VERSION "1.1"
+#define VERSION "1.2"
 #define AUTHOR  "O'Zone"
 
 new const weaponsWithoutInspect = (1<<CSW_C4) | (1<<CSW_HEGRENADE) | (1<<CSW_FLASHBANG) | (1<<CSW_SMOKEGRENADE);
@@ -47,6 +47,12 @@ new inspectAnimation[] =
 	6	//p90
 };
 
+new const sounds[][] = {
+	"inspect/movement1.wav",
+	"inspect/movement2.wav",
+	"inspect/movement3.wav"
+}
+
 public plugin_init()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR);
@@ -57,6 +63,25 @@ public plugin_init()
 	RegisterHam(Ham_Weapon_SecondaryAttack, "weapon_knife", "knife_override");
 
 	register_impulse(100, "inspect_weapon");
+}
+
+public plugin_precache()
+{
+	new file[64], failed;
+
+	for (new i = 0; i < sizeof(sounds); i++) {
+		formatex(file, charsmax(file), "sound\%s", sounds[i]);
+
+		if (file_exists(file)) {
+			precache_sound(sounds[i]);
+		} else {
+			log_amx("[CS:GO] Inspect file '%s' not exist. Skipped!", sounds[i]);
+
+			failed = true;
+		}
+	}
+
+	if (failed) set_fail_state("[CS:GO] Not all molotov files were precached. Check logs!");
 }
 
 public deagle_reload(weapon)
