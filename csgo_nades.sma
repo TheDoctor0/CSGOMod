@@ -75,25 +75,19 @@ public grenade_world_model(ent, model[])
 
 	if (!is_user_connected(id)) return FMRES_IGNORED;
 
-	client_print_color(id, id, model);
-
 	if (model[0] == 'm' && model[7] == 'w' && model[8] == '_') {
-		switch (model[9]) {
-			case 'h': {
-				engfunc(EngFunc_SetModel, ent, grenadeModels[HEGRENADE][W_MODEL]);
+		if (contain(model[9], "hegrenade") != -1) {
+			engfunc(EngFunc_SetModel, ent, grenadeModels[HEGRENADE][W_MODEL]);
 
-				return FMRES_SUPERCEDE;
-			}
-			case 'f': {
-				engfunc(EngFunc_SetModel, ent, grenadeModels[FLASHBANG][W_MODEL]);
+			return FMRES_SUPERCEDE;
+		} else if (contain(model[9], "flashbang") != -1) {
+			engfunc(EngFunc_SetModel, ent, grenadeModels[FLASHBANG][W_MODEL]);
 
-				return FMRES_SUPERCEDE;
-			}
-			case 's': {
-				engfunc(EngFunc_SetModel, ent, grenadeModels[SMOKEGRENADE][W_MODEL]);
+			return FMRES_SUPERCEDE;
+		} else if (contain(model[9], "smokegrenade") != -1) {
+			engfunc(EngFunc_SetModel, ent, grenadeModels[SMOKEGRENADE][W_MODEL]);
 
-				return FMRES_SUPERCEDE;
-			}
+			return FMRES_SUPERCEDE;
 		}
 	}
 
