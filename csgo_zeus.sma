@@ -4,57 +4,33 @@
 #include <fun>
 #include <engine>
 #include <cstrike>
+#include <csgomod>
 
 #define PLUGIN "CS:GO Zeus"
 #define AUTHOR "wopox1337 & O'Zone"
-#define VERSION "1.1"
+#define VERSION "2.0"
 
 #define ZEUS_DISTANCE 230
 
-new const zeusWeaponName[] = "weapon_p228";
-
-new const gBeamSprite[] = "sprites/laserbeam.spr";
-
 enum { ViewModel, PlayerModel, WorldModel }
-new const Models[][] = {
-	"models/ozone_csgo/zeus/v_zeus.mdl",
-	"models/ozone_csgo/zeus/p_zeus.mdl",
-	"models/ozone_csgo/zeus/w_zeus.mdl"
+new const models[][] = {
+	"models/csgo_ozone/zeus/v_zeus.mdl",
+	"models/csgo_ozone/zeus/p_zeus.mdl",
+	"models/csgo_ozone/zeus/w_zeus.mdl"
 }
 
-stock const OLDWORLD_MODEL[] = "models/w_p228.mdl";
-
 enum { Deploy, Hit, Shoot }
-new const Sounds[][] = {
+new const sounds[][] = {
 	"zeus/deploy.wav",
 	"zeus/hit.wav",
 	"zeus/hitwall.wav"
 }
 
-new g_pBoltSprite;
+new const zeusWeaponName[] = "weapon_p228";
+new const beamSprite[] = "sprites/laserbeam.spr";
+new const worldModel[] = "models/w_p228.mdl";
 
-new Float:gameTime;
-
-new bool:bRestarted
-new bool:bReset;
-
-new bool:bZeus[MAX_PLAYERS + 1];
-
-new zeusEnabled;
-new zeusPrice;
-
-new mapBuyBlock;
-
-const XO_PLAYER	= 5;
-const XO_WEAPON	= 4;
-
-const m_pPlayer			= 41;
-const m_flNextPrimaryAttack		= 46;
-const m_flNextSecondaryAttack	= 47;
-const m_flTimeWeaponIdle = 48;
-const m_fKnown			= 44;
-const m_iClip			= 51;
-const m_iClientClip		= 52;
+new Float:gameTime, bool:restarted, bool:reset, zeus, zeusEnabled, zeusPrice, mapBuyBlock, boltSprite;
 
 public plugin_init()
 {
@@ -88,16 +64,16 @@ public plugin_init()
 
 public plugin_precache()
 {
-	g_pBoltSprite = precache_model(gBeamSprite);
+	boltSprite = precache_model(beamSprite);
 
 	precache_sound("items/9mmclip1.wav");
 
 	new i, bWasFail;
 
-	for (i = 0; i < sizeof Models; i++) {
-		if (file_exists(Models[i])) precache_model(Models[i]);
+	for (i = 0; i < sizeof models; i++) {
+		if (file_exists(models[i])) precache_model(models[i]);
 		else {
-			log_amx("[CS:GO] Zeus file '%s' not exist. Skipped!", Models[i]);
+			log_amx("[CS:GO] Zeus file '%s' not exist. Skipped!", models[i]);
 
 			bWasFail = true;
 		}
@@ -105,12 +81,12 @@ public plugin_precache()
 
 	new szFile[64];
 
-	for (i = 0; i < sizeof Sounds; i++) {
-		formatex(szFile, charsmax(szFile), "sound\%s", Sounds[i]);
+	for (i = 0; i < sizeof sounds; i++) {
+		formatex(szFile, charsmax(szFile), "sound\%s", sounds[i]);
 
-		if (file_exists(szFile)) precache_sound(Sounds[i]);
+		if (file_exists(szFile)) precache_sound(sounds[i]);
 		else {
-			log_amx("[CS:GO] Zeus file '%s' not exist. Skipped!", Sounds[i]);
+			log_amx("[CS:GO] Zeus file '%s' not exist. Skipped!", sounds[i]);
 
 			bWasFail = true;
 		}
@@ -135,10 +111,10 @@ public key_value(ent, keyValueId)
 }
 
 public client_putinserver(id)
-	bZeus[id] = false;
+	rem_bit(id, zeus);
 
 public client_disconnected(id)
-	bZeus[id] = false;
+	rem_bit(id, zeus);
 
 public buy_zeus(id)
 {
@@ -183,7 +159,7 @@ public buy_zeus(id)
 		return PLUGIN_HANDLED;
 	}
 
-	if (bZeus[id]) {
+	if (get_bit(id, zeus)) {
 		message_begin(MSG_ONE, get_user_msgid("TextMsg"), .player = id);
 		write_byte(print_center);
 		write_string("#Already_Have_One");
@@ -192,7 +168,7 @@ public buy_zeus(id)
 		return PLUGIN_HANDLED;
 	}
 
-	bZeus[id] = true;
+	set_bit(id, zeus);
 
 	cs_set_user_money(id, money - zeusPrice);
 
@@ -208,25 +184,27 @@ public buy_zeus(id)
 }
 
 public event_deathmsg()
-	bZeus[read_data(2)] = false;
+	rem_bit(read_data(2), zeus);
 
 public event_gamerestart()
-	bRestarted = true;
+	restarted = true;
 
 public event_round_end()
-	if(!bReset) bReset = true;
+	if (!reset) reset = true;
 
 public event_round_start()
 	gameTime = get_gametime();
 
 public event_new_round()
 {
-	bReset = false;
+	reset = false;
 
-	if (bRestarted) {
-		for (new i; i <= MAX_PLAYERS; i++) bZeus[i] = false;
+	if (restarted) {
+		for (new i; i <= MAX_PLAYERS; i++) {
+			rem_bit(i, zeus);
+		}
 
-		bRestarted = false;
+		restarted = false;
 	}
 
 	return PLUGIN_CONTINUE;
@@ -234,64 +212,60 @@ public event_new_round()
 
 public weapon_attach_to_player(weapon, id)
 {
-	if (get_pdata_float(weapon, m_fKnown, XO_WEAPON) || !bZeus[id] || !zeusEnabled) return;
+	if (get_pdata_float(weapon, 44, 4) || !get_bit(id, zeus) || !zeusEnabled) return;
 
-	set_pdata_int(weapon, m_iClip, 1, XO_WEAPON);
-	set_pdata_int(id, m_iClientClip, 0, XO_PLAYER);
+	set_pdata_int(weapon, 51, 1, 4);
+	set_pdata_int(id, 52, 0, 5);
 }
 
 public weapon_item_deploy(weapon)
 {
-	static id;
-	id = get_pdata_cbase(weapon, m_pPlayer, XO_WEAPON);
+	static id; id = get_pdata_cbase(weapon, 41, 4);
 
-	if (!is_user_alive(id) || !zeusEnabled || !bZeus[id]) return HAM_IGNORED;
+	if (!is_user_alive(id) || !zeusEnabled || !get_bit(id, zeus)) return HAM_IGNORED;
 
-	set_pev(id, pev_viewmodel2, Models[ViewModel]);
-	set_pev(id, pev_weaponmodel2, Models[PlayerModel]);
+	set_pev(id, pev_viewmodel2, models[ViewModel]);
+	set_pev(id, pev_weaponmodel2, models[PlayerModel]);
 
-	UTIL_PlayWeaponAnimation(id, 3);
-	emit_sound(weapon, CHAN_WEAPON, Sounds[Deploy], VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
+	send_weapon_animation(id, 3);
+	emit_sound(weapon, CHAN_WEAPON, sounds[Deploy], VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
 
 	return HAM_IGNORED;
 }
 
 public weapon_primary_attack(weapon)
 {
-	static id;
-	id = get_pdata_cbase(weapon, m_pPlayer, XO_WEAPON);
+	static id; id = get_pdata_cbase(weapon, 41, 4);
 
-	if (!is_user_alive(id) || !zeusEnabled || !bZeus[id]) return HAM_IGNORED;
+	if (!is_user_alive(id) || !zeusEnabled || !get_bit(id, zeus)) return HAM_IGNORED;
 
-	bZeus[id] = false;
+	rem_bit(id, zeus);
 
-	static target, iBody, Float: fDistance;
-	fDistance = get_user_aiming(id, target, iBody);
+	static any:targetOrigin[3], Float:origin[3], Float:velocity[3], Float:vector[3], end[3], target, body, Float:distance;
 
-	static iOrigin[3];
+	distance = get_user_aiming(id, target, body);
+	entity_get_vector(id, EV_VEC_origin, origin);
+	VelocityByAim(id, ZEUS_DISTANCE, velocity);
 
-	static any: targetOrigin[3];
+	xs_vec_add(origin, velocity, vector);
+	FVecIVec(origin, end);
+	FVecIVec(vector, targetOrigin);
 
-	static Float: fOrigin[3], Float: fVelocity[3];
-	entity_get_vector(id, EV_VEC_origin, fOrigin);
-	VelocityByAim(id, ZEUS_DISTANCE, fVelocity);
-
-	static Float: fTemp[3];
-	xs_vec_add(fOrigin, fVelocity, fTemp);
-	FVecIVec(fOrigin, iOrigin);
-	FVecIVec(fTemp, targetOrigin);
-
-	if (is_user_connected(target) && fDistance <= ZEUS_DISTANCE) {
+	if (is_user_connected(target) && distance <= ZEUS_DISTANCE) {
 		get_user_origin(target, targetOrigin, 0);
 
-		if (get_user_team(id) != get_user_team(target)) ExecuteHam(Ham_TakeDamage, target, 0, id, 999.0, DMG_SHOCK);
+		if (get_user_team(id) != get_user_team(target)) {
+			ExecuteHam(Ham_TakeDamage, target, 0, id, 999.0, DMG_SHOCK);
+		}
 
-		emit_sound(id, CHAN_WEAPON, Sounds[Hit], VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
-	} else emit_sound(id, CHAN_WEAPON, Sounds[Shoot], VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
+		emit_sound(id, CHAN_WEAPON, sounds[Hit], VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
+	} else {
+		emit_sound(id, CHAN_WEAPON, sounds[Shoot], VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
+	}
 
-	UTIL_CreateThunder2(id, targetOrigin);
-	UTIL_CreateLight(iOrigin);
-	UTIL_PlayWeaponAnimation(id, 2);
+	create_thunder2(id, targetOrigin);
+	create_light(end);
+	send_weapon_animation(id, 2);
 
 	ham_strip_weapon(id, zeusWeaponName);
 
@@ -300,10 +274,9 @@ public weapon_primary_attack(weapon)
 
 public weapon_item_can_drop(weapon)
 {
-	static id;
-	id = get_pdata_cbase(weapon, m_pPlayer, XO_WEAPON);
+	static id; id = get_pdata_cbase(weapon, 41, 4);
 
-	if (!is_user_alive(id) || !zeusEnabled || !bZeus[id]) return HAM_IGNORED;
+	if (!is_user_alive(id) || !zeusEnabled || !get_bit(id, zeus)) return HAM_IGNORED;
 
 	SetHamReturnInteger(false);
 
@@ -311,17 +284,21 @@ public weapon_item_can_drop(weapon)
 }
 
 public player_spawned(id)
-	if (bZeus[id]) set_task(0.1, "player_spawned_post", id);
+	if (get_bit(id, zeus)) set_task(0.1, "player_spawned_post", id);
 
 public player_spawned_post(id)
 {
-	new weapons[32], weaponsNum, bool:zeus;
+	new weapons[32], weaponsNum, bool:found;
 
 	get_user_weapons(id, weapons, weaponsNum);
 
-	for(new i; i < weaponsNum; i++) if(weapons[i] == get_weaponid(zeusWeaponName)) zeus = true;
+	for(new i; i < weaponsNum; i++) if(weapons[i] == get_weaponid(zeusWeaponName)) found = true;
 
-	bZeus[id] = zeus;
+	if (found) {
+		set_bit(id, zeus);
+	} else {
+		rem_bit(id, zeus);
+	}
 }
 
 public set_model(ent, model[])
@@ -330,14 +307,14 @@ public set_model(ent, model[])
 
 	new id = entity_get_edict(ent, EV_ENT_owner);
 
-	if (!is_user_connected(id) || is_user_bot(id) || is_user_hltv(id) || !bZeus[id]) return HAM_IGNORED;
+	if (!is_user_connected(id) || is_user_bot(id) || is_user_hltv(id) || !get_bit(id, zeus)) return HAM_IGNORED;
 
-	if (equali(model, OLDWORLD_MODEL)) {
-		static szClassName[8];
-		pev(ent, pev_classname, szClassName, charsmax(szClassName));
+	if (equali(model, worldModel)) {
+		static className[8];
+		pev(ent, pev_classname, className, charsmax(className));
 
-		if (szClassName[0] == 'w' && szClassName[6] == 'b') {
-			engfunc(EngFunc_SetModel, ent, Models[WorldModel]);
+		if (className[0] == 'w' && className[6] == 'b') {
+			engfunc(EngFunc_SetModel, ent, models[WorldModel]);
 
 			return FMRES_SUPERCEDE;
 		}
@@ -346,27 +323,27 @@ public set_model(ent, model[])
 	return FMRES_IGNORED;
 }
 
-stock UTIL_PlayWeaponAnimation(const id, const Sequence)
+stock send_weapon_animation(const id, const animation)
 {
-	set_pev(id, pev_weaponanim, Sequence);
+	set_pev(id, pev_weaponanim, animation);
 
 	message_begin(MSG_ONE_UNRELIABLE, SVC_WEAPONANIM, .player = id);
-	write_byte(Sequence);
+	write_byte(animation);
 	write_byte(pev(id, pev_body));
 	message_end();
 }
 
-stock UTIL_CreateThunder(iStart[3], iEnd[3])
+stock create_thunder(start[3], end[3])
 {
 	message_begin(MSG_BROADCAST, SVC_TEMPENTITY);
 	write_byte(TE_BEAMPOINTS);
-	write_coord(iStart[0]);
-	write_coord(iStart[1]);
-	write_coord(iStart[2]);
-	write_coord(iEnd[0]);
-	write_coord(iEnd[1]);
-	write_coord(iEnd[2]);
-	write_short(g_pBoltSprite);
+	write_coord(start[0]);
+	write_coord(start[1]);
+	write_coord(start[2]);
+	write_coord(end[0]);
+	write_coord(end[1]);
+	write_coord(end[2]);
+	write_short(boltSprite);
 	write_byte(1);
 	write_byte(5);
 	write_byte(7);
@@ -380,15 +357,15 @@ stock UTIL_CreateThunder(iStart[3], iEnd[3])
 	message_end();
 }
 
-stock UTIL_CreateThunder2(iStartId, iEnd[3])
+stock create_thunder2(start, end[3])
 {
 	message_begin(MSG_BROADCAST ,SVC_TEMPENTITY);
 	write_byte(TE_BEAMENTPOINT);
-	write_short(iStartId | 0x1000);
-	write_coord(iEnd[0]);
-	write_coord(iEnd[1]);
-	write_coord(iEnd[2]);
-	write_short(g_pBoltSprite);
+	write_short(start | 0x1000);
+	write_coord(end[0]);
+	write_coord(end[1]);
+	write_coord(end[2]);
+	write_short(boltSprite);
 	write_byte(1);
 	write_byte(30);
 	write_byte(5);
@@ -402,7 +379,7 @@ stock UTIL_CreateThunder2(iStartId, iEnd[3])
 	message_end()
 }
 
-stock UTIL_CreateLight(origin[3])
+stock create_light(origin[3])
 {
 	message_begin(MSG_BROADCAST, SVC_TEMPENTITY);
 	write_byte(TE_DLIGHT);
@@ -422,23 +399,23 @@ stock ham_strip_weapon(id, const weapon[])
 {
 	if (!equal(weapon, "weapon_", 7)) return 0;
 
-	new wId = get_weaponid(weapon);
+	new weaponId = get_weaponid(weapon);
 
-	if (!wId) return 0;
+	if (!weaponId) return 0;
 
-	new wEnt;
+	new ent;
 
-	while ((wEnt = engfunc(EngFunc_FindEntityByString, wEnt, "classname", weapon)) && pev(wEnt, pev_owner) != id) {}
+	while ((ent = engfunc(EngFunc_FindEntityByString, ent, "classname", weapon)) && pev(ent, pev_owner) != id) {}
 
-	if (!wEnt) return 0;
+	if (!ent) return 0;
 
-	if (get_user_weapon(id) == wId) ExecuteHamB(Ham_Weapon_RetireWeapon, wEnt);
+	if (get_user_weapon(id) == weaponId) ExecuteHamB(Ham_Weapon_RetireWeapon, ent);
 
-	if (!ExecuteHamB(Ham_RemovePlayerItem, id, wEnt)) return 0;
+	if (!ExecuteHamB(Ham_RemovePlayerItem, id, ent)) return 0;
 
-	ExecuteHamB(Ham_Item_Kill, wEnt);
+	ExecuteHamB(Ham_Item_Kill, ent);
 
-	set_pev(id, pev_weapons, pev(id, pev_weapons) & ~(1<<wId));
+	set_pev(id, pev_weapons, pev(id, pev_weapons) & ~(1 << weaponId));
 
 	return 1;
 }
