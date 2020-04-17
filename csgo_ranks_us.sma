@@ -5,7 +5,7 @@
 #include <ultimate_stats>
 
 #define PLUGIN "CS:GO Rank System (Ultimate Stats)"
-#define VERSION "1.1"
+#define VERSION "2.0"
 #define AUTHOR "O'Zone"
 
 #define TASK_HUD 7501
@@ -118,7 +118,9 @@ public plugin_precache()
 			log_to_file("csgo-error.log", "[CS:GO] Brakujacy plik sprite: ^"%s^"", spriteFile);
 
 			error = true;
-		} else sprites[i] = precache_model(spriteFile);
+		} else {
+			sprites[i] = precache_model(spriteFile);
+		}
 	}
 
 	if (error) set_fail_state("Brakuje plikow sprite, zaladowanie pluginu niemozliwe! Sprawdz logi w pliku csgo/error.log!");
@@ -166,7 +168,7 @@ stock save_rank(id)
 	playerId[0] = id;
 
 	formatex(queryData, charsmax(queryData), "REPLACE INTO `csgo_ranks` (`name`, `rank`, `elorank`) VALUES (^"%s^", '%i', '%f');",
-	playerData[id][SAFE_NAME], playerData[id][RANK], playerData[id][ELO_RANK]);
+		playerData[id][SAFE_NAME], playerData[id][RANK], playerData[id][ELO_RANK]);
 
 	SQL_ThreadQuery(sql, "ignore_handle", queryData, playerId, sizeof(playerId));
 }
@@ -217,7 +219,9 @@ stock check_rank(id)
 	if (playerData[id][KILLS] >= unrankedKills) {
 		playerData[id][ELO_RANK] = _:get_user_elo(id);
 
-		while (playerData[id][RANK] < MAX_RANKS && playerData[id][ELO_RANK] >= rankElo[playerData[id][RANK] + 1]) playerData[id][RANK]++;
+		while (playerData[id][RANK] < MAX_RANKS && playerData[id][ELO_RANK] >= rankElo[playerData[id][RANK] + 1]) {
+			playerData[id][RANK]++;
+		}
 	}
 
 	save_rank(id);
@@ -229,9 +233,7 @@ public display_hud(id)
 
 	if (is_user_bot(id) || !is_user_connected(id)) return PLUGIN_CONTINUE;
 
-	remove_task(id + 768, 1);
-
-	static clan[64], operation[64], skin[64], target;
+	static clan[64], operation[64], skin[64], statTrak[64], weaponStatTrak, target;
 
 	target = id;
 
@@ -239,7 +241,9 @@ public display_hud(id)
 		target = pev(id, pev_iuser2);
 
 		set_hudmessage(255, 255, 255, 0.7, 0.25, 0, 0.0, 1.2, 0.0, 0.0, 3);
-	} else set_hudmessage(0, 255, 0, 0.7, 0.06, 0, 0.0, 1.2, 0.0, 0.0, 3);
+	} else {
+		set_hudmessage(0, 255, 0, 0.7, 0.06, 0, 0.0, 1.2, 0.0, 0.0, 3);
+	}
 
 	if (!target || !get_bit(target, loaded)) return PLUGIN_CONTINUE;
 
@@ -267,12 +271,20 @@ public display_hud(id)
 	format(operation, charsmax(operation), "^n[Operacja : %s]", operation);
 	format(clan, charsmax(clan), "^n[Klan : %s]", clan);
 
-	if (!playerData[target][RANK]) ShowSyncHudMsg(id, hud, "[Forum : %s]^n[Konto : %s]%s^n[Ranga : %s (%i / %i)]%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]",
-		forum, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), clan, rankName[playerData[target][RANK]], playerData[target][KILLS], unrankedKills, skin, csgo_get_money(target), operation, hours, minutes, seconds);
-	else if (playerData[target][RANK] < MAX_RANKS) ShowSyncHudMsg(id, hud, "[Forum : %s]^n[Konto : %s]%s^n[Ranga : %s]^n[Punkty Elo : %.2f / %d]%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]",
-		forum, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), clan, rankName[playerData[target][RANK]], playerData[target][ELO_RANK], rankElo[playerData[target][RANK] + 1], skin, csgo_get_money(target), operation, hours, minutes, seconds);
-	else ShowSyncHudMsg(id, hud, "[Forum : %s]^n[Konto : %s]%s^n[Ranga : %s]^n[Punkty Elo : %.2f]%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]",
-		forum, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), clan, rankName[playerData[target][RANK]], playerData[target][ELO_RANK], skin, csgo_get_money(target), operation, hours, minutes, seconds);
+	weaponStatTrak = csgo_get_weapon_stattrak(target, get_user_weapon(target));
+
+	if (weaponStatTrak > -1) {
+		format(statTrak, charsmax(statTrak), "^n[StatTrak : %i]", weaponStatTrak);
+	} else {
+		statTrak = "";
+	}
+
+	if (!playerData[target][RANK]) ShowSyncHudMsg(id, hud, "[Forum : %s]^n[Konto : %s]%s^n[Ranga : %s (%i / %i)]%s%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]",
+		forum, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), clan, rankName[playerData[target][RANK]], playerData[target][KILLS], unrankedKills, skin, statTrak, csgo_get_money(target), operation, hours, minutes, seconds);
+	else if (playerData[target][RANK] < MAX_RANKS) ShowSyncHudMsg(id, hud, "[Forum : %s]^n[Konto : %s]%s^n[Ranga : %s]^n[Punkty Elo : %.2f / %d]%s%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]",
+		forum, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), clan, rankName[playerData[target][RANK]], playerData[target][ELO_RANK], rankElo[playerData[target][RANK] + 1], skin, statTrak, csgo_get_money(target), operation, hours, minutes, seconds);
+	else ShowSyncHudMsg(id, hud, "[Forum : %s]^n[Konto : %s]%s^n[Ranga : %s]^n[Punkty Elo : %.2f]%s%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]",
+		forum, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), clan, rankName[playerData[target][RANK]], playerData[target][ELO_RANK], skin, statTrak, csgo_get_money(target), operation, hours, minutes, seconds);
 
 	return PLUGIN_CONTINUE;
 }
@@ -323,8 +335,9 @@ public cmd_ranks(id)
 
 public cmd_rank(id)
 {
-	if (playerData[id][RANK] == MAX_RANKS) client_print_color(id, id, "^x04[CS:GO]^x01 Twoja aktualna ranga to:^x03 %s^x01.", rankName[playerData[id][RANK]]);
-	else {
+	if (playerData[id][RANK] == MAX_RANKS) {
+		client_print_color(id, id, "^x04[CS:GO]^x01 Twoja aktualna ranga to:^x03 %s^x01.", rankName[playerData[id][RANK]]);
+	} else {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Twoja aktualna ranga to:^x03 %s^x01. ", rankName[playerData[id][RANK]]);
 		client_print_color(id, id, "^x04[CS:GO]^x01 Do kolejnej rangi (^x03%s^x01) potrzebujesz^x03 %.2f^x01 punktow Elo.", rankName[playerData[id][RANK] + 1], rankElo[playerData[id][RANK] + 1] - playerData[id][ELO_RANK]);
 	}

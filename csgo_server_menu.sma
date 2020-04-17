@@ -1,62 +1,63 @@
 #include <amxmodx>
+#include <csgomod>
 
 #define PLUGIN "CS:GO Server Menu"
-#define VERSION "1.1"
+#define VERSION "2.0"
 #define AUTHOR "O'Zone"
 
-new Array:aTitles, Array:aCommands;
+new Array:titles, Array:commands;
 
-new const szMenuCommands[][] = { "say /menu", "say_team /menu", "menu", "say /komendy", "say_team /komendy" };
+new const menuCommands[][] = { "say /menu", "say_team /menu", "menu", "say /komendy", "say_team /komendy" };
 
 public plugin_init()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR);
 
-	for (new i; i < sizeof szMenuCommands; i++) register_clcmd(szMenuCommands[i], "Menu");
+	for (new i; i < sizeof menuCommands; i++) register_clcmd(menuCommands[i], "server_menu");
 }
 
 public plugin_cfg()
 {
-	aTitles = ArrayCreate(64, 1);
-	aCommands = ArrayCreate(64, 1);
+	titles = ArrayCreate(64, 1);
+	commands = ArrayCreate(64, 1);
 
-	new szFile[128];
+	new filePath[128];
 
-	get_localinfo("amxx_configsdir", szFile, charsmax(szFile));
-	format(szFile, charsmax(szFile), "%s/csgo_menu.ini", szFile);
+	get_localinfo("amxx_configsdir", filePath, charsmax(filePath));
+	format(filePath, charsmax(filePath), "%s/csgo_menu.ini", filePath);
 
-	if (!file_exists(szFile)) set_fail_state("[Menu] Brak pliku z zawartoscia menu serwera!");
+	if (!file_exists(filePath)) set_fail_state("[CS:GO Menu] Brak pliku z zawartoscia menu serwera!");
 
-	new szContent[128], szTitle[64], szCommand[64], iOpen = fopen(szFile, "r");
+	new content[128], title[64], command[64], file = fopen(filePath, "r");
 
-	while (!feof(iOpen)) {
-		fgets(iOpen, szContent, charsmax(szContent)); trim(szContent);
+	while (!feof(file)) {
+		fgets(file, content, charsmax(content)); trim(content);
 
-		if(szContent[0] == ';' || szContent[0] == '^0') continue;
+		if(content[0] == ';' || content[0] == '^0') continue;
 
-		parse(szContent, szTitle, charsmax(szTitle), szCommand, charsmax(szCommand));
+		parse(content, title, charsmax(title), command, charsmax(command));
 
-		ArrayPushString(aTitles, szTitle);
-		ArrayPushString(aCommands, szCommand);
+		ArrayPushString(titles, title);
+		ArrayPushString(commands, command);
 	}
 
-	fclose(iOpen);
+	fclose(file);
 }
 
 public client_putinserver(id)
 {
 	client_cmd(id, "bind ^"v^" ^"menu^"");
-
 	cmd_execute(id, "bind v menu");
 }
 
-public Menu(id)
+public server_menu(id)
 {
-	new menu = menu_create("\yMenu \rSerwera\w:", "Menu_Handler"), szTitle[64];
+	new title[64], menu = menu_create("\yMenu \rSerwera\w:", "server_menu_handler");
 
-	for (new i; i < ArraySize(aTitles); i++) {
-		ArrayGetString(aTitles, i, szTitle, charsmax(szTitle));
-		menu_additem(menu, szTitle);
+	for (new i; i < ArraySize(titles); i++) {
+		ArrayGetString(titles, i, title, charsmax(title));
+
+		menu_additem(menu, title);
 	}
 
 	menu_setprop(menu, MPROP_BACKNAME, "Wroc");
@@ -64,10 +65,11 @@ public Menu(id)
 	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
 
 	menu_display(id, menu, 0);
+
 	return PLUGIN_HANDLED;
 }
 
-public Menu_Handler(id, menu, item)
+public server_menu_handler(id, menu, item)
 {
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -75,36 +77,15 @@ public Menu_Handler(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	new szCommand[64];
+	new command[64];
 
-	ArrayGetString(aCommands, item, szCommand, charsmax(szCommand));
+	ArrayGetString(commands, item, command, charsmax(command));
 
-	client_cmd(id, szCommand);
-	engclient_cmd(id, szCommand);
-	cmd_execute(id, szCommand);
+	client_cmd(id, command);
+	engclient_cmd(id, command);
+	cmd_execute(id, command);
 
 	menu_destroy(menu);
 
 	return PLUGIN_HANDLED;
-}
-
-stock cmd_execute(id, const szText[], any:...)
-{
-	message_begin(MSG_ONE, SVC_DIRECTOR, _, id);
-	write_byte(strlen(szText) + 2);
-	write_byte(10);
-	write_string(szText);
-	message_end();
-
-	#pragma unused szText
-
-	new szMessage[256];
-
-	format_args(szMessage, charsmax(szMessage), 1);
-
-	message_begin(id == 0 ? MSG_ALL : MSG_ONE, 51, _, id);
-	write_byte(strlen(szMessage) + 2);
-	write_byte(10);
-	write_string(szMessage);
-	message_end();
 }

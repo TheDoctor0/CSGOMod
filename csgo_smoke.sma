@@ -1,23 +1,15 @@
-// ========================================================================= CONFIG START =========================================================================
-
-// Radius in units from smoke grenade where smoke can be created. Float number type is needed
-#define SMOKE_MAX_RADIUS 144.0 // default: (144.0)
-
-// Number of smoke puffs what will be created every 0.1sec from one grenade (the higher this value is - the higher is ability of getting svc_bad errors)
-#define SMOKE_PUFFS_PER_THINK 3 // default: (5)
-
-// How long smoke will stay on until it disappears (in seconds). NOTE: Counter-Strike default is 25.0
-#define SMOKE_LIFE_TIME 18.0 // default (18.0)
-
-// ========================================================================== CONFIG END ==========================================================================
-
 #include <amxmodx>
 #include <fakemeta>
 #include <hamsandwich>
 
-#define PLUGIN_NAME	"CS:GO Smoke"
-#define PLUGIN_VERSION	"1.1"
-#define PLUGIN_AUTHOR	"Numb & O'Zone"
+#define PLUGIN	"CS:GO Smoke"
+#define VERSION	"2.0"
+#define AUTHOR	"Numb & O'Zone"
+
+#define SMOKE_MAX_RADIUS		144.0
+#define SMOKE_PUFFS_PER_THINK	3
+#define SMOKE_LIFE_TIME			18.0
+#define SMOKE_ID				678
 
 #define SGF1 ADMIN_CVAR
 #define SGF2 ADMIN_MAP
@@ -27,15 +19,15 @@
 #define SGF6 ADMIN_RESERVATION
 #define SGF7 ADMIN_IMMUNITY
 
-new g_iSpriteWhite;
+new spriteWhite;
 
 public plugin_init()
 {
-	register_plugin(PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR);
+	register_plugin(PLUGIN, VERSION, AUTHOR);
 
-	register_forward(FM_SetModel, "FM_SetModel_Pre", 0);
+	register_forward(FM_SetModel, "set_model", 0);
 
-	RegisterHam(Ham_Think, "grenade", "Ham_Think_grenade_Pre", 0);
+	RegisterHam(Ham_Think, "grenade", "think_grenade", 0);
 }
 
 public plugin_precache()
@@ -69,115 +61,112 @@ public plugin_precache()
 	integer28Cells[24] = (SGF3|SGF2|SGF1);
 	integer28Cells[25] = (SGF6|SGF3|SGF2|SGF1);
 
-	if(contain(integer28Cells, "sprites/smoke_csgo.spr"))
-	{
-		g_iSpriteWhite = precache_model(integer28Cells);
+	if (contain(integer28Cells, "sprites/smoke_csgo.spr")) {
+		spriteWhite = precache_model(integer28Cells);
+
 		force_unmodified(force_exactfile, {0,0,0}, {0,0,0}, integer28Cells);
-	}
-	else
-	{
-		g_iSpriteWhite = precache_model("sprites/smoke_csgo.spr");
+	} else {
+		spriteWhite = precache_model("sprites/smoke_csgo.spr");
+
 		force_unmodified(force_exactfile, {0,0,0}, {0,0,0}, "sprites/smoke_csgo.spr");
 	}
 }
 
-public FM_SetModel_Pre(iEnt, iModel[])
+public set_model(ent, model[])
 {
-	if(pev_valid(iEnt))
-	{
-		static s_iClassName[9];
-		pev(iEnt, pev_classname, s_iClassName, 8);
+	if (pev_valid(ent)) {
+		static className[9];
 
-		if(equal(s_iClassName, "grenade") && equal(iModel, "models/w_smokegrenade.mdl")) set_pev(iEnt, pev_iuser3, 678);
+		pev(ent, pev_classname, className, charsmax(className));
+
+		if (equal(className, "grenade") && equal(model, "models/w_smokegrenade.mdl")) {
+			set_pev(ent, pev_iuser3, SMOKE_ID);
+		}
 	}
 }
 
-public Ham_Think_grenade_Pre(iEnt)
+public think_grenade(ent)
 {
-	if(pev(iEnt, pev_iuser3) == 678)
-	{
-		static Float:s_fDmgTime, Float:s_fGameTime;
+	if (pev(ent, pev_iuser3) == SMOKE_ID) {
+		static Float:damageTime, Float:gameTime;
 
-		pev(iEnt, pev_dmgtime, s_fDmgTime);
-		global_get(glb_time, s_fGameTime);
+		pev(ent, pev_dmgtime, damageTime);
+		global_get(glb_time, gameTime);
 
-		if(s_fGameTime>=s_fDmgTime)
-		{
-			set_pev(iEnt, pev_dmgtime, (s_fGameTime+SMOKE_LIFE_TIME));
-			if(!pev(iEnt, pev_iuser4))
-			{
-				emit_sound(iEnt, CHAN_WEAPON, "weapons/sg_explode.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
-				set_pev(iEnt, pev_iuser4, 1);
+		if (gameTime >= damageTime) {
+			set_pev(ent, pev_dmgtime, (gameTime + SMOKE_LIFE_TIME));
+
+			if (!pev(ent, pev_iuser4)) {
+				emit_sound(ent, CHAN_WEAPON, "weapons/sg_explode.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
+				set_pev(ent, pev_iuser4, 1);
+			} else {
+				set_pev(ent, pev_flags, (pev(ent, pev_flags) | FL_KILLME));
 			}
-			else set_pev(iEnt, pev_flags, (pev(iEnt, pev_flags)|FL_KILLME));
+		} else if(!pev(ent, pev_iuser4)) {
+			return HAM_IGNORED;
 		}
-		else if(!pev(iEnt, pev_iuser4)) return HAM_IGNORED;
 
-		static Float:s_fOrigin[3], Float:s_fEndOrigin[3];
+		static Float:origin[3], Float:newOrigin[3], Float:fraction;
 
-		pev(iEnt, pev_origin, s_fOrigin);
-		s_fEndOrigin = s_fOrigin;
-		s_fEndOrigin[2] += random_float(8.0, 32.0);
+		pev(ent, pev_origin, origin);
 
-		static Float:s_fFraction;
+		newOrigin = origin;
+		newOrigin[2] += random_float(8.0, 32.0);
 
-		engfunc(EngFunc_TraceLine, s_fOrigin, s_fEndOrigin, IGNORE_MONSTERS, iEnt, 0);
-		get_tr2(0, TR_flFraction, s_fFraction);
+		engfunc(EngFunc_TraceLine, origin, newOrigin, IGNORE_MONSTERS, ent, 0);
+		get_tr2(0, TR_flFraction, fraction);
 
-		if(s_fFraction!=1.0) get_tr2(0, TR_pHit, s_fOrigin);
-		else s_fOrigin = s_fEndOrigin;
+		if (fraction != 1.0) get_tr2(0, TR_pHit, origin);
+		else origin = newOrigin;
 
-		static s_iLoopId, Float:s_fDistance;
+		static counter, Float:distance;
 
-		for(s_iLoopId = 0; s_iLoopId < SMOKE_PUFFS_PER_THINK; s_iLoopId++)
-		{
-			s_fEndOrigin[0] = random_float((random(2) ? -50.0 : -80.0), 0.0);
-			s_fEndOrigin[1] = random_float((s_iLoopId*(360.0 / SMOKE_PUFFS_PER_THINK)), ((s_iLoopId + 1) * (360.0 / SMOKE_PUFFS_PER_THINK)));
-			s_fEndOrigin[2] = -20.0;
+		for (counter = 0; counter < SMOKE_PUFFS_PER_THINK; counter++) {
+			newOrigin[0] = random_float((random(2) ? -50.0 : -80.0), 0.0);
+			newOrigin[1] = random_float((counter*(360.0 / SMOKE_PUFFS_PER_THINK)), ((counter + 1) * (360.0 / SMOKE_PUFFS_PER_THINK)));
+			newOrigin[2] = -20.0;
 
-			while(s_fEndOrigin[1] > 180.0) s_fEndOrigin[1] -= 360.0;
+			while (newOrigin[1] > 180.0) newOrigin[1] -= 360.0;
 
-			engfunc(EngFunc_MakeVectors, s_fEndOrigin);
-			global_get(glb_v_forward, s_fEndOrigin);
+			engfunc(EngFunc_MakeVectors, newOrigin);
+			global_get(glb_v_forward, newOrigin);
 
-			s_fEndOrigin[0] *= 9999.0;
-			s_fEndOrigin[1] *= 9999.0;
-			s_fEndOrigin[2] *= 9999.0;
-			s_fEndOrigin[0] += s_fOrigin[0];
-			s_fEndOrigin[1] += s_fOrigin[1];
-			s_fEndOrigin[2] += s_fOrigin[2];
+			newOrigin[0] *= 9999.0;
+			newOrigin[1] *= 9999.0;
+			newOrigin[2] *= 9999.0;
+			newOrigin[0] += origin[0];
+			newOrigin[1] += origin[1];
+			newOrigin[2] += origin[2];
 
-			engfunc(EngFunc_TraceLine, s_fOrigin, s_fEndOrigin, IGNORE_MONSTERS, iEnt, 0);
-			get_tr2(0, TR_vecEndPos, s_fEndOrigin);
+			engfunc(EngFunc_TraceLine, origin, newOrigin, IGNORE_MONSTERS, ent, 0);
+			get_tr2(0, TR_vecEndPos, newOrigin);
 
-			if((s_fDistance=get_distance_f(s_fOrigin, s_fEndOrigin)) > (s_fFraction = (random(3) ? random_float((SMOKE_MAX_RADIUS * 0.5), SMOKE_MAX_RADIUS) : random_float(16.0, SMOKE_MAX_RADIUS))))
-			{
-				s_fFraction /= s_fDistance;
+			if ((distance = get_distance_f(origin, newOrigin)) > (fraction = (random(3) ? random_float((SMOKE_MAX_RADIUS * 0.5), SMOKE_MAX_RADIUS) : random_float(16.0, SMOKE_MAX_RADIUS)))) {
+				fraction /= distance;
 
-				if(s_fEndOrigin[0]!=s_fOrigin[0])
-				{
-					s_fDistance = (s_fEndOrigin[0]-s_fOrigin[0])*s_fFraction;
-					s_fEndOrigin[0] = (s_fOrigin[0]+s_fDistance);
+				if (newOrigin[0] != origin[0]) {
+					distance = (newOrigin[0] - origin[0]) * fraction;
+					newOrigin[0] = (origin[0] + distance);
 				}
-				if(s_fEndOrigin[1]!=s_fOrigin[1])
-				{
-					s_fDistance = (s_fEndOrigin[1]-s_fOrigin[1])*s_fFraction;
-					s_fEndOrigin[1] = (s_fOrigin[1]+s_fDistance);
+
+				if (newOrigin[1] != origin[1]) {
+					distance = (newOrigin[1] - origin[1]) * fraction;
+					newOrigin[1] = (origin[1] + distance);
 				}
-				if(s_fEndOrigin[2]!=s_fOrigin[2])
-				{
-					s_fDistance = (s_fEndOrigin[2]-s_fOrigin[2])*s_fFraction;
-					s_fEndOrigin[2] = (s_fOrigin[2]+s_fDistance);
+
+				if (newOrigin[2] != origin[2]) {
+					distance = (newOrigin[2] - origin[2]) * fraction;
+					newOrigin[2] = (origin[2] + distance);
 				}
 			}
 
 			message_begin(MSG_BROADCAST, SVC_TEMPENTITY);
 
 			write_byte(TE_SPRITE);
-			engfunc(EngFunc_WriteCoord, s_fEndOrigin[0]);
-			engfunc(EngFunc_WriteCoord, s_fEndOrigin[1]);
-			engfunc(EngFunc_WriteCoord, s_fEndOrigin[2]);
-			write_short(g_iSpriteWhite);
+			engfunc(EngFunc_WriteCoord, newOrigin[0]);
+			engfunc(EngFunc_WriteCoord, newOrigin[1]);
+			engfunc(EngFunc_WriteCoord, newOrigin[2]);
+			write_short(spriteWhite);
 			write_byte(random_num(18, 22));
 			write_byte(127);
 			message_end();

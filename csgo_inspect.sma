@@ -3,9 +3,10 @@
 #include <fakemeta>
 #include <engine>
 #include <hamsandwich>
+#include <csgomod>
 
 #define PLUGIN  "CS:GO Inspect"
-#define VERSION "1.1"
+#define VERSION "2.0"
 #define AUTHOR  "O'Zone"
 
 new const weaponsWithoutInspect = (1<<CSW_C4) | (1<<CSW_HEGRENADE) | (1<<CSW_FLASHBANG) | (1<<CSW_SMOKEGRENADE);
@@ -47,6 +48,12 @@ new inspectAnimation[] =
 	6	//p90
 };
 
+new const sounds[][] = {
+	"inspect/movement1.wav",
+	"inspect/movement2.wav",
+	"inspect/movement3.wav"
+}
+
 public plugin_init()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR);
@@ -57,6 +64,25 @@ public plugin_init()
 	RegisterHam(Ham_Weapon_SecondaryAttack, "weapon_knife", "knife_override");
 
 	register_impulse(100, "inspect_weapon");
+}
+
+public plugin_precache()
+{
+	new file[64], failed;
+
+	for (new i = 0; i < sizeof(sounds); i++) {
+		formatex(file, charsmax(file), "sound\%s", sounds[i]);
+
+		if (file_exists(file)) {
+			precache_sound(sounds[i]);
+		} else {
+			log_amx("[CS:GO] Inspect file '%s' not exist. Skipped!", sounds[i]);
+
+			failed = true;
+		}
+	}
+
+	if (failed) set_fail_state("[CS:GO] Not all molotov files were precached. Check logs!");
 }
 
 public deagle_reload(weapon)
@@ -102,20 +128,22 @@ public inspect_weapon(id)
 
 	new animation = inspectAnimation[weaponId], currentAnimation = pev(get_pdata_cbase(weapon, 41, 4), pev_weaponanim);
 
-	switch(weaponId) {
+	switch (weaponId) {
 		case CSW_M4A1: {
 			if (!cs_get_weapon_silen(weapon)) animation = 15;
 
 			if (!currentAnimation || currentAnimation == 7 || currentAnimation == animation) play_inspect(id, weapon, animation);
-		}
-		case CSW_USP: {
+		} case CSW_USP: {
 			if (!cs_get_weapon_silen(weapon)) animation = 17;
 
 			if (!currentAnimation || currentAnimation == 8 || currentAnimation == animation) play_inspect(id, weapon, animation);
+		} case CSW_DEAGLE: {
+			if (!deagleDisable[id]) play_inspect(id, weapon, animation);
+		} case CSW_GLOCK18: {
+			if (!currentAnimation || currentAnimation == 1 || currentAnimation == 2 || currentAnimation == 9 || currentAnimation == 10 || currentAnimation == animation) play_inspect(id, weapon, animation);
+		} default: {
+			if (!currentAnimation || currentAnimation == animation) play_inspect(id, weapon, animation);
 		}
-		case CSW_DEAGLE: if (!deagleDisable[id]) play_inspect(id, weapon, animation);
-		case CSW_GLOCK18: if (!currentAnimation || currentAnimation == 1 || currentAnimation == 2 || currentAnimation == 9 || currentAnimation == 10 || currentAnimation == animation) play_inspect(id, weapon, animation);
-		default: if (!currentAnimation || currentAnimation == animation) play_inspect(id, weapon, animation);
 	}
 
 	return PLUGIN_HANDLED;
@@ -129,20 +157,5 @@ stock play_inspect(id, weapon, animation)
 	message_begin(MSG_ONE_UNRELIABLE, SVC_WEAPONANIM, {0, 0, 0}, id);
 	write_byte(animation);
 	write_byte(pev(id, pev_body));
-	message_end();
-}
-
-stock cmd_execute(id, const text[], any:...)
-{
-	#pragma unused text
-
-	new message[192];
-
-	format_args(message, charsmax(message), 1);
-
-	message_begin(id == 0 ? MSG_ALL : MSG_ONE, SVC_DIRECTOR, _, id);
-	write_byte(strlen(message) + 2);
-	write_byte(10);
-	write_string(message);
 	message_end();
 }

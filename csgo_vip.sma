@@ -7,7 +7,7 @@
 #include <csgomod>
 
 #define PLUGIN "CS:GO VIP & SVIP"
-#define VERSION "1.1"
+#define VERSION "2.0"
 #define AUTHOR "O'Zone"
 
 #define ADMIN_FLAG_X (1<<23)
@@ -639,10 +639,9 @@ public say_text(msgId,msgDest,msgEnt)
 	new id = get_msg_arg_int(1);
 
 	if (is_user_connected(id) && get_bit(id, VIP)) {
-		new tempMessage[192], message[192], chatPrefix[64], steamId[33], playerName[32];
+		new tempMessage[192], message[192], chatPrefix[16], playerName[32];
 
 		get_msg_arg_string(2, tempMessage, charsmax(tempMessage));
-		get_user_authid(id, steamId, charsmax(steamId));
 
 		if (get_bit(id, SVIP)) formatex(chatPrefix, charsmax(chatPrefix), "^x04[SVIP]");
 		else formatex(chatPrefix, charsmax(chatPrefix), "^x04[VIP]");

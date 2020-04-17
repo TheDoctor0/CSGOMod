@@ -3,19 +3,18 @@
 #include <fakemeta>
 
 #define PLUGIN "CS:GO Unprecacher"
-#define VERSION "1.1"
+#define VERSION "2.0"
 #define AUTHOR "O'Zone"
 
 public plugin_precache()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR);
 
-	register_forward(FM_PrecacheModel, "PrecacheModel");
-	register_forward(FM_PrecacheSound, "PrecacheSound");
+	register_forward(FM_PrecacheModel, "unprecache_models");
+	register_forward(FM_PrecacheSound, "uprecache_sounds");
 }
 
-new const g_Sounds[][] =
-{
+new const sounds[][] = {
 	"ambience\3dmbridge.wav",
 	"ambience\3dmeagle.wav",
 	"ambience\3dmstart.wav",
@@ -196,18 +195,15 @@ new const g_Sounds[][] =
 	"radio\terwin.wav",
 	"radio\vip.wav",
 	"storm\thunder-theme.wav",
-	"weapons/ak47-1.wav",
 	"weapons/ak47-2.wav",
 	"weapons/ak47_boltpull.wav",
 	"weapons/ak47_clipin.wav",
 	"weapons/ak47_clipout.wav",
-	"weapons/aug-1.wav",
 	"weapons/aug_boltpull.wav",
 	"weapons/aug_boltslap.wav",
 	"weapons/aug_clipin.wav",
 	"weapons/aug_clipout.wav",
 	"weapons/aug_forearm.wav",
-	"weapons/awp1.wav",
 	"weapons/awp_clipin.wav",
 	"weapons/awp_clipout.wav",
 	"weapons/awp_deploy.wav",
@@ -220,76 +216,59 @@ new const g_Sounds[][] =
 	"weapons/de_clipout.wav",
 	"weapons/de_deploy.wav",
 	"weapons/deagle-1.wav",
-	"weapons/deagle-2.wav",
 	"weapons/elite_clipout.wav",
 	"weapons/elite_deploy.wav",
-	"weapons/elite_fire.wav",
 	"weapons/elite_leftclipin.wav",
 	"weapons/elite_reloadstart.wav",
 	"weapons/elite_rightclipin.wav",
 	"weapons/elite_sliderelease.wav",
 	"weapons/elite_twirl.wav",
-	"weapons/famas-1.wav",
 	"weapons/famas-2.wav",
-	"weapons/famas-burst.wav",
 	"weapons/famas_boltpull.wav",
 	"weapons/famas_boltslap.wav",
 	"weapons/famas_clipin.wav",
 	"weapons/famas_clipout.wav",
 	"weapons/famas_forearm.wav",
-	"weapons/fiveseven-1.wav",
 	"weapons/fiveseven_clipin.wav",
 	"weapons/fiveseven_clipout.wav",
 	"weapons/fiveseven_slidepull.wav",
 	"weapons/fiveseven_sliderelease.wav",
-	"weapons/g3sg1-1.wav",
 	"weapons/g3sg1_clipin.wav",
 	"weapons/g3sg1_clipout.wav",
 	"weapons/g3sg1_slide.wav",
-	"weapons/galil-1.wav",
 	"weapons/galil-2.wav",
 	"weapons/galil_boltpull.wav",
 	"weapons/galil_clipin.wav",
 	"weapons/galil_clipout.wav",
 	"weapons/generic_reload.wav",
 	"weapons/generic_shot_reload.wav",
-	"weapons/glock18-1.wav",
-	"weapons/glock18-2.wav",
 	"weapons/headshot2.wav",
-	"weapons/m3-1.wav",
 	"weapons/m3_insertshell.wav",
 	"weapons/m3_pump.wav",
-	"weapons/m4a1-1.wav",
 	"weapons/m4a1_boltpull.wav",
 	"weapons/m4a1_clipin.wav",
 	"weapons/m4a1_clipout.wav",
 	"weapons/m4a1_deploy.wav",
 	"weapons/m4a1_silencer_off.wav",
 	"weapons/m4a1_silencer_on.wav",
-	"weapons/m4a1_unsil-1.wav",
 	"weapons/m4a1_unsil-2.wav",
-	"weapons/m249-1.wav",
 	"weapons/m249-2.wav",
 	"weapons/m249_boxin.wav",
 	"weapons/m249_boxout.wav",
 	"weapons/m249_chain.wav",
 	"weapons/m249_coverdown.wav",
 	"weapons/m249_coverup.wav",
-	"weapons/mac10-1.wav",
 	"weapons/mac10_boltpull.wav",
 	"weapons/mac10_clipin.wav",
 	"weapons/mac10_clipout.wav",
-	"weapons/mp5-1.wav",
 	"weapons/mp5-2.wav",
 	"weapons/mp5_clipin.wav",
 	"weapons/mp5_clipout.wav",
 	"weapons/mp5_slideback.wav",
-	"weapons/p90-1.wav",
 	"weapons/p90_boltpull.wav",
 	"weapons/p90_clipin.wav",
 	"weapons/p90_clipout.wav",
 	"weapons/p90_cliprelease.wav",
-	"weapons/p228-1.wav",
 	"weapons/p228_clipin.wav",
 	"weapons/p228_clipout.wav",
 	"weapons/p228_slidepull.wav",
@@ -302,25 +281,19 @@ new const g_Sounds[][] =
 	"weapons/scout_bolt.wav",
 	"weapons/scout_clipin.wav",
 	"weapons/scout_clipout.wav",
-	"weapons/scout_fire-1.wav",
-	"weapons/sg550-1.wav",
 	"weapons/sg550_boltpull.wav",
 	"weapons/sg550_clipin.wav",
 	"weapons/sg550_clipout.wav",
-	"weapons/sg552-1.wav",
 	"weapons/sg552-2.wav",
 	"weapons/sg552_boltpull.wav",
 	"weapons/sg552_clipin.wav",
 	"weapons/sg552_clipout.wav",
 	"weapons/slideback1.wav",
 	"weapons/sliderelease1.wav",
-	"weapons/tmp-1.wav",
 	"weapons/tmp-2.wav",
-	"weapons/ump45-1.wav",
 	"weapons/ump45_boltslap.wav",
 	"weapons/ump45_clipin.wav",
 	"weapons/ump45_clipout.wav",
-	"weapons/usp1.wav",
 	"weapons/usp2.wav",
 	"weapons/usp_clipin.wav",
 	"weapons/usp_clipout.wav",
@@ -328,29 +301,20 @@ new const g_Sounds[][] =
 	"weapons/usp_silencer_on.wav",
 	"weapons/usp_slideback.wav",
 	"weapons/usp_sliderelease.wav",
-	"weapons/usp_unsil-1.wav",
-	"weapons/xm1014-1.wav",
 	"weapons/scout_clipin.wav",
 	"weapons/scout_bolt.wav",
 	"weapons/scout_clipout.wav",
-	"weapons/scout_fire-1.wav",
-	"weapons/tmp-1.wav",
 	"weapons/tmp-2.wav",
 	"weapons/p228_clipin.wav",
 	"weapons/p228_clipout.wav",
 	"weapons/p228_slidepull.wav",
 	"weapons/p228_sliderelease.wav",
-	"weapons/p228-1.wav",
-	"weapons/glock18-1.wav",
-	"weapons/glock18-2.wav",
 	"weapons/fiveseven_clipin.wav",
 	"weapons/fiveseven_clipout.wav",
 	"weapons/fiveseven_slidepull.wav",
 	"weapons/fiveseven_sliderelease.wav",
-	"weapons/fiveseven-1.wav",
 	"weapons/elite_clipout.wav",
 	"weapons/elite_deploy.wav",
-	"weapons/elite_fire.wav",
 	"weapons/elite_leftclipin.wav",
 	"weapons/elite_reloadstart.wav",
 	"weapons/elite_rightclipin.wav",
@@ -398,29 +362,22 @@ new const g_Sounds[][] =
 	"weapons/famas_clipin.wav",
 	"weapons/famas_clipout.wav",
 	"weapons/famas_forearm.wav",
-	"weapons/famas-1.wav",
 	"weapons/famas-2.wav",
-	"weapons/famas-burst.wav",
 	"weapons/galil_boltpull.wav",
 	"weapons/galil_clipin.wav",
 	"weapons/galil_clipout.wav",
-	"weapons/galil-1.wav",
 	"weapons/galil-2.wav",
 	"weapons/mac10_boltpull.wav",
 	"weapons/mac10_clipin.wav",
 	"weapons/mac10_clipout.wav",
-	"weapons/mac10-1.wav",
 	"weapons/scout_bolt.wav",
 	"weapons/scout_clipin.wav",
 	"weapons/scout_clipout.wav",
-	"weapons/scout_fire-1.wav",
 	"weapons/ump45_boltslap.wav",
 	"items/tr_kevlar.wav",
 	"weapons/boltup.wav",
 	"weapons/boltdown.wav",
 	"weapons/awp_deploy.wav",
-	"weapons/deagle-1.wav",
-	"weapons/deagle-2.wav",
 	"weapons/awp_clipin.wav",
 	"weapons/awp_clipout.wav",
 	"weapons/g3sg1_slide.wav",
@@ -449,7 +406,6 @@ new const g_Sounds[][] =
 	"weapons/m3_pump.wav",
 	"weapons/reload1.wav",
 	"weapons/reload3.wav",
-	"weapons/usp1.wav",
 	"weapons/usp2.wav",
 	"weapons/usp_clipout.wav",
 	"weapons/usp_clipin.wav",
@@ -486,7 +442,6 @@ new const g_Sounds[][] =
 	"weapons/mp5_clipout.wav",
 	"weapons/mp5_clipin.wav",
 	"weapons/mp5_slideback.wav",
-	"weapons/elite_fire.wav",
 	"weapons/elite_reloadstart.wav",
 	"weapons/elite_leftclipin.wav",
 	"weapons/elite_clipout.wav",
@@ -501,7 +456,6 @@ new const g_Sounds[][] =
 	"weapons/famas_boltpull.wav",
 	"weapons/famas_boltslap.wav",
 	"weapons/famas_forearm.wav",
-	"weapons/famas-burst.wav",
 	"weapons/debris1.wav",
 	"weapons/debris2.wav",
 	"weapons/debris3.wav",
@@ -598,8 +552,7 @@ new const g_Sounds[][] =
 	"weapons/ric_conc-2.wav"
 }
 
-new const g_Models[][] =
-{
+new const models[][] = {
 	"bag.mdl",
 	"bigtree.mdl",
 	"bush.mdl",
@@ -608,18 +561,16 @@ new const g_Models[][] =
 	"pallet_with_bags2.mdl",
 	"palmtree.mdl",
 	"PG-150.mdl",
-	"pshell.mdl",
 	"rshell.mdl",
 	"rshell_big.mdl",
 }
 
-public PrecacheModel(const szModel[])
+public unprecache_models(const model[])
 {
-	for(new i = 0; i < sizeof(g_Models); i++)
-	{
-		if( containi(szModel, g_Models[i]) != -1 )
-		{
+	for (new i = 0; i < sizeof(models); i++) {
+		if (containi(model, models[i]) != -1) {
 			forward_return(FMV_CELL, 0);
+
 			return FMRES_SUPERCEDE ;
 		}
 	}
@@ -627,12 +578,10 @@ public PrecacheModel(const szModel[])
 	return FMRES_IGNORED;
 }
 
-public PrecacheSound(const szSound[])
+public uprecache_sounds(const sound[])
 {
-	for(new i = 0; i < sizeof(g_Sounds); i++)
-	{
-		if(containi(szSound, g_Sounds[i]) != -1)
-		{
+	for (new i = 0; i < sizeof(sounds); i++) {
+		if (containi(sound, sounds[i]) != -1) {
 			forward_return(FMV_CELL, 0);
 
 			return FMRES_SUPERCEDE;

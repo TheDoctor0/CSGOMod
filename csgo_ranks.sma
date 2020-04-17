@@ -8,7 +8,7 @@
 #include <csgomod>
 
 #define PLUGIN "CS:GO Rank System"
-#define VERSION "1.1"
+#define VERSION "2.0"
 #define AUTHOR "O'Zone"
 
 #define get_elo(%1,%2) (1.0 / (1.0 + floatpower(10.0, ((%1 - %2) / 400.0))))
@@ -82,7 +82,7 @@ new const commandSounds[][] = { "dzwieki", "say /dzwieki", "say_team /dzwieki", 
 enum _:playerInfo { KILLS, RANK, TIME, FIRST_VISIT, LAST_VISIT, BRONZE, SILVER, GOLD, MEDALS, BEST_STATS, BEST_KILLS, BEST_DEATHS,
 	BEST_HS, CURRENT_STATS, CURRENT_KILLS, CURRENT_DEATHS, CURRENT_HS, Float:ELO_RANK, PLAYER_NAME[32], SAFE_NAME[64] };
 
-enum _:winers { THIRD, SECOND, FIRST };
+enum _:winners { THIRD, SECOND, FIRST };
 
 new playerData[MAX_PLAYERS + 1][playerInfo], sprites[MAX_RANKS + 1], Handle:sql, bool:sqlConnected, bool:oneAndOnly,
 	bool:mapChange,bool:block, loaded, visit, hud, aimHUD, defaultInfo, round, sounds, soundMayTheForce, soundOneAndOnly,
@@ -156,7 +156,9 @@ public plugin_precache()
 			log_to_file("csgo-error.log", "[CS:GO] Brakujacy plik sprite: ^"%s^"", spriteFile);
 
 			error = true;
-		} else sprites[i] = precache_model(spriteFile);
+		} else {
+			sprites[i] = precache_model(spriteFile);
+		}
 	}
 
 	if (error) set_fail_state("Brakuje plikow sprite, zaladowanie pluginu niemozliwe! Sprawdz logi w pliku csgo/error.log!");
@@ -181,8 +183,8 @@ public sql_init()
 
 	new Handle:connectHandle = SQL_Connect(sql, errorNum, error, charsmax(error));
 
-	if(errorNum) {
-		log_to_file("csgo-error.log", "Error: %s (%i)", error, errorNum);
+	if (errorNum) {
+		log_to_file("csgo-error.log", "error: %s (%i)", error, errorNum);
 
 		return;
 	}
@@ -261,7 +263,7 @@ public load_data(id)
 public load_data_handle(failState, Handle:query, error[], errorNum, playerId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL error: %s (%d)", error, errorNum);
 
 		return;
 	}
@@ -311,18 +313,18 @@ stock save_data(id, end = 0)
 
 	if (playerData[id][CURRENT_STATS] > playerData[id][BEST_STATS]) {
 		formatex(queryDataStats, charsmax(queryDataStats), ", `bestkills` = %d, `besths` = %d, `bestdeaths` = %d, `beststats` = %d",
-		playerData[id][CURRENT_KILLS], playerData[id][CURRENT_HS], playerData[id][CURRENT_DEATHS], playerData[id][CURRENT_STATS]);
+			playerData[id][CURRENT_KILLS], playerData[id][CURRENT_HS], playerData[id][CURRENT_DEATHS], playerData[id][CURRENT_STATS]);
 	}
 
 	new medals = playerData[id][GOLD] * 3 + playerData[id][SILVER] * 2 + playerData[id][BRONZE];
 
 	if (medals > playerData[id][MEDALS]) {
 		formatex(queryDataMedals, charsmax(queryDataMedals), ", `gold` = %d, `silver` = %d, `bronze` = %d, `medals` = %d",
-		playerData[id][GOLD], playerData[id][SILVER], playerData[id][BRONZE], medals);
+			playerData[id][GOLD], playerData[id][SILVER], playerData[id][BRONZE], medals);
 	}
 
 	formatex(queryData, charsmax(queryData), "UPDATE `csgo_ranks` SET `kills` = %i, `rank` = %i, `elorank` = %f, `time` = %i, `lastvisit` = %i%s%s WHERE name = ^"%s^" AND `time` <= %i",
-	playerData[id][KILLS], playerData[id][RANK], playerData[id][ELO_RANK], time, get_systime(), queryDataStats, queryDataMedals, playerData[id][SAFE_NAME], time);
+		playerData[id][KILLS], playerData[id][RANK], playerData[id][ELO_RANK], time, get_systime(), queryDataStats, queryDataMedals, playerData[id][SAFE_NAME], time);
 
 	switch(end) {
 		case 0, 1: SQL_ThreadQuery(sql, "ignore_handle", queryData, playerId, sizeof(playerId));
@@ -338,7 +340,7 @@ stock save_data(id, end = 0)
 			if (!SQL_Execute(query)) {
 				errorNum = SQL_QueryError(query, error, charsmax(error));
 
-				log_to_file("csgo-error.log", "Save Query Nonthreaded failed. [%d] %s", errorNum, error);
+				log_to_file("csgo-error.log", "Save suery nonthreaded failed. [%d] %s", errorNum, error);
 
 				SQL_FreeHandle(query);
 				SQL_FreeHandle(sqlConnection);
@@ -354,10 +356,10 @@ stock save_data(id, end = 0)
 	if (end) rem_bit(id, loaded);
 }
 
-public ignore_handle(FailState, Handle:Query, Error[], ErrCode, Data[], DataSize)
+public ignore_handle(failState, Handle:query, error[], errorCode, data[], dataSize)
 {
-	if (FailState == TQUERY_CONNECT_FAILED) log_to_file("csgo-error.log", "[CS:GO Ranks] Could not connect to SQL database. [%d] %s", ErrCode, Error);
-	else if (FailState == TQUERY_QUERY_FAILED) log_to_file("csgo-error.log", "[CS:GO Ranks] Query failed. [%d] %s", ErrCode, Error);
+	if (failState == TQUERY_CONNECT_FAILED) log_to_file("csgo-error.log", "[CS:GO Ranks] Could not connect to SQL database. [%d] %s", errorCode, error);
+	else if (failState == TQUERY_QUERY_FAILED) log_to_file("csgo-error.log", "[CS:GO Ranks] Query failed. [%d] %s", errorCode, error);
 }
 
 stock check_rank(id, check = 0)
@@ -366,7 +368,9 @@ stock check_rank(id, check = 0)
 
 	if (playerData[id][KILLS] < unrankedKills) return;
 
-	while (playerData[id][RANK] < MAX_RANKS && playerData[id][ELO_RANK] >= rankElo[playerData[id][RANK] + 1]) playerData[id][RANK]++;
+	while (playerData[id][RANK] < MAX_RANKS && playerData[id][ELO_RANK] >= rankElo[playerData[id][RANK] + 1]) {
+		playerData[id][RANK]++;
+	}
 
 	if (!check) save_data(id);
 }
@@ -377,8 +381,6 @@ public display_hud(id)
 
 	if (is_user_bot(id) || !is_user_connected(id)) return PLUGIN_CONTINUE;
 
-	remove_task(id + 768, 1);
-
 	static clan[64], operation[64], skin[64], statTrak[64], weaponStatTrak, target;
 
 	target = id;
@@ -387,7 +389,9 @@ public display_hud(id)
 		target = pev(id, pev_iuser2);
 
 		set_hudmessage(255, 255, 255, 0.7, 0.25, 0, 0.0, 1.2, 0.0, 0.0, 3);
-	} else set_hudmessage(0, 255, 0, 0.7, 0.06, 0, 0.0, 1.2, 0.0, 0.0, 3);
+	} else {
+		set_hudmessage(0, 255, 0, 0.7, 0.06, 0, 0.0, 1.2, 0.0, 0.0, 3);
+	}
 
 	if (!target || !get_bit(target, loaded)) return PLUGIN_CONTINUE;
 
@@ -522,7 +526,7 @@ public client_death(killer, victim, weapon, hitPlace, TK)
 	for (new i = 1; i <= MAX_PLAYERS; i++) {
 		if (!is_user_alive(i)) continue;
 
-		switch(get_user_team(i)) {
+		switch (get_user_team(i)) {
 			case 1: {
 				tCount++;
 				lastT = i;
@@ -639,7 +643,7 @@ public check_time(id)
 
 	UnixToTime(time, visitYear, visitMonth, visitDay, visitHour, visitMinutes, visitSeconds, UT_TIMEZONE_SERVER);
 
-	client_print_color(id, id, "^x04[CS:GO]^x01 Aktualnie jest godzina^x03 %02d:%02d:%02d (Data: %02d.%02d.%02d)^x01.", visitHour, visitMinutes, visitSeconds, visitDay, visitMonth, visitYear);
+	client_print_color(id, id, "^x04[CS:GO]^x01 Aktualnie jest godzina^x03 %02d:%02d:%02d (data: %02d.%02d.%02d)^x01.", visitHour, visitMinutes, visitSeconds, visitDay, visitMonth, visitYear);
 
 	if (playerData[id][FIRST_VISIT] == playerData[id][LAST_VISIT]) client_print_color(id, id, "^x04[CS:GO]^x01 To twoja^x03 pierwsza wizyta^x01 na serwerze. Zyczymy milej gry!" );
 	else {
@@ -647,7 +651,7 @@ public check_time(id)
 
 		if (visitYear == Year && visitMonth == Month && visitDay == Day) client_print_color(id, id, "^x04[CS:GO]^x01 Twoja ostatnia wizyta miala miejsce^x03 dzisiaj^x01 o^x03 %02d:%02d:%02d^x01. Zyczymy milej gry!", visitHour, visitMinutes, visitSeconds);
 		else if (visitYear == Year && visitMonth == Month && (visitDay - 1) == Day) client_print_color(id, id, "^x04[CS:GO]^x01 Twoja ostatnia wizyta miala miejsce^x03 wczoraj^x01 o^x03 %02d:%02d:%02d^x01. Zyczymy milej gry!", visitHour, visitMinutes, visitSeconds);
-		else client_print_color(id, id, "^x04[CS:GO]^x01 Twoja ostatnia wizyta:^x03 %02d:%02d:%02d (Data: %02d.%02d.%02d)^x01. Zyczymy milej gry!", visitHour, visitMinutes, visitSeconds, Day, Month, Year);
+		else client_print_color(id, id, "^x04[CS:GO]^x01 Twoja ostatnia wizyta:^x03 %02d:%02d:%02d (data: %02d.%02d.%02d)^x01. Zyczymy milej gry!", visitHour, visitMinutes, visitSeconds, Day, Month, Year);
 	}
 }
 
@@ -685,7 +689,7 @@ public cmd_topranks(id)
 public show_topranks(failState, Handle:query, error[], errorNum, playerId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL error: %s (%d)", error, errorNum);
 
 		return PLUGIN_HANDLED;
 	}
@@ -738,7 +742,7 @@ public cmd_time(id)
 public show_time(failState, Handle:query, error[], errorNum, playerId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL error: %s (%d)", error, errorNum);
 
 		return PLUGIN_HANDLED;
 	}
@@ -777,7 +781,7 @@ public cmd_toptime(id)
 public show_toptime(failState, Handle:query, error[], errorNum, playerId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL error: %s (%d)", error, errorNum);
 
 		return PLUGIN_HANDLED;
 	}
@@ -840,7 +844,7 @@ public cmd_medals(id)
 public show_medals(failState, Handle:query, error[], errorNum, playerId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL error: %s (%d)", error, errorNum);
 
 		return PLUGIN_HANDLED;
 	}
@@ -869,7 +873,7 @@ public cmd_topmedals(id)
 public show_topmedals(failState, Handle:query, error[], errorNum, playerId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL error: %s (%d)", error, errorNum);
 
 		return PLUGIN_HANDLED;
 	}
@@ -926,7 +930,7 @@ public cmd_stats(id)
 public show_stats(failState, Handle:query, error[], errorNum, playerId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL error: %s (%d)", error, errorNum);
 
 		return PLUGIN_HANDLED;
 	}
@@ -957,7 +961,7 @@ public cmd_topstats(id)
 public show_topstats(failState, Handle:query, error[], errorNum, playerId[], dataSize)
 {
 	if (failState) {
-		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL Error: %s (%d)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL error: %s (%d)", error, errorNum);
 
 		return PLUGIN_HANDLED;
 	}
@@ -1181,7 +1185,7 @@ public load_sounds(id)
 
 public cmd_sounds(id)
 {
-	new menuData[64], menu = menu_create("\yUstawienia \rDzwiekow\w:", "cmd_sounds_Handle");
+	new menuData[64], menu = menu_create("\yUstawienia \rDzwiekow\w:", "cmd_sounds_handle");
 
 	formatex(menuData, charsmax(menuData), "\wThe Force Will Be With You \w[\r%s\w]", get_bit(id, soundMayTheForce) ? "Wlaczony" : "Wylaczony");
 	menu_additem(menu, menuData);
@@ -1205,7 +1209,7 @@ public cmd_sounds(id)
 	return PLUGIN_HANDLED;
 }
 
-public cmd_sounds_Handle(id, menu, item)
+public cmd_sounds_handle(id, menu, item)
 {
 	if (!is_user_connected(id)) return PLUGIN_HANDLED;
 
