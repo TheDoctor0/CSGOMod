@@ -28,7 +28,11 @@ if not os.path.isfile("default.qc"):
     print("Default weapon QC file (default.qc) does not exists!")
     exit(0)
 
-skins = glob.glob("{}_*.bmp".format(weapon))
+if not os.path.isdir("bmp"):
+    print("Directory (bmp) that contains skin textures does not exists!")
+    exit(0)
+
+skins = glob.glob("bmp/*.bmp".format(weapon))
 
 if fresh:
     files = glob.glob("v_{}_*.qc".format(weapon))
@@ -37,7 +41,16 @@ if fresh:
         os.remove(file)
 
 for index, skin in enumerate(skins, start=0):
-    smd = skin.replace(".bmp", ".smd")
+    original = skin
+    skin = skin.lower().replace(' ', '_').replace('\'', '_')
+
+    if original != skin:
+        os.rename(original, skin)
+
+    smd = skin.replace("bmp", "smd")
+
+    if not os.path.isdir("smd"):
+        os.mkdir("smd")
 
     if fresh or not os.path.isfile(smd):
         shutil.copyfile("template.smd", smd)
@@ -60,7 +73,7 @@ for index, skin in enumerate(skins, start=0):
         found = False
 
         for line in file:
-            entry = "studio \"{}\"".format(skin.replace(".bmp", ""))
+            entry = "studio \"{}\"".format(smd.replace(".smd", ""))
 
             if entry in line:
                 found = True
