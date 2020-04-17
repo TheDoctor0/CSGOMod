@@ -5,13 +5,13 @@
 #include <xs>
 
 #define PLUGIN "CS:GO Nades"
-#define VERSION "1.1"
+#define VERSION "2.0"
 #define AUTHOR "O'Zone"
 
 new const grenadeModels[][][] = {
-	{ "models/ozone_csgo/nades/w_hegrenade.mdl", "models/ozone_csgo/nades/v_hegrenade.mdl", "models/ozone_csgo/nades/p_hegrenade.mdl" },
-	{ "models/ozone_csgo/nades/w_flashbang.mdl", "models/ozone_csgo/nades/v_flashbang.mdl", "models/ozone_csgo/nades/p_flashbang.mdl" },
-	{ "models/ozone_csgo/nades/w_smokegrenade.mdl", "models/ozone_csgo/nades/v_smokegrenade.mdl", "models/ozone_csgo/nades/p_smokegrenade.mdl" }
+	{ "models/csgo_ozone/nades/w_hegrenade.mdl", "models/csgo_ozone/nades/v_hegrenade.mdl", "models/csgo_ozone/nades/p_hegrenade.mdl" },
+	{ "models/csgo_ozone/nades/w_flashbang.mdl", "models/csgo_ozone/nades/v_flashbang.mdl", "models/csgo_ozone/nades/p_flashbang.mdl" },
+	{ "models/csgo_ozone/nades/w_smokegrenade.mdl", "models/csgo_ozone/nades/v_smokegrenade.mdl", "models/csgo_ozone/nades/p_smokegrenade.mdl" }
 };
 
 new const grenadeNames[][] = { "weapon_flashbang", "weapon_hegrenade", "weapon_smokegrenade" };
@@ -28,8 +28,10 @@ public plugin_init()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR);
 
-	for (new i = 0; i < sizeof grenadeNames; i++) RegisterHam(Ham_Item_Deploy, grenadeNames[i], "grenade_deploy_model", true);
-	for (new i = 0; i < sizeof grenadeNames; i++) RegisterHam(Ham_Weapon_SecondaryAttack, grenadeNames[i], "grenade_secondary_attack", false);
+	for (new i = 0; i < sizeof grenadeNames; i++) {
+		RegisterHam(Ham_Item_Deploy, grenadeNames[i], "grenade_deploy_model", true);
+		RegisterHam(Ham_Weapon_SecondaryAttack, grenadeNames[i], "grenade_secondary_attack", false);
+	}
 
 	register_forward(FM_SetModel, "grenade_world_model", false);
 }
@@ -37,7 +39,9 @@ public plugin_init()
 public plugin_precache()
 {
 	for (new i = 0; i < sizeof(grenadeModels); i++) {
-		for (new j = 0; j < sizeof(grenadeModels); j++) precache_model(grenadeModels[i][j]);
+		for (new j = 0; j < sizeof(grenadeModels); j++) {
+			precache_model(grenadeModels[i][j]);
+		}
 	}
 }
 
@@ -47,7 +51,7 @@ public grenade_deploy_model(weapon)
 
 	if (!is_user_alive(id)) return HAM_IGNORED;
 
-	switch(cs_get_weapon_id(weapon)) {
+	switch (cs_get_weapon_id(weapon)) {
 		case CSW_HEGRENADE: {
 			set_pev(id, pev_weaponmodel2, grenadeModels[HEGRENADE][P_MODEL]);
 			set_pev(id, pev_viewmodel2, grenadeModels[HEGRENADE][V_MODEL]);
@@ -70,6 +74,8 @@ public grenade_world_model(ent, model[])
 	static id; id = pev(ent, pev_owner);
 
 	if (!is_user_connected(id)) return FMRES_IGNORED;
+
+	client_print_color(id, id, model);
 
 	if (model[0] == 'm' && model[7] == 'w' && model[8] == '_') {
 		switch (model[9]) {
@@ -96,12 +102,10 @@ public grenade_world_model(ent, model[])
 
 public grenade_secondary_attack(const ent)
 {
-	if (pev_valid(ent))
-	{
+	if (pev_valid(ent)) {
 		new id = get_pdata_cbase(ent, 41, 4), buttons = pev(id, pev_button);
 
-		if (buttons & IN_ATTACK) grenadeThrow[id] = MEDIUM;
-		else grenadeThrow[id] = SHORT;
+		grenadeThrow[id] = (buttons & IN_ATTACK) ? MEDIUM : SHORT;
 
 		ExecuteHamB(Ham_Weapon_PrimaryAttack, ent);
 	}
