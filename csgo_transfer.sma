@@ -2,7 +2,7 @@
 #include <csgomod>
 
 #define PLUGIN "CS:GO Transfer"
-#define VERSION "1.1"
+#define VERSION "2.0"
 #define AUTHOR "O'Zone"
 
 new const commandTransfer[][] = { "say /transferuj", "say_team /transferuj", "say /transfer", "say_team /transfer", "transfer" };
@@ -46,7 +46,9 @@ public transfer_menu(id)
 		menu_destroy(menu);
 
 		client_print_color(id, id, "^x04[CS:GO]^x01 Na serwerze nie ma gracza, ktoremu moglbys przetransferowac^x03 pieniadze^x01!");
-	} else menu_display(id, menu);
+	} else {
+		menu_display(id, menu);
+	}
 
 	return PLUGIN_HANDLED;
 }
@@ -80,7 +82,6 @@ public transfer_menu_handle(id, menu, item)
 	client_cmd(id, "messagemode ILOSC_KASY");
 
 	client_print_color(id, id, "^x04[CS:GO]^x01 Wpisz ilosc^x03 pieniedzy^x01, ktora chcesz przetransferowac!");
-
 	client_print(id, print_center, "Wpisz ilosc pieniedzy, ktora chcesz przetransferowac!");
 
 	return PLUGIN_HANDLED;
@@ -124,7 +125,6 @@ public transfer_handle(id)
 	csgo_add_money(id, -cashAmount);
 
 	client_print_color(0, id, "^x04[CS:GO]^x03 %s^x01 przetransferowal^x04 %.2f Euro^x01 na konto^x03 %s^x01.", playerName, cashAmount, playerIdName);
-
 	log_to_file("csgo-transfer.log", "Gracz %s przetransferowal %.2f Euro na konto gracza %s.", playerName, cashAmount, playerIdName);
 
 	return PLUGIN_HANDLED;
