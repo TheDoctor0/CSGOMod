@@ -19,6 +19,7 @@
 #define TASK_AD		6234
 #define TASK_SHELL	7892
 #define TASK_SPEC   8012
+#define TASK_DEPLOY 9321
 
 #define WEAPON_ALL	31
 #define OBSERVER	4
@@ -2102,7 +2103,7 @@ public update_client_data_post(id, sendWeapons, handleCD)
 
 	ent = get_pdata_cbase(target, 373, 5);
 
-	if (ent == -1) return FMRES_IGNORED;
+	if (ent == -1 || !pev_valid(ent)) return FMRES_IGNORED;
 
 	weapon = weapon_entity(ent);
 
@@ -2165,7 +2166,7 @@ public client_playback_event(flags, id, event, Float:delay, Float:origin[3], Flo
 	for (i = 0; i < count; i++) {
 		spectator = spectators[i];
 
-		if (pev(spectator, pev_iuser1) != OBS_IN_EYE || pev(spectator, pev_iuser2) != id) continue;
+		if (!is_user_connected(spectator) || pev(spectator, pev_iuser1) != OBSERVER || pev(spectator, pev_iuser2) != id) continue;
 
 		return FMRES_SUPERCEDE;
 	}
@@ -2267,6 +2268,8 @@ public give_weapons(data[2])
 
 stock change_skin(id, weapon, ent = 0)
 {
+	remove_task(id + TASK_DEPLOY);
+
 	playerData[id][SKIN] = -1;
 	playerData[id][SUBMODEL] = 0;
 	playerData[id][TEMP][WEAPON_ENT] = 0;
@@ -2303,7 +2306,7 @@ stock change_skin(id, weapon, ent = 0)
 				}
 			}
 
-			set_task(0.1, "deploy_weapon_switch", id);
+			set_task(0.1, "deploy_weapon_switch", id + TASK_DEPLOY);
 
 			return;
 		}
@@ -2316,14 +2319,18 @@ stock change_skin(id, weapon, ent = 0)
 		playerData[id][SUBMODEL] = skin[SKIN_SUBMODEL];
 	}
 
-	set_task(0.1, "deploy_weapon_switch", id);
+	set_task(0.1, "deploy_weapon_switch", id + TASK_DEPLOY);
 }
 
 public deploy_weapon_switch(id)
 {
+	id -= TASK_DEPLOY;
+
+	if (!is_user_alive(id)) return;
+
 	static skin[skinsInfo], weapon; weapon = get_pdata_cbase(id, 373, 5);
 
-	if (!weapon || !pev_valid(weapon) || weapon == CSW_HEGRENADE || weapon == CSW_SMOKEGRENADE || weapon == CSW_FLASHBANG || weapon == CSW_C4) return;
+	if (!weapon || !pev_valid(weapon)) return;
 
 	if (playerData[id][SKIN] > -1) {
 		ArrayGetArray(skins, playerData[id][SKIN], skin);
@@ -2344,6 +2351,8 @@ stock send_weapon_animation(id, submodel, animation = 0)
 {
 	static i, count, spectator, spectators[MAX_PLAYERS];
 
+	if (!is_user_alive(id)) return;
+
 	set_pev(id, pev_weaponanim, animation);
 
 	message_begin(MSG_ONE, SVC_WEAPONANIM, _, id);
@@ -2358,7 +2367,7 @@ stock send_weapon_animation(id, submodel, animation = 0)
 	for (i = 0; i < count; i++) {
 		spectator = spectators[i];
 
-		if (pev(spectator, pev_iuser1) != OBSERVER || pev(spectator, pev_iuser2) != id) continue;
+		if (!is_user_connected(spectator) || pev(spectator, pev_iuser1) != OBSERVER || pev(spectator, pev_iuser2) != id) continue;
 
 		set_pev(spectator, pev_weaponanim, animation);
 
@@ -2489,9 +2498,11 @@ stock weapon_shoot_info(ent, animation, const soundEmpty[], const soundFire[], a
 
 stock play_weapon_state(id, const soundFire[], animation)
 {
+	if (!is_user_alive(id)) return;
+
 	emit_sound(id, CHAN_WEAPON, soundFire, VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
 
-	send_weapon_animation(id, playerData[id][SUBMODEL], animation)
+	send_weapon_animation(id, playerData[id][SUBMODEL], animation);
 }
 
 stock eject_brass(id, ent)
@@ -2519,6 +2530,8 @@ stock eject_brass(id, ent)
 public eject_shell(id)
 {
 	id -= TASK_SHELL;
+
+	if (!is_user_alive(id)) return;
 
 	set_pdata_float(id, 111, get_gametime(), 5);
 }
@@ -3021,19 +3034,19 @@ stock remove_seller(id)
 	}
 }
 
-stock fm_get_user_aiming_ent(index, const sClassName[])
+stock fm_get_user_aiming_ent(index, const className[])
 {
-	new Float:vOrigin[3];
+	new Float:origin[3];
 
-	fm_get_aim_origin(index, vOrigin);
+	fm_get_aim_origin(index, origin);
 
-	new ent, sTempClass[32], iLen = sizeof(sTempClass) - 1;
+	new ent, tempClass[32];
 
 	do {
-		pev(ent, pev_classname, sTempClass, iLen);
+		pev(ent, pev_classname, tempClass, charsmax(tempClass));
 
-		if (equali(sClassName, sTempClass)) return ent;
-	} while ((ent = engfunc(EngFunc_FindEntityInSphere, ent, vOrigin, 0.005)));
+		if (equali(className, tempClass)) return ent;
+	} while ((ent = engfunc(EngFunc_FindEntityInSphere, ent, origin, 0.005)));
 
 	return 0;
 }
