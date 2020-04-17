@@ -3,19 +3,18 @@
 #include <fakemeta>
 
 #define PLUGIN "CS:GO Unprecacher"
-#define VERSION "1.1"
+#define VERSION "2.0"
 #define AUTHOR "O'Zone"
 
 public plugin_precache()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR);
 
-	register_forward(FM_PrecacheModel, "PrecacheModel");
-	register_forward(FM_PrecacheSound, "PrecacheSound");
+	register_forward(FM_PrecacheModel, "unprecache_models");
+	register_forward(FM_PrecacheSound, "uprecache_sounds");
 }
 
-new const g_Sounds[][] =
-{
+new const sounds[][] = {
 	"ambience\3dmbridge.wav",
 	"ambience\3dmeagle.wav",
 	"ambience\3dmstart.wav",
@@ -598,8 +597,7 @@ new const g_Sounds[][] =
 	"weapons/ric_conc-2.wav"
 }
 
-new const g_Models[][] =
-{
+new const models[][] = {
 	"bag.mdl",
 	"bigtree.mdl",
 	"bush.mdl",
@@ -613,13 +611,12 @@ new const g_Models[][] =
 	"rshell_big.mdl",
 }
 
-public PrecacheModel(const szModel[])
+public unprecache_models(const model[])
 {
-	for(new i = 0; i < sizeof(g_Models); i++)
-	{
-		if( containi(szModel, g_Models[i]) != -1 )
-		{
+	for (new i = 0; i < sizeof(models); i++) {
+		if (containi(model, models[i]) != -1) {
 			forward_return(FMV_CELL, 0);
+
 			return FMRES_SUPERCEDE ;
 		}
 	}
@@ -627,12 +624,10 @@ public PrecacheModel(const szModel[])
 	return FMRES_IGNORED;
 }
 
-public PrecacheSound(const szSound[])
+public uprecache_sounds(const sound[])
 {
-	for(new i = 0; i < sizeof(g_Sounds); i++)
-	{
-		if(containi(szSound, g_Sounds[i]) != -1)
-		{
+	for (new i = 0; i < sizeof(sounds); i++) {
+		if (containi(sound, sounds[i]) != -1) {
 			forward_return(FMV_CELL, 0);
 
 			return FMRES_SUPERCEDE;
