@@ -141,6 +141,7 @@ native csgo_get_user_svip(id);
 #define set_bit(%2,%1) (%1 |= (1<<(%2&31)))
 #define rem_bit(%2,%1) (%1 &= ~(1 <<(%2&31)))
 
+#define weapon_entity(%0) (get_pdata_int(%0, 43, 4))
 #define is_user_valid(%1) (1 <= %1 <= MAX_PLAYERS)
 
 stock mysql_escape_string(const source[], dest[], length)
