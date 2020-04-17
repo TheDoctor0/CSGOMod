@@ -2005,14 +2005,17 @@ public weapon_send_weapon_anim_post(ent, animation, skipLocal)
 
 	if (!is_user_alive(id)) return HAM_IGNORED;
 
-	send_weapon_animation(id, playerData[id][SUBMODEL], animation);
+	switch (weapon_entity(ent)) {
+		case CSW_C4, CSW_HEGRENADE, CSW_FLASHBANG, CSW_SMOKEGRENADE: return HAM_IGNORED;
+		default: send_weapon_animation(id, playerData[id][SUBMODEL], animation);
+	}
 
 	return HAM_IGNORED;
 }
 
 public weapon_primary_attack(ent)
 {
-	switch(weapon_entity(ent)) {
+	switch (weapon_entity(ent)) {
 		case CSW_C4, CSW_HEGRENADE, CSW_FLASHBANG, CSW_SMOKEGRENADE: return HAM_IGNORED;
 		default: emulate_primary_attack(ent);
 	}
@@ -2093,20 +2096,24 @@ public update_client_data_post(id, sendWeapons, handleCD)
 {
 	enum { SPEC_MODE, SPEC_TARGET, SPEC_END };
 
-	static specInfo[MAX_PLAYERS + 1][SPEC_END], Float:gameTime, Float:lastEventCheck, specMode, weapon, target, owner;
+	static specInfo[MAX_PLAYERS + 1][SPEC_END], Float:gameTime, Float:lastEventCheck, specMode, ent, weapon, target, owner;
 
 	target = (specMode = pev(id, pev_iuser1)) ? pev(id, pev_iuser2) : id;
 
-	weapon = get_pdata_cbase(target, 373, 5);
+	ent = get_pdata_cbase(target, 373, 5);
 
-	if (weapon == -1) return FMRES_IGNORED;
+	if (ent == -1) return FMRES_IGNORED;
 
-	owner = get_pdata_int(weapon, 43, 4);
+	weapon = weapon_entity(ent);
+
+	if (weapon == CSW_HEGRENADE || weapon == CSW_SMOKEGRENADE || weapon == CSW_FLASHBANG || weapon == CSW_C4) return FMRES_IGNORED;
+
+	owner = get_pdata_int(ent, 43, 4);
 
 	if (!owner) return FMRES_IGNORED;
 
 	gameTime = get_gametime();
-	lastEventCheck = get_pdata_float(weapon, 38, 4);
+	lastEventCheck = get_pdata_float(ent, 38, 4);
 
 	if (specMode) {
 		if (specInfo[id][SPEC_MODE] != specMode) {
@@ -2134,9 +2141,9 @@ public update_client_data_post(id, sendWeapons, handleCD)
 	}
 
 	if (lastEventCheck <= gameTime) {
-		send_weapon_animation(target, playerData[target][SUBMODEL], get_weapon_draw_animation(weapon));
+		send_weapon_animation(target, playerData[target][SUBMODEL], get_weapon_draw_animation(ent));
 
-		set_pdata_float(weapon, 38, 0.0, 4);
+		set_pdata_float(ent, 38, 0.0, 4);
 	}
 
 	return FMRES_IGNORED;
@@ -2264,7 +2271,7 @@ stock change_skin(id, weapon, ent = 0)
 	playerData[id][SUBMODEL] = 0;
 	playerData[id][TEMP][WEAPON_ENT] = 0;
 
-	if (!is_user_alive(id) || weapon == CSW_HEGRENADE || weapon == CSW_SMOKEGRENADE || weapon == CSW_FLASHBANG || weapon == CSW_C4 || !weapon) return;
+	if (!is_user_alive(id) || !weapon || weapon == CSW_HEGRENADE || weapon == CSW_SMOKEGRENADE || weapon == CSW_FLASHBANG || weapon == CSW_C4) return;
 
 	set_pev(id, pev_viewmodel2, "");
 
@@ -2316,7 +2323,7 @@ public deploy_weapon_switch(id)
 {
 	static skin[skinsInfo], weapon; weapon = get_pdata_cbase(id, 373, 5);
 
-	if (!weapon || !pev_valid(weapon)) return;
+	if (!weapon || !pev_valid(weapon) || weapon == CSW_HEGRENADE || weapon == CSW_SMOKEGRENADE || weapon == CSW_FLASHBANG || weapon == CSW_C4) return;
 
 	if (playerData[id][SKIN] > -1) {
 		ArrayGetArray(skins, playerData[id][SKIN], skin);
