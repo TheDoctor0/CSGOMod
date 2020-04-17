@@ -1,6 +1,6 @@
 // Start of QC script.
 
-$modelname "v_ak47_2.mdl"
+$modelname "v_ak47.mdl"
 $cd ".\"
 $cdtexture ".\"
 $scale 1.0
@@ -19,39 +19,7 @@ $body "arms" "t_arms_05"
 
 $bodygroup "skins"
 {
-studio "ak47_polar"
-studio "ak47_powerdriven"
-studio "ak47_predator"
-studio "ak47_pride"
-studio "ak47_propaganda"
-studio "ak47_rainbowline"
-studio "ak47_rampage"
-studio "ak47_rampage2"
-studio "ak47_rebelbell"
-studio "ak47_redgolddragon"
-studio "ak47_redhot"
-studio "ak47_redice"
-studio "ak47_redlaminate"
-studio "ak47_redline"
-studio "ak47_redline2"
-studio "ak47_redrose"
-studio "ak47_safarimesh"
-studio "ak47_sharkattack"
-studio "ak47_sovietrust"
-studio "ak47_stelar_vandalism"
-studio "ak47_sugarrush"
-studio "ak47_theempress"
-studio "ak47_tigerstrike"
-studio "ak47_totalchaos"
-studio "ak47_toucan"
-studio "ak47_vanquish"
-studio "ak47_vulcan"
-studio "ak47_vulcangreen"
-studio "ak47_wastelandrebels"
-studio "ak47_wayfarer"
-studio "ak47_wd"
-studio "ak47_wood"
-studio "ak47_xraymachine"
+studio "default"
 // end
 }
 
