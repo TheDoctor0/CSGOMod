@@ -2430,7 +2430,6 @@ stock emulate_primary_attack(ent)
 	return HAM_IGNORED;
 }
 
-//Set here anims, sounds
 stock weapon_shoot_info(ent, animation, const soundEmpty[], const soundFire[], autoShoot, weaponType)
 {
 	static id, clip;
