@@ -382,7 +382,7 @@ public plugin_cfg()
 
 	SQL_Execute(query);
 
-	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_data` (name VARCHAR(35), money FLOAT NOT NULL, disabled INT NOT NULL, exchange INT NOT NULL, menu INT NOT NULL, online INT NOT NULL, PRIMARY KEY(name))");
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_data` (name VARCHAR(35), money FLOAT NOT NULL, exchange INT NOT NULL, menu INT NOT NULL, online INT NOT NULL, PRIMARY KEY(name))");
 
 	query = SQL_PrepareQuery(connection, queryData);
 
@@ -2287,7 +2287,7 @@ stock change_skin(id, weapon, ent = 0)
 
 				get_weaponname(weapon, weaponName, charsmax(weaponName));
 
-				playerData[id][SKIN] = skin[SKIN_ID];
+				playerData[id][SKIN] = weaponSkin;
 				playerData[id][SUBMODEL] = skin[SKIN_SUBMODEL];
 
 				if (weapon != get_weapon_id(skin[SKIN_WEAPON])) {
@@ -2305,7 +2305,7 @@ stock change_skin(id, weapon, ent = 0)
 	if (playerData[id][ACTIVE][weapon] > -1) {
 		ArrayGetArray(skins, playerData[id][ACTIVE][weapon], skin);
 
-		playerData[id][SKIN] = skin[SKIN_ID];
+		playerData[id][SKIN] = playerData[id][ACTIVE][weapon];
 		playerData[id][SUBMODEL] = skin[SKIN_SUBMODEL];
 	}
 
@@ -2522,11 +2522,7 @@ stock get_weapon_skin(id, weapon)
 	if (!is_user_connected(id) || is_user_hltv(id) || is_user_bot(id) || weapon == CSW_HEGRENADE || weapon == CSW_SMOKEGRENADE || weapon == CSW_FLASHBANG || weapon == CSW_C4 || !weapon || weapon > CSW_P90) return -1;
 
 	if (playerData[id][ACTIVE][weapon] > -1) {
-		static skin[skinsInfo];
-
-		ArrayGetArray(skins, playerData[id][ACTIVE][weapon], skin);
-
-		return skin[SKIN_ID];
+		return playerData[id][ACTIVE][weapon];
 	}
 
 	return -1;
@@ -2758,6 +2754,8 @@ stock get_weapon_skin_name(id, ent, dataReturn[], dataLength, weapon = 0, check 
 			get_weaponname(weapon, weaponName, charsmax(weaponName));
 
 			strtoupper(weaponName);
+
+			replace(weaponName, charsmax(weaponName), "MP5NAVY", "MP5");
 
 			if (equal(dataReturn, "Domyslny") || !dataReturn[0]) formatex(dataReturn, dataLength, weaponName[7]);
 			else format(dataReturn, dataLength, "%s | %s", weaponName[7], dataReturn);
