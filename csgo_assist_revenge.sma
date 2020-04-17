@@ -6,7 +6,7 @@
 #include <csgomod>
 
 #define PLUGIN		"CS:GO Assist and Revenge"
-#define VERSION		"1.1"
+#define VERSION		"2.0"
 #define AUTHOR		"O'Zone"
 
 native csgo_add_kill(id);
@@ -112,7 +112,7 @@ public player_die()
 			playerDamage[i][victim] = 0;
 		}
 
-		if(assistant > 0 && damage > assistDamage) {
+		if (assistant > 0 && damage > assistDamage) {
 			set_user_frags(assistant, get_user_frags(assistant) + 1);
 
 			cs_set_user_deaths(assistant, cs_get_user_deaths(assistant));
