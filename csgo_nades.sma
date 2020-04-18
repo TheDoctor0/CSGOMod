@@ -9,9 +9,9 @@
 #define AUTHOR "O'Zone"
 
 new const grenadeModels[][][] = {
-	{ "models/csgo_ozone/nades/w_hegrenade.mdl", "models/csgo_ozone/nades/v_hegrenade.mdl", "models/csgo_ozone/nades/p_hegrenade.mdl" },
-	{ "models/csgo_ozone/nades/w_flashbang.mdl", "models/csgo_ozone/nades/v_flashbang.mdl", "models/csgo_ozone/nades/p_flashbang.mdl" },
-	{ "models/csgo_ozone/nades/w_smokegrenade.mdl", "models/csgo_ozone/nades/v_smokegrenade.mdl", "models/csgo_ozone/nades/p_smokegrenade.mdl" }
+	{ "models/csgo_ozone/hegrenade/w_hegrenade.mdl", "models/csgo_ozone/hegrenade/v_hegrenade.mdl", "models/csgo_ozone/hegrenade/p_hegrenade.mdl" },
+	{ "models/csgo_ozone/flashbang/w_flashbang.mdl", "models/csgo_ozone/flashbang/v_flashbang.mdl", "models/csgo_ozone/flashbang/p_flashbang.mdl" },
+	{ "models/csgo_ozone/smokegrenade/w_smokegrenade.mdl", "models/csgo_ozone/smokegrenade/v_smokegrenade.mdl", "models/csgo_ozone/smokegrenade/p_smokegrenade.mdl" }
 };
 
 new const grenadeNames[][] = { "weapon_flashbang", "weapon_hegrenade", "weapon_smokegrenade" };
