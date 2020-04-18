@@ -2110,9 +2110,11 @@ public update_client_data_post(id, sendWeapons, handleCD)
 
 	target = (specMode = pev(id, pev_iuser1)) ? pev(id, pev_iuser2) : id;
 
+	if (!is_user_alive(target)) return FMRES_IGNORED;
+
 	ent = get_pdata_cbase(target, 373, 5);
 
-	if (ent == -1 || !pev_valid(ent)) return FMRES_IGNORED;
+	if (!ent || !pev_valid(ent)) return FMRES_IGNORED;
 
 	weapon = weapon_entity(ent);
 
@@ -2458,6 +2460,8 @@ stock emulate_primary_attack(ent)
 stock weapon_shoot_info(ent, animation, const soundEmpty[], const soundFire[], autoShoot, weaponType)
 {
 	static id, clip;
+
+	if (!pev_valid(ent)) return HAM_IGNORED;
 
 	id = get_pdata_cbase(ent, 41, 4);
 	clip = get_pdata_int(ent, 51, 4);
