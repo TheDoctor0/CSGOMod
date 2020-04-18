@@ -21,11 +21,6 @@
 #define TASK_SPEC   8012
 #define TASK_DEPLOY 9321
 
-#define WEAPON_ALL	31
-#define OBSERVER	4
-#define UNSILENCED 0
-#define SILENCED 1
-
 #define WPNSTATE_USP_SILENCED		(1<<0)
 #define WPNSTATE_GLOCK18_BURST_MODE	(1<<1)
 #define WPNSTATE_M4A1_SILENCED		(1<<2)
@@ -39,70 +34,12 @@
 #define WEAPONTYPE_M4A1		5
 #define WEAPONTYPE_USP		6
 
-#define IDLE_ANIM			0
-#define GLOCK18_SHOOT2		4
-#define GLOCK18_SHOOT3		5
-#define AK47_SHOOT1			3
-#define AUG_SHOOT1			3
-#define AWP_SHOOT2			2
-#define DEAGLE_SHOOT1		2
-#define ELITE_SHOOTLEFT5	6
-#define ELITE_SHOOTRIGHT5	12
-#define CLARION_SHOOT2		4
-#define CLARION_SHOOT3		3
-#define FIVESEVEN_SHOOT1	1
-#define G3SG1_SHOOT			1
-#define GALIL_SHOOT3		5
-#define M3_FIRE2			2
-#define XM1014_FIRE2		2
-#define M4A1_SHOOT3			3
-#define M4A1_UNSIL_SHOOT3	10
-#define M249_SHOOT2			2
-#define MAC10_SHOOT1		3
-#define MP5N_SHOOT1			3
-#define P90_SHOOT1			3
-#define P228_SHOOT2			2
-#define SCOUT_SHOOT			1
-#define SG550_SHOOT			1
-#define SG552_SHOOT2		4
-#define TMP_SHOOT3			5
-#define UMP45_SHOOT2		4
-#define USP_UNSIL_SHOOT3	11
-#define USP_SHOOT3			3
+#define WEAPON_ALL	31
 
-#define SHELL_MODEL			"models/pshell.mdl"
-#define SHOTGUN_SHELL_MODEL "models/shotgunshell.mdl"
+#define UNSILENCED 0
+#define SILENCED 1
 
-#define DRYFIRE_PISTOL			"weapons/dryfire_pistol.wav"
-#define DRYFIRE_RIFLE			"weapons/dryfire_rifle.wav"
-#define GLOCK18_BURST_SOUND		"weapons/glock18-1.wav"
-#define GLOCK18_SHOOT_SOUND		"weapons/glock18-2.wav"
-#define AK47_SHOOT_SOUND		"weapons/ak47-1.wav"
-#define AUG_SHOOT_SOUND			"weapons/aug-1.wav"
-#define AWP_SHOOT_SOUND			"weapons/awp1.wav"
-#define DEAGLE_SHOOT_SOUND		"weapons/deagle-2.wav"
-#define ELITE_SHOOT_SOUND		"weapons/elite_fire.wav"
-#define CLARION_BURST_SOUND		"weapons/famas-burst.wav"
-#define CLARION_SHOOT_SOUND		"weapons/famas-1.wav"
-#define FIVESEVEN_SHOOT_SOUND	"weapons/fiveseven-1.wav"
-#define G3SG1_SHOOT_SOUND		"weapons/g3sg1-1.wav"
-#define GALIL_SHOOT_SOUND		"weapons/galil-1.wav"
-#define M3_SHOOT_SOUND			"weapons/m3-1.wav"
-#define XM1014_SHOOT_SOUND		"weapons/xm1014-1.wav"
-#define M4A1_SILENT_SOUND		"weapons/m4a1-1.wav"
-#define M4A1_SHOOT_SOUND		"weapons/m4a1_unsil-1.wav"
-#define M249_SHOOT_SOUND		"weapons/m249-1.wav"
-#define MAC10_SHOOT_SOUND		"weapons/mac10-1.wav"
-#define MP5_SHOOT_SOUND			"weapons/mp5-1.wav"
-#define P90_SHOOT_SOUND			"weapons/p90-1.wav"
-#define P228_SHOOT_SOUND		"weapons/p228-1.wav"
-#define SCOUT_SHOOT_SOUND		"weapons/scout_fire-1.wav"
-#define SG550_SHOOT_SOUND		"weapons/sg550-1.wav"
-#define SG552_SHOOT_SOUND		"weapons/sg552-1.wav"
-#define TMP_SHOOT_SOUND			"weapons/tmp-1.wav"
-#define UMP45_SHOOT_SOUND		"weapons/ump45-1.wav"
-#define USP_SHOOT_SOUND			"weapons/usp_unsil-1.wav"
-#define USP_SILENT_SOUND		"weapons/usp1.wav"
+#define OBSERVER	4
 
 new const commandSkins[][] = { "skiny", "say /skins", "say_team /skins", "say /skin", "say_team /skin", "say /skiny",
 	"say_team /skiny", "say /modele", "say_team /modele", "say /model", "say_team /model", "say /jackpot", "say_team /jackpot" };
@@ -137,6 +74,8 @@ new const weaponSlots[] = { -1, 2, -1, 1, 4, 1, 5, 1, 1, 4, 2, 2, 1, 1, 1, 1, 2,
 new const maxBPAmmo[] = { -1, 52, -1, 90, 1, 32, 1, 100, 90, 1, 120, 100, 100, 90, 90, 90, 100, 120, 30, 120, 200, 32, 90, 120, 90, 2, 35, 90, 90, -1, 100 };
 
 new const traceBullets[][] = { "func_breakable", "func_wall", "func_door", "func_plat", "func_rotating", "worldspawn", "func_door_rotating" };
+
+new const defaultShell[] = "models/pshell.mdl", shotgunShell[] = "models/shotgunshell.mdl";
 
 enum _:tempInfo { WEAPON, WEAPONS, WEAPON_ENT, EXCHANGE_PLAYER, EXCHANGE_SKIN, EXCHANGE_FOR_SKIN, GIVE_PLAYER, SALE_SKIN };
 enum _:playerInfo { ACTIVE[CSW_P90 + 1], Float:MONEY, SKIN, SUBMODEL, bool:SKINS_LOADED, bool:DATA_LOADED, bool:EXCHANGE_BLOCKED, bool:MENU_BLOCKED, TEMP[tempInfo], NAME[32], SAFE_NAME[64] };
@@ -248,6 +187,9 @@ public plugin_precache()
 	skins = ArrayCreate(skinsInfo);
 	market = ArrayCreate(marketInfo);
 	weapons = ArrayCreate(32, 32);
+
+	precache_model(defaultShell);
+	precache_model(shotgunShell);
 
 	new file[128];
 
@@ -2444,30 +2386,30 @@ stock get_weapon_draw_animation(entity)
 stock emulate_primary_attack(ent)
 {
 	switch (weapon_entity(ent)) {
-		case CSW_GLOCK18: weapon_shoot_info(ent, GLOCK18_SHOOT3, DRYFIRE_PISTOL, GLOCK18_SHOOT_SOUND, 0, WEAPONTYPE_GLOCK18);
-		case CSW_AK47: weapon_shoot_info(ent, AK47_SHOOT1, DRYFIRE_RIFLE, AK47_SHOOT_SOUND, 1, WEAPONTYPE_OTHER);
-		case CSW_AUG: weapon_shoot_info(ent, AUG_SHOOT1, DRYFIRE_RIFLE, AUG_SHOOT_SOUND, 1, WEAPONTYPE_OTHER);
-		case CSW_AWP: weapon_shoot_info(ent, AWP_SHOOT2, DRYFIRE_RIFLE, AWP_SHOOT_SOUND, 1, WEAPONTYPE_OTHER);
-		case CSW_DEAGLE: weapon_shoot_info(ent, DEAGLE_SHOOT1, DRYFIRE_PISTOL, DEAGLE_SHOOT_SOUND, 0, WEAPONTYPE_OTHER);
-		case CSW_ELITE: weapon_shoot_info(ent, ELITE_SHOOTRIGHT5, DRYFIRE_PISTOL, ELITE_SHOOT_SOUND, 0, WEAPONTYPE_ELITE);
-		case CSW_FAMAS: weapon_shoot_info(ent, CLARION_SHOOT3, DRYFIRE_RIFLE, CLARION_SHOOT_SOUND, 1, WEAPONTYPE_FAMAS);
-		case CSW_FIVESEVEN: weapon_shoot_info(ent, FIVESEVEN_SHOOT1, DRYFIRE_PISTOL, FIVESEVEN_SHOOT_SOUND, 0, WEAPONTYPE_OTHER);
-		case CSW_G3SG1: weapon_shoot_info(ent, G3SG1_SHOOT, DRYFIRE_RIFLE, G3SG1_SHOOT_SOUND, 1, WEAPONTYPE_OTHER);
-		case CSW_GALIL: weapon_shoot_info(ent, GALIL_SHOOT3, DRYFIRE_RIFLE, GALIL_SHOOT_SOUND, 1, WEAPONTYPE_OTHER);
-		case CSW_M3: weapon_shoot_info(ent, M3_FIRE2, DRYFIRE_RIFLE, M3_SHOOT_SOUND, 1, WEAPONTYPE_OTHER);
-		case CSW_XM1014: weapon_shoot_info(ent, XM1014_FIRE2, DRYFIRE_RIFLE, XM1014_SHOOT_SOUND, 1, WEAPONTYPE_OTHER);
-		case CSW_M4A1: weapon_shoot_info(ent, M4A1_UNSIL_SHOOT3, DRYFIRE_RIFLE, M4A1_SHOOT_SOUND, 1, WEAPONTYPE_M4A1);
-		case CSW_M249: weapon_shoot_info(ent, M249_SHOOT2, DRYFIRE_RIFLE, M249_SHOOT_SOUND, 1, WEAPONTYPE_OTHER);
-		case CSW_MAC10: weapon_shoot_info(ent, MAC10_SHOOT1, DRYFIRE_RIFLE, MAC10_SHOOT_SOUND, 1, WEAPONTYPE_OTHER);
-		case CSW_MP5NAVY: weapon_shoot_info(ent, MP5N_SHOOT1, DRYFIRE_RIFLE, MP5_SHOOT_SOUND, 1, WEAPONTYPE_OTHER);
-		case CSW_P90: weapon_shoot_info(ent, P90_SHOOT1, DRYFIRE_RIFLE, P90_SHOOT_SOUND, 1, WEAPONTYPE_OTHER);
-		case CSW_P228: weapon_shoot_info(ent, P228_SHOOT2, DRYFIRE_PISTOL, P228_SHOOT_SOUND, 0, WEAPONTYPE_OTHER);
-		case CSW_SCOUT: weapon_shoot_info(ent, SCOUT_SHOOT, DRYFIRE_RIFLE, SCOUT_SHOOT_SOUND, 1, WEAPONTYPE_OTHER);
-		case CSW_SG550: weapon_shoot_info(ent, SG550_SHOOT, DRYFIRE_RIFLE, SG550_SHOOT_SOUND, 1, WEAPONTYPE_OTHER);
-		case CSW_SG552: weapon_shoot_info(ent, SG552_SHOOT2, DRYFIRE_RIFLE, SG552_SHOOT_SOUND, 1, WEAPONTYPE_OTHER);
-		case CSW_TMP: weapon_shoot_info(ent, TMP_SHOOT3, DRYFIRE_RIFLE, TMP_SHOOT_SOUND, 1, WEAPONTYPE_OTHER);
-		case CSW_UMP45: weapon_shoot_info(ent, UMP45_SHOOT2, DRYFIRE_RIFLE, UMP45_SHOOT_SOUND, 1, WEAPONTYPE_OTHER);
-		case CSW_USP: weapon_shoot_info(ent, USP_UNSIL_SHOOT3, DRYFIRE_PISTOL, USP_SHOOT_SOUND, 0, WEAPONTYPE_USP);
+		case CSW_GLOCK18: weapon_shoot_info(ent, 5, "weapons/dryfire_pistol.wav", "weapons/glock18-2.wav", 0, WEAPONTYPE_GLOCK18);
+		case CSW_AK47: weapon_shoot_info(ent, 3, "weapons/dryfire_rifle.wav", "weapons/ak47-1.wav", 1, WEAPONTYPE_OTHER);
+		case CSW_AUG: weapon_shoot_info(ent, 3, "weapons/dryfire_rifle.wav", "weapons/aug-1.wav", 1, WEAPONTYPE_OTHER);
+		case CSW_AWP: weapon_shoot_info(ent, 2, "weapons/dryfire_rifle.wav", "weapons/awp1.wav", 1, WEAPONTYPE_OTHER);
+		case CSW_DEAGLE: weapon_shoot_info(ent, 2, "weapons/dryfire_pistol.wav", "weapons/deagle-2.wav", 0, WEAPONTYPE_OTHER);
+		case CSW_ELITE: weapon_shoot_info(ent, 12, "weapons/dryfire_pistol.wav", "weapons/elite_fire.wav", 0, WEAPONTYPE_ELITE);
+		case CSW_FAMAS: weapon_shoot_info(ent, 3, "weapons/dryfire_rifle.wav", "weapons/famas-1.wav", 1, WEAPONTYPE_FAMAS);
+		case CSW_FIVESEVEN: weapon_shoot_info(ent, 1, "weapons/dryfire_pistol.wav", "weapons/fiveseven-1.wav", 0, WEAPONTYPE_OTHER);
+		case CSW_G3SG1: weapon_shoot_info(ent, 1, "weapons/dryfire_rifle.wav", "weapons/g3sg1-1.wav", 1, WEAPONTYPE_OTHER);
+		case CSW_GALIL: weapon_shoot_info(ent, 5, "weapons/dryfire_rifle.wav", "weapons/galil-1.wav", 1, WEAPONTYPE_OTHER);
+		case CSW_M3: weapon_shoot_info(ent, 2, "weapons/dryfire_rifle.wav", "weapons/m3-1.wav", 1, WEAPONTYPE_OTHER);
+		case CSW_XM1014: weapon_shoot_info(ent, 2, "weapons/dryfire_rifle.wav", "weapons/xm1014-1.wav", 1, WEAPONTYPE_OTHER);
+		case CSW_M4A1: weapon_shoot_info(ent, 10, "weapons/dryfire_rifle.wav", "weapons/m4a1_unsil-1.wav", 1, WEAPONTYPE_M4A1);
+		case CSW_M249: weapon_shoot_info(ent, 2, "weapons/dryfire_rifle.wav", "weapons/m249-1.wav", 1, WEAPONTYPE_OTHER);
+		case CSW_MAC10: weapon_shoot_info(ent, 3, "weapons/dryfire_rifle.wav", "weapons/mac10-1.wav", 1, WEAPONTYPE_OTHER);
+		case CSW_MP5NAVY: weapon_shoot_info(ent, 3, "weapons/dryfire_rifle.wav", "weapons/mp5-1.wav", 1, WEAPONTYPE_OTHER);
+		case CSW_P90: weapon_shoot_info(ent, 3, "weapons/dryfire_rifle.wav", "weapons/p90-1.wav", 1, WEAPONTYPE_OTHER);
+		case CSW_P228: weapon_shoot_info(ent, 2, "weapons/dryfire_pistol.wav", "weapons/p228-1.wav", 0, WEAPONTYPE_OTHER);
+		case CSW_SCOUT: weapon_shoot_info(ent, 1, "weapons/dryfire_rifle.wav", "weapons/scout_fire-1.wav", 1, WEAPONTYPE_OTHER);
+		case CSW_SG550: weapon_shoot_info(ent, 1, "weapons/dryfire_rifle.wav", "weapons/sg550-1.wav", 1, WEAPONTYPE_OTHER);
+		case CSW_SG552: weapon_shoot_info(ent, 4, "weapons/dryfire_rifle.wav", "weapons/sg552-1.wav", 1, WEAPONTYPE_OTHER);
+		case CSW_TMP: weapon_shoot_info(ent, 5, "weapons/dryfire_rifle.wav", "weapons/tmp-1.wav", 1, WEAPONTYPE_OTHER);
+		case CSW_UMP45: weapon_shoot_info(ent, 4, "weapons/dryfire_rifle.wav", "weapons/ump45-1.wav", 1, WEAPONTYPE_OTHER);
+		case CSW_USP: weapon_shoot_info(ent, 11, "weapons/dryfire_pistol.wav", "weapons/usp_unsil-1.wav", 0, WEAPONTYPE_USP);
 	}
 
 	return HAM_IGNORED;
@@ -2495,23 +2437,23 @@ stock weapon_shoot_info(ent, animation, const soundEmpty[], const soundFire[], a
 	switch (weaponType) {
 		case WEAPONTYPE_ELITE: {
 			if (get_pdata_int(ent, 74, 4) & WPNSTATE_ELITE_LEFT) {
-				play_weapon_state(id, ELITE_SHOOT_SOUND, ELITE_SHOOTLEFT5);
+				play_weapon_state(id, "weapons/elite_fire.wav", 6);
 			}
 		} case WEAPONTYPE_GLOCK18: {
 			if (get_pdata_int(ent, 74, 4) & WPNSTATE_GLOCK18_BURST_MODE) {
-				play_weapon_state(id, GLOCK18_BURST_SOUND, GLOCK18_SHOOT2);
+				play_weapon_state(id, "weapons/glock18-1.wav", 4);
 			}
 		} case WEAPONTYPE_FAMAS: {
 			if (get_pdata_int(ent, 74, 4) & WPNSTATE_FAMAS_BURST_MODE) {
-				play_weapon_state(id, CLARION_BURST_SOUND, CLARION_SHOOT2);
+				play_weapon_state(id, "weapons/famas-burst.wav", 4);
 			}
 		} case WEAPONTYPE_M4A1: {
 			if (get_pdata_int(ent, 74, 4) & WPNSTATE_M4A1_SILENCED) {
-				play_weapon_state(id, M4A1_SILENT_SOUND, M4A1_SHOOT3);
+				play_weapon_state(id, "weapons/m4a1-1.wav", 3);
 			}
 		} case WEAPONTYPE_USP: {
 			if (get_pdata_int(ent, 74, 4) & WPNSTATE_USP_SILENCED) {
-				play_weapon_state(id, USP_SILENT_SOUND, USP_SHOOT3);
+				play_weapon_state(id, "weapons/usp1.wav", 3);
 			}
 		}
 	}
@@ -2536,15 +2478,15 @@ stock play_weapon_state(id, const soundFire[], animation)
 
 stock eject_brass(id, ent)
 {
-	static shellRifle, shellShotgun;
+	static shellRifle, shotgunShell;
 
-	if (!shellRifle || !shellShotgun) {
-		shellRifle = engfunc(EngFunc_PrecacheModel, SHELL_MODEL);
-		shellShotgun = engfunc(EngFunc_PrecacheModel, SHOTGUN_SHELL_MODEL);
+	if (!shellRifle || !shotgunShell) {
+		shellRifle = engfunc(EngFunc_PrecacheModel, defaultShell);
+		shotgunShell = engfunc(EngFunc_PrecacheModel, shotgunShell);
 	}
 
 	switch (weapon_entity(ent)) {
-		case CSW_M3, CSW_XM1014: set_pdata_int(ent, 57, shellShotgun, 4);
+		case CSW_M3, CSW_XM1014: set_pdata_int(ent, 57, shotgunShell, 4);
 		case CSW_ELITE: return;
 		default: set_pdata_int(ent, 57, shellRifle, 4);
 	}
