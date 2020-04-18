@@ -58,8 +58,6 @@ public plugin_init()
 	register_event("HLTV", "event_new_round", "a", "1=0", "2=0");
 	register_logevent("event_round_start", 2, "1=Round_Start");
 	register_event("TextMsg", "event_gamerestart", "a", "2=#Game_Commencing", "2=#Game_will_restart_in");
-
-	register_logevent("event_round_end", 2, "1=Round_End");
 }
 
 public plugin_natives()
