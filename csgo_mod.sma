@@ -2441,7 +2441,9 @@ stock weapon_shoot_info(ent, animation, const soundEmpty[], const soundFire[], a
 			}
 		} case WEAPONTYPE_GLOCK18: {
 			if (get_pdata_int(ent, 74, 4) & WPNSTATE_GLOCK18_BURST_MODE) {
-				play_weapon_state(id, "weapons/glock18-1.wav", 4);
+				play_weapon_state(id, "weapons/glock18-2.wav", 4);
+
+				emit_sound(id, CHAN_WEAPON, "weapons/glock18-2.wav", VOL_NORM, ATTN_IDLE, 0, PITCH_LOW);
 			}
 		} case WEAPONTYPE_FAMAS: {
 			if (get_pdata_int(ent, 74, 4) & WPNSTATE_FAMAS_BURST_MODE) {
