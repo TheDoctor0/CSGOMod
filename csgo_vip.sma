@@ -221,6 +221,8 @@ public restart_round()
 
 public player_spawn(id)
 {
+	remove_task(id);
+
 	if (!is_user_alive(id) || !get_bit(id, VIP) || disabled) return PLUGIN_CONTINUE;
 
 	if (get_user_team(id) == 2) cs_set_user_defuse(id, 1);
