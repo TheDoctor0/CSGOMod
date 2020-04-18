@@ -30,7 +30,7 @@ new const zeusWeaponName[] = "weapon_p228";
 new const beamSprite[] = "sprites/laserbeam.spr";
 new const worldModel[] = "models/w_p228.mdl";
 
-new Float:gameTime, bool:restarted, bool:reset, zeus, zeusEnabled, zeusPrice, mapBuyBlock, boltSprite;
+new Float:gameTime, bool:restarted, zeus, zeusEnabled, zeusPrice, mapBuyBlock, boltSprite;
 
 public plugin_init()
 {
@@ -175,11 +175,13 @@ public buy_zeus(id)
 
 	cs_set_user_money(id, money - zeusPrice);
 
-	ham_strip_weapon(id, zeusWeaponName);
+	if (get_user_weapon(id) == CSW_P228) {
+		new weapon = get_pdata_cbase(id, 373);
 
-	give_item(id, zeusWeaponName);
+		ExecuteHamB(Ham_Item_Deploy, weapon);
+	}
 
-	engclient_cmd(id, zeusWeaponName);
+	fm_give_item(id, zeusWeaponName);
 
 	emit_sound(id, CHAN_AUTO, "items/9mmclip1.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
 
@@ -192,16 +194,11 @@ public event_deathmsg()
 public event_gamerestart()
 	restarted = true;
 
-public event_round_end()
-	if (!reset) reset = true;
-
 public event_round_start()
 	gameTime = get_gametime();
 
 public event_new_round()
 {
-	reset = false;
-
 	if (restarted) {
 		for (new i; i <= MAX_PLAYERS; i++) {
 			rem_bit(i, zeus);
@@ -290,19 +287,7 @@ public player_spawned(id)
 	if (get_bit(id, zeus)) set_task(0.1, "player_spawned_post", id);
 
 public player_spawned_post(id)
-{
-	new weapons[32], weaponsNum, bool:found;
-
-	get_user_weapons(id, weapons, weaponsNum);
-
-	for(new i; i < weaponsNum; i++) if(weapons[i] == get_weaponid(zeusWeaponName)) found = true;
-
-	if (found) {
-		set_bit(id, zeus);
-	} else {
-		rem_bit(id, zeus);
-	}
-}
+	fm_give_item(id, zeusWeaponName);
 
 public set_model(ent, model[])
 {
@@ -314,6 +299,7 @@ public set_model(ent, model[])
 
 	if (equali(model, worldModel)) {
 		static className[8];
+
 		pev(ent, pev_classname, className, charsmax(className));
 
 		if (className[0] == 'w' && className[6] == 'b') {

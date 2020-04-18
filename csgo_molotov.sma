@@ -256,19 +256,7 @@ public player_spawned(id)
 	if (get_bit(id, molotov)) set_task(0.1, "player_spawned_post", id);
 
 public player_spawned_post(id)
-{
-	new weapons[32], weaponsNum, bool:found;
-
-	get_user_weapons(id, weapons, weaponsNum);
-
-	for (new i; i < weaponsNum; i++) if (weapons[i] == CSW_HEGRENADE) found = true;
-
-	if (found) {
-		set_bit(id, molotov);
-	} else {
-		rem_bit(id, molotov);
-	}
-}
+	fm_give_item(id, molotovWeaponName);
 
 public grenade_throw(id, ent, wid)
 {
