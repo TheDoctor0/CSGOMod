@@ -95,7 +95,7 @@ public plugin_precache()
 		}
 	}
 
-	if(bWasFail) set_fail_state("[CS:GO] Not all zeus files were precached. Check logs!");
+	if (bWasFail) set_fail_state("[CS:GO] Not all zeus files were precached. Check logs!");
 }
 
 public key_value(ent, keyValueId)
@@ -121,7 +121,7 @@ public client_disconnected(id)
 
 public buy_zeus(id)
 {
-	if(!is_user_alive(id) || !cs_get_user_buyzone(id) || !zeusEnabled) return PLUGIN_HANDLED;
+	if (!is_user_alive(id) || !cs_get_user_buyzone(id) || !zeusEnabled) return PLUGIN_HANDLED;
 
 	new Float:cvarBuyTime = get_cvar_float("mp_buytime"), Float:buyTime;
 
@@ -179,9 +179,9 @@ public buy_zeus(id)
 		new weapon = get_pdata_cbase(id, 373);
 
 		ExecuteHamB(Ham_Item_Deploy, weapon);
+	} else {
+		fm_give_item(id, zeusWeaponName);
 	}
-
-	fm_give_item(id, zeusWeaponName);
 
 	emit_sound(id, CHAN_AUTO, "items/9mmclip1.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
 

@@ -54,10 +54,10 @@ new const commandSell[][] = { "wystaw", "say /wystaw", "say_team /wystaw" };
 new const commandPurchase[][] = { "wykup", "say /wykup", "say_team /wykup" };
 new const commandWithdraw[][] = { "wycofaj", "say /wycofaj", "say_team /wycofaj" };
 
-new const defaultModels[][] = { "models/v_knife.mdl", "models/v_glock18.mdl", "models/v_ak47.mdl", "models/v_aug.mdl", "models/v_awp.mdl", "models/v_deagle.mdl",
-	"models/v_elite.mdl", "models/v_famas.mdl", "models/v_fiveseven.mdl", "models/v_g3sg1.mdl", "models/v_galil.mdl", "models/v_m3.mdl", "models/v_xm1014.mdl",
-	"models/v_m4a1.mdl", "models/v_m249.mdl", "models/v_mac10.mdl", "models/v_mp5.mdl", "models/v_p90.mdl", "models/v_p228.mdl", "models/v_scout.mdl",
-	"models/v_sg550.mdl", "models/v_sg552.mdl", "models/v_tmp.mdl", "models/v_ump45.mdl", "models/v_usp.mdl"};
+new const defaultModels[][] = { "models/v_knife.mdl", "models/v_glock18.mdl", "models/v_ak47.mdl", "models/v_aug.mdl", "models/v_deagle.mdl", "models/v_elite.mdl",
+	"models/v_famas.mdl", "models/v_fiveseven.mdl", "models/v_g3sg1.mdl", "models/v_galil.mdl", "models/v_m3.mdl", "models/v_xm1014.mdl", "models/v_m4a1.mdl",
+	"models/v_m249.mdl", "models/v_mac10.mdl", "models/v_mp5.mdl", "models/v_p90.mdl", "models/v_p228.mdl", "models/v_scout.mdl","models/v_sg550.mdl",
+	"models/v_sg552.mdl", "models/v_tmp.mdl", "models/v_ump45.mdl", "models/v_usp.mdl"};
 
 new const defaultSkins[][] = { "", "models/csgo_ozone/p228/v_p228.mdl", "", "models/csgo_ozone/scout/v_scout.mdl", "", "models/csgo_ozone/xm1014/v_xm1014.mdl", "",
 	"models/csgo_ozone/mac10/v_mac10.mdl", "models/csgo_ozone/aug/v_aug.mdl", "", "models/csgo_ozone/elite/v_elite.mdl", "models/csgo_ozone/fiveseven/v_fiveseven.mdl",
@@ -2744,8 +2744,6 @@ stock get_weapon_skin_name(id, ent, dataReturn[], dataLength, weapon = 0, check 
 			get_weaponname(weapon, weaponName, charsmax(weaponName));
 
 			strtoupper(weaponName);
-
-			replace(weaponName, charsmax(weaponName), "MP5NAVY", "MP5");
 
 			if (equal(dataReturn, "Domyslny") || !dataReturn[0]) formatex(dataReturn, dataLength, weaponName[7]);
 			else format(dataReturn, dataLength, "%s | %s", weaponName[7], dataReturn);

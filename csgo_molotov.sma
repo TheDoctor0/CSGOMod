@@ -195,9 +195,9 @@ public buy_molotov(id)
 		new weapon = get_pdata_cbase(id, 373);
 
 		ExecuteHamB(Ham_Item_Deploy, weapon);
+	} else {
+		fm_give_item(id, molotovWeaponName);
 	}
-
-	fm_give_item(id, molotovWeaponName);
 
 	emit_sound(id, CHAN_AUTO, "items/9mmclip1.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
 
