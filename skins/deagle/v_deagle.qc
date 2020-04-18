@@ -93,7 +93,7 @@ $sequence "shoot_empty" "shoot_empty" fps 25 { event 5001 0 "41" }
 $sequence "reload" "reload" fps 24 {
   { event 5004 5 "weapons/de_clipout.wav" }
   { event 5004 16 "weapons/de_clipin.wav" }
-  { event 5004 31 "weapons/de_slideback.wav" }
+  { event 5004 31 "weapons/p228_slidepull.wav" }
   { event 5004 36 "weapons/de_slideforward.wav" }
  }
 $sequence "draw" "draw" fps 29 { event 5004 0 "weapons/de_deploy.wav" }
