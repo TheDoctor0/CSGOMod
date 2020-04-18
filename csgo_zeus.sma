@@ -21,9 +21,9 @@ new const models[][] = {
 
 enum { Deploy, Hit, Shoot }
 new const sounds[][] = {
-	"zeus/deploy.wav",
-	"zeus/hit.wav",
-	"zeus/hitwall.wav"
+	"weapons/zeus_deploy.wav",
+	"weapons/zeus_hit.wav",
+	"weapons/zeus_hitwall.wav"
 }
 
 new const zeusWeaponName[] = "weapon_p228";
