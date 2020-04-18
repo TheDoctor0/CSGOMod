@@ -1989,11 +1989,16 @@ public event_money(id)
 
 public weapon_deploy_post(ent)
 {
-	static id; id = get_pdata_cbase(ent, 41, 4);
+	static weapon, id; id = get_pdata_cbase(ent, 41, 4);
 
 	if (!is_user_alive(id)) return HAM_IGNORED;
 
-	playerData[id][TEMP][WEAPON] = cs_get_weapon_id(ent);
+	weapon = cs_get_weapon_id(ent);
+	playerData[id][TEMP][WEAPON] = weapon;
+
+	if (weapon != CSW_HEGRENADE && weapon != CSW_SMOKEGRENADE && weapon != CSW_FLASHBANG && weapon != CSW_C4) {
+		set_pev(id, pev_viewmodel2, "");
+	}
 
 	change_skin(id, playerData[id][TEMP][WEAPON], ent);
 
@@ -2016,6 +2021,10 @@ public weapon_send_weapon_anim_post(ent, animation, skipLocal)
 
 public weapon_primary_attack(ent)
 {
+	static id; id = get_pdata_cbase(ent, 41, 4);
+
+	if (!is_user_alive(id)) return HAM_IGNORED;
+
 	switch (weapon_entity(ent)) {
 		case CSW_C4, CSW_HEGRENADE, CSW_FLASHBANG, CSW_SMOKEGRENADE: return HAM_IGNORED;
 		default: emulate_primary_attack(ent);
@@ -2030,7 +2039,7 @@ public trace_attack_post(ent, attacker, Float:damage, Float:direction[3], ptr, d
 
 	weapon = get_pdata_cbase(attacker, 373, 5);
 
-	if (weapon_entity(weapon) == CSW_KNIFE) return HAM_IGNORED;
+	if (!weapon || weapon_entity(weapon) == CSW_KNIFE) return HAM_IGNORED;
 
 	get_tr2(ptr, TR_vecEndPos, vectorEnd);
 
