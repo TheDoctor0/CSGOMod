@@ -98,10 +98,6 @@ $sequence "draw" "draw" fps 25 { event 5004 0 "weapons/ak47_draw.wav" } { event 
 $sequence "shoot1" "shoot1" fps 25 { event 5001 0 "22" }
 $sequence "shoot2" "shoot2" fps 25 { event 5001 0 "22" }
 $sequence "shoot3" "shoot3" fps 25 { event 5001 0 "22" }
-$sequence "inspect" "inspect" fps 25 {
-  { event 5004 0 "inspect/movement1.wav" }
-  { event 5004 0 "inspect/movement2.wav" }
-  { event 5004 10 "inspect/movement3.wav" }
- }
+$sequence "inspect" "inspect" fps 25
 
 // End of QC script.
