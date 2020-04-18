@@ -7,7 +7,7 @@
 #define AUTHOR	"Numb & O'Zone"
 
 #define SMOKE_MAX_RADIUS		144.0
-#define SMOKE_PUFFS_PER_THINK	3
+#define SMOKE_PUFFS_PER_THINK	5
 #define SMOKE_LIFE_TIME			18.0
 #define SMOKE_ID				678
 
@@ -124,7 +124,7 @@ public think_grenade(ent)
 		for (counter = 0; counter < SMOKE_PUFFS_PER_THINK; counter++) {
 			newOrigin[0] = random_float((random(2) ? -50.0 : -80.0), 0.0);
 			newOrigin[1] = random_float((counter * (360.0 / SMOKE_PUFFS_PER_THINK)), ((counter + 1) * (360.0 / SMOKE_PUFFS_PER_THINK)));
-			newOrigin[2] = -20.0;
+			newOrigin[2] = -30.0;
 
 			while (newOrigin[1] > 180.0) newOrigin[1] -= 360.0;
 
