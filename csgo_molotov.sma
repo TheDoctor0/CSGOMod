@@ -19,18 +19,21 @@
 
 enum { ViewModel, PlayerModel, WorldModel, WorldModelBroken }
 new const models[][] = {
-	"models/csgo_ozone/nades/v_molotov.mdl",
-	"models/csgo_ozone/nades/p_molotov.mdl",
-	"models/csgo_ozone/nades/w_molotov.mdl",
-	"models/csgo_ozone/nades/w_broken_molotov.mdl"
-}
+	"models/csgo_ozone/molotov/v_molotov.mdl",
+	"models/csgo_ozone/molotov/p_molotov.mdl",
+	"models/csgo_ozone/molotov/w_molotov.mdl",
+	"models/csgo_ozone/molotov/w_broken_molotov.mdl"
+};
 
 enum { Fire, Explode, Extinguish }
 new const sounds[][] = {
-	"molotov/fire.wav",
-	"molotov/explode.wav",
-	"molotov/extinguish.wav"
-}
+	"weapons/molotov_fire.wav",
+	"weapons/molotov_explode.wav",
+	"weapons/molotov_extinguish.wav",
+	"weapons/molotov_pinpull.wav",
+	"weapons/molotov_throw.wav",
+	"weapons/molotov_draw.wav",
+};
 
 new const molotovWeaponName[] = "weapon_hegrenade";
 
@@ -188,9 +191,13 @@ public buy_molotov(id)
 
 	cs_set_user_money(id, money - molotovPrice);
 
-	fm_give_item(id, molotovWeaponName);
+	if (get_user_weapon(id) == CSW_HEGRENADE) {
+		new weapon = get_pdata_cbase(id, 373);
 
-	engclient_cmd(id, molotovWeaponName);
+		ExecuteHamB(Ham_Item_Deploy, weapon);
+	}
+
+	fm_give_item(id, molotovWeaponName);
 
 	emit_sound(id, CHAN_AUTO, "items/9mmclip1.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
 
@@ -407,13 +414,19 @@ stock extinguish_molotov(data[])
 
 	for (new i = 0; i < foundGrenades; i++) {
 		if (grenade_is_smoke(entList[i])) {
-			new Float:entVelocity[3];
+			new Float:velocity[3], Float:origin[3];
 
-			entVelocity[0] = 0.0;
-			entVelocity[1] = 0.0;
-			entVelocity[2] = 0.0;
+			velocity[0] = 0.0;
+			velocity[1] = 0.0;
+			velocity[2] = 0.0;
 
-			entity_set_vector(entList[i], EV_VEC_velocity, entVelocity);
+			entity_set_vector(entList[i], EV_VEC_velocity, velocity);
+
+			entity_get_vector(entList[i], EV_VEC_origin, origin);
+
+			origin[2] -= distance_to_floor(origin);
+
+			entity_set_origin(entList[i], origin);
 
 			static Float:dmgTime;
 
@@ -600,4 +613,20 @@ stock remove_molotovs(id = 0)
 
 		if (equal(className, "molotov")) engfunc(EngFunc_RemoveEntity, i);
 	}
+}
+
+stock Float:distance_to_floor(Float:start[3], ignoremonsters = 1)
+{
+	new Float:dest[3], Float:end[3];
+
+	dest[0] = start[0];
+	dest[1] = start[1];
+	dest[2] = -8191.0;
+
+	engfunc(EngFunc_TraceLine, start, dest, ignoremonsters, 0, 0);
+	get_tr2(0, TR_vecEndPos, end);
+
+	new Float:ret = start[2] - end[2];
+
+	return ret > 0 ? ret : 0.0;
 }
