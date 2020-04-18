@@ -2724,14 +2724,17 @@ stock get_weapon_skin_name(id, ent, dataReturn[], dataLength, weapon = 0, check 
 			if (weaponSkin > -1) {
 				get_skin_info(weaponSkin, SKIN_WEAPON, skinWeapon, charsmax(skinWeapon));
 
-				if (!weapon || weapon == get_weapon_id(skinWeapon)) get_skin_info(weaponSkin, SKIN_NAME, dataReturn, dataLength);
-				else {
+				if (!weapon || weapon == get_weapon_id(skinWeapon)) {
+					get_skin_info(weaponSkin, SKIN_NAME, dataReturn, dataLength);
+				} else {
 					entity_set_int(ent, EV_INT_iuser1, 0);
 					entity_set_int(ent, EV_INT_iuser2, -1);
 
 					formatex(dataReturn, dataLength, "Domyslny");
 				}
-			} else formatex(dataReturn, dataLength, "Domyslny");
+			} else {
+				formatex(dataReturn, dataLength, "Domyslny");
+			}
 
 			if (check && weaponOwner != id) {
 				get_user_name(weaponOwner, ownerName, charsmax(ownerName));
@@ -2910,7 +2913,7 @@ stock add_skin(id, skinId, weapon[], skin[])
 
 stock set_skin(id, weapon[], skin[] = "", skinId = -1, active = 0)
 {
-	if (skinId >= ArraySize(skins) || skinId < 0) return;
+	if (skinId >= ArraySize(skins) || skinId < -1) return;
 
 	playerData[id][ACTIVE][get_weapon_id(weapon)] = skinId;
 
