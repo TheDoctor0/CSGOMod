@@ -62,6 +62,9 @@ public plugin_init()
 	register_logevent("event_round_end", 2, "1=Round_End");
 }
 
+public plugin_natives()
+	register_native("csgo_get_zeus", "_csgo_get_zeus", 1);
+
 public plugin_precache()
 {
 	boltSprite = precache_model(beamSprite);
@@ -322,6 +325,9 @@ public set_model(ent, model[])
 
 	return FMRES_IGNORED;
 }
+
+public _csgo_get_zeus(id)
+	return get_bit(id, zeus);
 
 stock send_weapon_animation(const id, const animation)
 {

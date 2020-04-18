@@ -149,6 +149,8 @@ new playerData[MAX_PLAYERS + 1][playerInfo], Array:playerSkins[MAX_PLAYERS + 1],
 	Float:killReward, Float:killHSReward, Float:bombReward, Float:defuseReward, Float:hostageReward, Float:winReward, minPlayers, bool:end, bool:sqlConnected,
 	sqlHost[64], sqlUser[64], sqlPassword[64], sqlDatabase[64];
 
+native csgo_get_zeus(id);
+
 public plugin_init()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR);
@@ -1996,6 +1998,8 @@ public weapon_deploy_post(ent)
 	weapon = cs_get_weapon_id(ent);
 	playerData[id][TEMP][WEAPON] = weapon;
 
+	if (weapon == CSW_P228 && csgo_get_zeus(id)) return HAM_IGNORED;
+
 	if (weapon != CSW_HEGRENADE && weapon != CSW_SMOKEGRENADE && weapon != CSW_FLASHBANG && weapon != CSW_C4) {
 		set_pev(id, pev_viewmodel2, "");
 	}
@@ -2007,13 +2011,19 @@ public weapon_deploy_post(ent)
 
 public weapon_send_weapon_anim_post(ent, animation, skipLocal)
 {
-	static id; id = get_pdata_cbase(ent, 41, 4);
+	static weapon, id; id = get_pdata_cbase(ent, 41, 4);
 
 	if (!is_user_alive(id)) return HAM_IGNORED;
 
-	switch (weapon_entity(ent)) {
+	weapon = weapon_entity(ent);
+
+	switch (weapon) {
 		case CSW_C4, CSW_HEGRENADE, CSW_FLASHBANG, CSW_SMOKEGRENADE: return HAM_IGNORED;
-		default: send_weapon_animation(id, playerData[id][SUBMODEL], animation);
+		default: {
+			if (weapon == CSW_P228 && csgo_get_zeus(id)) return HAM_IGNORED;
+
+			send_weapon_animation(id, playerData[id][SUBMODEL], animation);
+		}
 	}
 
 	return HAM_IGNORED;
@@ -2021,13 +2031,19 @@ public weapon_send_weapon_anim_post(ent, animation, skipLocal)
 
 public weapon_primary_attack(ent)
 {
-	static id; id = get_pdata_cbase(ent, 41, 4);
+	static weapon, id; id = get_pdata_cbase(ent, 41, 4);
 
 	if (!is_user_alive(id)) return HAM_IGNORED;
 
-	switch (weapon_entity(ent)) {
+	weapon = weapon_entity(ent);
+
+	switch (weapon) {
 		case CSW_C4, CSW_HEGRENADE, CSW_FLASHBANG, CSW_SMOKEGRENADE: return HAM_IGNORED;
-		default: emulate_primary_attack(ent);
+		default: {
+			if (weapon == CSW_P228 && csgo_get_zeus(id)) return HAM_IGNORED;
+
+			emulate_primary_attack(ent);
+		}
 	}
 
 	return HAM_IGNORED;
