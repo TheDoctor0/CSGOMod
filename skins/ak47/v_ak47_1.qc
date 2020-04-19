@@ -16,6 +16,7 @@ $body "arms" "t_arms_02"
 $body "arms" "t_arms_03"
 $body "arms" "t_arms_04"
 $body "arms" "t_arms_05"
+$body "attachments" "attachments"
 
 $bodygroup "skins"
 {
