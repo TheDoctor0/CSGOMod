@@ -3,139 +3,9 @@
 #endif
 #define _csgomod_included
 
-/*----------------------------
-------------NATYWY------------
-----------------------------*/
-
-/*------------------------------
-Zwraca czy gracz zostal zalogowany.
-Jesli nie jest zalogowany wymusza logowanie.
-------------------------------*/
-native csgo_check_account(id);
-
-/*------------------------------
-Zwraca stan konta euro gracza.
-------------------------------*/
-native Float:csgo_get_money(id);
-
-/*------------------------------
-Dodaje wartosc do stanu konta euro gracza.
-Wartosc moze byc zarowno dodatnia jak i ujemna.
-------------------------------*/
-native csgo_add_money(id, Float:money);
-
-/*------------------------------
-Ustawia wartość stanu konta euro gracza.
-------------------------------*/
-native csgo_set_money(id, Float:money);
-
-/*------------------------------
-Zwraca id wykonywanej operacji.
--1 w przypadku braku operacji.
-------------------------------*/
-native csgo_get_user_operation(id);
-
-/*------------------------------
-Zwraca opis wykonywanej opracji.
-Format: "x/x (x.x%)"
-"Wpisz /operacja" w przypadku braku operacji.
-------------------------------*/
-native csgo_get_user_operation_text(id, dataReturn[], dataLength);
-
-/*------------------------------
-Zwraca progres wykonania operacji.
--1 w przypadku braku operacji.
-------------------------------*/
-native csgo_get_user_operation_progress(id);
-
-/*------------------------------
-Zwraca ogolna liczbe jednostek wymagana do zakonczenia w wykonywanej opracji.
--1 w przypadku braku operacji.
-------------------------------*/
-native csgo_get_user_operation_need(id);
-
-/*------------------------------
-Zwraca typ menu kupowania gracza.
-0 - nowe.
-1 - standardowe.
-------------------------------*/
-native csgo_get_menu(id);
-
-/*------------------------------
-Zwraca id skina broni trzymanej przez gracza.
--1 w przypadku braku skina.
-------------------------------*/
-native csgo_get_skin(id);
-
-/*------------------------------
-Zwraca id skina gracza dla podanej broni.
--1 w przypadku braku skina.
-------------------------------*/
-native csgo_get_weapon_skin(id, weapon);
-
-/*------------------------------
-Zwraca nazwe skina o podanym id - skin.
-"Domyslny" w przypadku braku skina o podanym id.
-------------------------------*/
-native csgo_get_skin_name(skin, dataReturn[], dataLength);
-
-/*------------------------------
-Zwraca nazwe skina aktualnie trzymanej broni.
-"Domyslny" w przypadku braku skina.
-------------------------------*/
-native csgo_get_current_skin_name(id, dataReturn[], dataLength);
-
-/*------------------------------
-Zwraca id klanu gracza.
-0 w przypadku braku klanu.
-------------------------------*/
-native csgo_get_user_clan(id);
-
-/*------------------------------
-Zwraca nazwe klanu o podanym id - clan.
-"Brak" w przypadku braku clanu (id = 0).
-------------------------------*/
-native csgo_get_clan_name(clan, dataReturn[], dataLength);
-
-/*------------------------------
-Zwraca liczbe czlonkow klanu o podanym id - clan.
-------------------------------*/
-native csgo_get_clan_members(clan);
-
-/*------------------------------
-Zwraca id rangi gracza.
-------------------------------*/
-native csgo_get_rank(id);
-
-/*------------------------------
-Zwraca nazwe rangi o podanym id - rank.
-------------------------------*/
-native csgo_get_rank_name(skin, dataReturn[], dataLength);
-
-/*------------------------------
-Zwraca nazwe aktualnej rangi gracza.
-------------------------------*/
-native csgo_get_current_rank_name(id, dataReturn[], dataLength);
-
-/*------------------------------
-Zwraca StaTtrak dla danej broni.
--1 jesli StaTtrak jest wylaczony lub gdy bron go nie posiada.
-------------------------------*/
-native csgo_get_weapon_stattrak(id, weapon);
-
-/*------------------------------
-Zwraca czy gracz posiada konto VIP.
-------------------------------*/
-native csgo_get_user_vip(id);
-
-/*------------------------------
-Zwraca czy gracz posiada konto SVIP.
-------------------------------*/
-native csgo_get_user_svip(id);
-
-/*------------------------------
--------------FUNKCJE------------
-------------------------------*/
+#if !defined client_print_color || !defined MAX_NAME_LENGTH
+    #error THIS VERSION IS NOT SUPPORTED! PLEASE USE AMXX 1.8.3+!
+#endif
 
 #define get_bit(%2,%1) (%1 & (1<<(%2&31)))
 #define set_bit(%2,%1) (%1 |= (1<<(%2&31)))
@@ -143,6 +13,240 @@ native csgo_get_user_svip(id);
 
 #define weapon_entity(%0) (get_pdata_int(%0, 43, 4))
 #define is_user_valid(%1) (1 <= %1 <= MAX_PLAYERS)
+
+/**
+ * Checks if player is logged in his account.
+ *
+ * @note Account menu will be diplayed for player if not logged in.
+ *
+ * @param id        Player index
+ *
+ * @return          1 if player is logged in, 0 otherwise
+ */
+native csgo_check_account(id);
+
+/**
+ * Returns account balance (euro) for player.
+ *
+ * @param id        Player index
+ *
+ * @return          Account balance (Float)
+ */
+native Float:csgo_get_money(id);
+
+/**
+ * Adds value to player's account balance.
+ *
+ * @param id        Player index
+ * @param money     Value to add (Float)
+ *
+ * @noreturn
+ */
+native csgo_add_money(id, Float:money);
+
+/**
+ * Sets player's account balance to given value.
+ *
+ * @param id        Player index
+ * @param money     Value to set (Float)
+ *
+ * @noreturn
+ */
+native csgo_set_money(id, Float:money);
+
+/**
+ * Returns id of current player operation.
+ *
+ * @param id        Player index
+ *
+ * @return          Opration index or -1 if none
+ */
+native csgo_get_user_operation(id);
+
+/**
+ * Retrieves status text of current player operation.
+ *
+ * @note Format: "x/x (x.x%)" or command info if none.
+ *
+ * @param id        Player index
+ * @param data      Buffer to copy text to
+ * @param lenth     Maximum buffer size
+ *
+ * @noreturn
+ */
+native csgo_get_user_operation_text(id, data[], legth);
+
+/**
+ * Returns progress of current player operation.
+ *
+ * @param id        Player index
+ *
+ * @return          Progress or -1 if none
+ */
+native csgo_get_user_operation_progress(id);
+
+/**
+ * Returns total number of units required to complete current player operation.
+ *
+ * @param id        Player index
+ *
+ * @return          Total units or -1 if none
+ */
+native csgo_get_user_operation_need(id);
+
+/**
+ * Returns player buymenu type.
+ *
+ * @param id        Player index
+ *
+ * @return          0 if new 1 if standard
+ */
+native csgo_get_menu(id);
+
+/**
+ * Returns player skin id for current weapon.
+ *
+ * @param id        Player index
+ *
+ * @return          Skin index -1 if none
+ */
+native csgo_get_skin(id);
+
+/**
+ * Returns player skin id for given weapon.
+ *
+ * @param id        Player index
+ * @param weapon    Weapon index
+ *
+ * @return          Skin index -1 if none
+ */
+native csgo_get_weapon_skin(id, weapon);
+
+/**
+ * Retrieves name of skin with given id.
+ *
+ * @note "Domyslny" if there is no skin.
+ *
+ * @param skin      Skin index
+ * @param data      Buffer to copy text to
+ * @param lenth     Maximum buffer size
+ *
+ * @noreturn
+ */
+native csgo_get_skin_name(skin, data[], length);
+
+/**
+ * Retrieves name of skin for current player weapon.
+ *
+ * @note "Domyslny" if there is no skin.
+ *
+ * @param id        Player index
+ * @param data      Buffer to copy text to
+ * @param lenth     Maximum buffer size
+ *
+ * @noreturn
+ */
+native csgo_get_current_skin_name(id, data[], length);
+
+/**
+ * Retrieves player clan id.
+ *
+ * @param id        Player index
+ *
+ * @return          Clan index or 0 if none
+ */
+native csgo_get_user_clan(id);
+
+/**
+ * Retrieves clan name for given clan id.
+ *
+ * @note "Brak" if there is no clan.
+ *
+ * @param clan      Clan index
+ * @param data      Buffer to copy name to
+ * @param lenth     Maximum buffer size
+ *
+ * @noreturn
+ */
+native csgo_get_clan_name(clan, data[], length);
+
+/**
+ * Retrieves members count for clan with given id.
+ *
+ * @param id        Clan index
+ *
+ * @return          Members count
+ */
+native csgo_get_clan_members(clan);
+
+/**
+ * Retrieves player rank id.
+ *
+ * @param id        Player index
+ *
+ * @return          Rank index
+ */
+native csgo_get_rank(id);
+
+/**
+ * Retrieves rank name for given rank id.
+ *
+ * @param rank      Rank index
+ * @param data      Buffer to copy name to
+ * @param lenth     Maximum buffer size
+ *
+ * @noreturn
+ */
+native csgo_get_rank_name(rank, data[], length);
+
+/**
+ * Retrieves current player rank name.
+ *
+ * @param id        Player index
+ * @param data      Buffer to copy name to
+ * @param lenth     Maximum buffer size
+ *
+ * @noreturn
+ */
+native csgo_get_current_rank_name(id, data[], length);
+
+/**
+ * Retrieves StatTrak for given player weapon.
+ *
+ * @param id        Player index
+ * @param weapon    Weapon index
+ *
+ * @return          Weapon StatTrak of -1 if none
+ */
+native csgo_get_weapon_stattrak(id, weapon);
+
+/**
+ * Checks if player has VIP account.
+ *
+ * @param id        Player index
+ *
+ * @return          1 if player is VIP 0 otherwise
+ */
+native csgo_get_user_vip(id);
+
+/**
+ * Checks if player has SVIP account.
+ *
+ * @param id        Player index
+ *
+ * @return          1 if player is SVIP 0 otherwise
+ */
+native csgo_get_user_svip(id);
+
+/**
+ * Multiforward called when player has logged in.
+ *
+ * @param id        Player index
+ *
+ * @noreturn
+ */
+forward csgo_user_login(id);
+
 
 stock mysql_escape_string(const source[], dest[], length)
 {
