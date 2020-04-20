@@ -13,6 +13,9 @@
 #define VERSION "2.0"
 #define AUTHOR "O'Zone"
 
+#pragma dynamic 65536
+#pragma semicolon 1
+
 #define TASK_SKINS	3045
 #define TASK_DATA	4592
 #define TASK_AIM	5309
@@ -2357,9 +2360,9 @@ stock get_weapon_draw_animation(entity)
 	static animation, weaponState;
 
 	if (get_pdata_int(entity, 74, 4) & WPNSTATE_USP_SILENCED || get_pdata_int(entity, 74, 4) & WPNSTATE_M4A1_SILENCED) {
-		weaponState = SILENCED
+		weaponState = SILENCED;
 	} else {
-		weaponState = UNSILENCED
+		weaponState = UNSILENCED;
 	}
 
 	switch (weapon_entity(entity)) {
@@ -2368,6 +2371,9 @@ stock get_weapon_draw_animation(entity)
 		case CSW_MAC10, CSW_AUG, CSW_UMP45, CSW_GALIL, CSW_FAMAS, CSW_MP5NAVY, CSW_TMP, CSW_SG552, CSW_AK47, CSW_P90: animation = 2;
 		case CSW_ELITE: animation = 15;
 		case CSW_FIVESEVEN, CSW_AWP, CSW_DEAGLE: animation = 5;
+		case CSW_GLOCK18: animation = 8;
+		case CSW_KNIFE, CSW_HEGRENADE, CSW_FLASHBANG, CSW_SMOKEGRENADE: animation = 3;
+		case CSW_C4: animation = 1;
 		case CSW_USP: {
 			switch (weaponState) {
 				case SILENCED: animation = 6;
@@ -2380,9 +2386,6 @@ stock get_weapon_draw_animation(entity)
 				case UNSILENCED: animation = 12;
 			}
 		}
-		case CSW_GLOCK18: animation = 8;
-		case CSW_KNIFE, CSW_HEGRENADE, CSW_FLASHBANG, CSW_SMOKEGRENADE: animation = 3;
-		case CSW_C4: animation = 1;
 	}
 
 	return animation;
