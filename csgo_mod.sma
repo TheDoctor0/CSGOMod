@@ -39,8 +39,8 @@
 
 #define WEAPON_ALL	31
 
-#define UNSILENCED 0
-#define SILENCED 1
+#define UNSILENCED 	0
+#define SILENCED 	1
 
 #define OBSERVER	4
 
@@ -56,11 +56,6 @@ new const commandMarket[][] = { "rynek", "say /market", "say_team /market", "say
 new const commandSell[][] = { "wystaw", "say /wystaw", "say_team /wystaw" };
 new const commandPurchase[][] = { "wykup", "say /wykup", "say_team /wykup" };
 new const commandWithdraw[][] = { "wycofaj", "say /wycofaj", "say_team /wycofaj" };
-
-new const defaultModels[][] = { "models/v_knife.mdl", "models/v_glock18.mdl", "models/v_ak47.mdl", "models/v_aug.mdl", "models/v_deagle.mdl", "models/v_elite.mdl",
-	"models/v_famas.mdl", "models/v_fiveseven.mdl", "models/v_g3sg1.mdl", "models/v_galil.mdl", "models/v_m3.mdl", "models/v_xm1014.mdl", "models/v_m4a1.mdl",
-	"models/v_m249.mdl", "models/v_mac10.mdl", "models/v_mp5.mdl", "models/v_p90.mdl", "models/v_p228.mdl", "models/v_scout.mdl","models/v_sg550.mdl",
-	"models/v_sg552.mdl", "models/v_tmp.mdl", "models/v_ump45.mdl", "models/v_usp.mdl"};
 
 new const defaultSkins[][] = { "", "models/csgo_ozone/p228/v_p228.mdl", "", "models/csgo_ozone/scout/v_scout.mdl", "", "models/csgo_ozone/xm1014/v_xm1014.mdl", "",
 	"models/csgo_ozone/mac10/v_mac10.mdl", "models/csgo_ozone/aug/v_aug.mdl", "", "models/csgo_ozone/elite/v_elite.mdl", "models/csgo_ozone/fiveseven/v_fiveseven.mdl",
@@ -168,19 +163,6 @@ public plugin_init()
 	for (new i = 0; i < sizeof traceBullets; i++) {
 		RegisterHam(Ham_TraceAttack, traceBullets[i], "trace_attack_post", 1);
 	}
-}
-
-public forward_precache(const model[])
-{
-	for (new i; i < sizeof(defaultModels); i++) {
-		if (!strcmp(model, defaultModels[i])) {
-			forward_return(FMV_CELL, 0);
-
-			return FMRES_SUPERCEDE;
-		}
-	}
-
-	return FMRES_IGNORED;
 }
 
 public plugin_precache()
