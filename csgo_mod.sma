@@ -73,7 +73,8 @@ new const maxBPAmmo[] = { -1, 52, -1, 90, 1, 32, 1, 100, 90, 1, 120, 100, 100, 9
 
 new const traceBullets[][] = { "func_breakable", "func_wall", "func_door", "func_plat", "func_rotating", "worldspawn", "func_door_rotating" };
 
-new const defaultShell[] = "models/pshell.mdl", shotgunShell[] = "models/shotgunshell.mdl";
+new const defaultShell[] = "models/pshell.mdl",
+	      shotgunShell[] = "models/shotgunshell.mdl";
 
 enum _:tempInfo { WEAPON, WEAPONS, WEAPON_ENT, EXCHANGE_PLAYER, EXCHANGE_SKIN, EXCHANGE_FOR_SKIN, GIVE_PLAYER, SALE_SKIN };
 enum _:playerInfo { ACTIVE[CSW_P90 + 1], Float:MONEY, SKIN, SUBMODEL, bool:SKINS_LOADED, bool:DATA_LOADED, bool:EXCHANGE_BLOCKED, bool:MENU_BLOCKED, TEMP[tempInfo], NAME[32], SAFE_NAME[64] };

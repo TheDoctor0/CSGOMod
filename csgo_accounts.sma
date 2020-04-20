@@ -22,7 +22,7 @@ new const commandAccount[][] = { "say /haslo", "say_team /haslo", "say /password
 	"say /konto", "say_team /konto", "say /account", "say_team /account", "konto" };
 
 new playerData[MAX_PLAYERS + 1][playerInfo], setinfo[16], Handle:sql, bool:sqlConnected, dataLoaded,
-	autoLogin, loginMaxTime, passwordMaxFails, passwordMinLength, loginForward;
+	autoLogin, loginMaxTime, passwordMaxFails, passwordMinLength, blockMovement, loginForward;
 
 public plugin_init()
 {
@@ -33,6 +33,7 @@ public plugin_init()
 	bind_pcvar_num(create_cvar("csgo_accounts_login_max_time", "60"), loginMaxTime);
 	bind_pcvar_num(create_cvar("csgo_accounts_password_max_fails", "3"), passwordMaxFails);
 	bind_pcvar_num(create_cvar("csgo_accounts_password_min_length", "5"), passwordMinLength);
+	bind_pcvar_num(create_cvar("csgo_accounts_block_movement", "1"), blockMovement);
 	bind_pcvar_string(create_cvar("csgo_accounts_setinfo", "csgopass"), setinfo, charsmax(setinfo));
 
 	register_clcmd("WPROWADZ_SWOJE_HASLO", "login_account");
@@ -101,7 +102,7 @@ public kick_player(id)
 
 public block_movement(id)
 {
-	if (!is_user_alive(id) || playerData[id][STATUS] >= LOGGED) return HAM_IGNORED;
+	if (!blockMovement || !is_user_alive(id) || playerData[id][STATUS] >= LOGGED) return HAM_IGNORED;
 
 	set_user_maxspeed(id, 0.1);
 
