@@ -27,9 +27,15 @@ All of available configuration files have proper descriptions.
 ## Optional
 There are some optional plugins:
 - [csgo_free_svip.sma](https://github.com/TheDoctor0/CSGOMod/blob/master/csgo_free_svip.sma) - Free SVIP for everyone (useful for server events)
-- [csgo_assist_revenge_us.sma](https://github.com/TheDoctor0/CSGOMod/blob/master/csgo_assist_revenge_us.sma) and [csgo_ranks_us.sma](https://github.com/TheDoctor0/CSGOMod/blob/master/csgo_raanks_us.sma) - Alternative versions compatible with [UltimateStats](https://github.com/TheDoctor0/UltimateStats)
+- [csgo_assist_revenge_us.sma](https://github.com/TheDoctor0/CSGOMod/blob/master/csgo_assist_revenge_us.sma), [csgo_ranks_us.sma](https://github.com/TheDoctor0/CSGOMod/blob/master/csgo_ranks_us.sma) and [csgo_stattrak_us.sma](https://github.com/TheDoctor0/CSGOMod/blob/master/csgo_stattrak_us.sma) - Alternative versions compatible with [UltimateStats](https://github.com/TheDoctor0/UltimateStats)
 - [sklepsms_usluga_euro.sma](https://github.com/TheDoctor0/CSGOMod/blob/master/sklepsms_usluga_euro.sma) - [SklepSMS](https://github.com/TheDoctor0/sklep-sms) service plugin
 
+## Commands
+There is one simple admin command that can be used to add money (Euro) to any player balance:
+```
+csgo_add_money <nick> <amount>
+```
+To use it you need **ADMIN_ADMIN** access, so better add yourself *"abcdefghijklmnopqrstuvxy"* flags.
 
 ## Servers
 List of servers that are using this mod is available [HERE](https://www.gametracker.com/search/?search_by=server_variable&search_by2=csgo_version&query=&loc=_all&sort=&order=).
