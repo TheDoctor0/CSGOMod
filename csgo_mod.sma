@@ -528,21 +528,31 @@ public random_skin_menu(id)
 
 public choose_weapon_menu(id, type)
 {
-	new menuData[32], tempType[2], menu = menu_create("\yWybierz \rBron\w:", "choose_weapon_menu_handle");
+	new menuData[32], tempType[2], count = 0, menu = menu_create("\yWybierz \rBron\w:", "choose_weapon_menu_handle");
 
 	num_to_str(type, tempType, charsmax(tempType));
 
-	for (new i = type == 2 ? 0 : (randomSkinPrice[WEAPON_ALL] > 0.0 ? 1 : 0); i < ArraySize(weapons); i++) {
+	for (new i = type != 2 ? 1 : (randomSkinPrice[WEAPON_ALL] > 0.0 ? 0 : 1); i < ArraySize(weapons); i++) {
 		ArrayGetString(weapons, i, menuData, charsmax(menuData));
 
-		menu_additem(menu, menuData, tempType);
+		if (type != 2 || randomSkinPrice[get_weapon_id(menuData)] > 0.0) {
+			menu_additem(menu, menuData, tempType);
+
+			count++;
+		}
 	}
 
 	menu_setprop(menu, MPROP_BACKNAME, "Wroc");
 	menu_setprop(menu, MPROP_NEXTNAME, "Dalej");
 	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
 
-	menu_display(id, menu);
+	if (!count) {
+		client_print_color(id, id, "^x04[CS:GO]^x01 Nie ma^x03 zadnych^x01 broni, dla ktorych mozna wylosowac skiny.");
+
+		menu_destroy(menu);
+	} else {
+		menu_display(id, menu);
+	}
 
 	return PLUGIN_HANDLED;
 }
