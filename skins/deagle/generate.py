@@ -57,7 +57,7 @@ for index, skin in enumerate(skins, start=0):
 
         with fileinput.FileInput(smd, inplace=True) as file:
             for line in file:
-                print(line.replace("{}.bmp".format(weapon), skin), end='')
+                print(line.replace("default.bmp", skin), end='')
 
     order = math.floor(index / max_per_file)
     filename = "v_{}_{}.qc".format(weapon, order)
