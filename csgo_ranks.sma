@@ -78,15 +78,17 @@ new const commandTopMedals[][] = { "topmedale", "say /topmedale", "say_team /top
 new const commandStats[][] = { "staty", "say /staty", "say_team /staty"};
 new const commandTopStats[][] = { "topstaty", "say /topstaty", "say_team /topstaty", "say /statytop15", "say_team /statytop15", "say /stop15", "say_team /stop15"};
 new const commandSounds[][] = { "dzwieki", "say /dzwieki", "say_team /dzwieki", "say /dzwiek", "say_team /dzwiek" };
+new const commandHud[][] = { "hud", "say /hud", "say_team /hud", "say /zmienhud", "say_team /zmienhud", "say /change_hud", "say_team /change_hud" };
 
-enum _:playerInfo { KILLS, RANK, TIME, FIRST_VISIT, LAST_VISIT, BRONZE, SILVER, GOLD, MEDALS, BEST_STATS, BEST_KILLS, BEST_DEATHS,
-	BEST_HS, CURRENT_STATS, CURRENT_KILLS, CURRENT_DEATHS, CURRENT_HS, Float:ELO_RANK, PLAYER_NAME[32], SAFE_NAME[64] };
+enum _:playerInfo { KILLS, RANK, TIME, FIRST_VISIT, LAST_VISIT, BRONZE, SILVER, GOLD, MEDALS, BEST_STATS, BEST_KILLS,
+	BEST_DEATHS, BEST_HS, CURRENT_STATS, CURRENT_KILLS, CURRENT_DEATHS, CURRENT_HS, PLAYER_HUD_RED, PLAYER_HUD_GREEN,
+	PLAYER_HUD_BLUE, PLAYER_HUD_POSX, PLAYER_HUD_POSY, Float:ELO_RANK, PLAYER_NAME[32], SAFE_NAME[64] };
 
 enum _:winners { THIRD, SECOND, FIRST };
 
 new playerData[MAX_PLAYERS + 1][playerInfo], sprites[MAX_RANKS + 1], Handle:sql, bool:sqlConnected, bool:oneAndOnly,
-	bool:mapChange,bool:block, loaded, visit, hud, aimHUD, defaultInfo, round, sounds, soundMayTheForce, soundOneAndOnly,
-	soundPrepare, soundHumiliation, soundLastLeft, forum[64], iconFlags[8], unrankedKills, minPlayers;
+	bool:mapChange,bool:block, loaded, hudLoaded, visit, hud, aimHUD, defaultInfo, round, sounds, soundMayTheForce,
+	soundOneAndOnly, soundPrepare, soundHumiliation, soundLastLeft, forum[64], iconFlags[8], unrankedKills, minPlayers;
 
 public plugin_init()
 {
@@ -107,6 +109,7 @@ public plugin_init()
 	for (new i; i < sizeof commandStats; i++) register_clcmd(commandStats[i], "cmd_stats");
 	for (new i; i < sizeof commandTopStats; i++) register_clcmd(commandTopStats[i], "cmd_topstats");
 	for (new i; i < sizeof commandSounds; i++) register_clcmd(commandSounds[i], "cmd_sounds");
+	for (new i; i < sizeof commandHud; i++) register_clcmd(commandHud[i], "change_hud");
 
 	RegisterHam(Ham_Spawn, "player", "player_spawn", 1);
 
@@ -199,6 +202,12 @@ public sql_init()
 
 	SQL_Execute(query);
 
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_hud` (`name` varchar(32) NOT NULL, `red` int(10) NOT NULL, `green` int(10) NOT NULL, `blue` int(10) NOT NULL, `x` int(10) NOT NULL, `y` int(10) NOT NULL, PRIMARY KEY (`name`));");
+
+	query = SQL_PrepareQuery(connectHandle, queryData);
+
+	SQL_Execute(query);
+
 	SQL_FreeHandle(query);
 	SQL_FreeHandle(connectHandle);
 
@@ -217,7 +226,14 @@ public client_putinserver(id)
 
 	playerData[id][ELO_RANK] = _:100.0;
 
+	playerData[id][PLAYER_HUD_RED] = 0;
+	playerData[id][PLAYER_HUD_GREEN] = 255;
+	playerData[id][PLAYER_HUD_BLUE] = 0;
+	playerData[id][PLAYER_HUD_POSX] = 70;
+	playerData[id][PLAYER_HUD_POSY] = 6;
+
 	rem_bit(id, loaded);
+	rem_bit(id, hudLoaded);
 	rem_bit(id, visit);
 	rem_bit(id, soundMayTheForce);
 	rem_bit(id, soundOneAndOnly);
@@ -296,9 +312,45 @@ public load_data_handle(failState, Handle:query, error[], errorNum, playerId[], 
 		SQL_ThreadQuery(sql, "ignore_handle", queryData);
 	}
 
+	set_bit(id, loaded);
+
+	new playerId[1], queryData[128];
+
+	playerId[0] = id;
+
+	formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_hud` WHERE name = ^"%s^";", playerData[id][SAFE_NAME]);
+
+	SQL_ThreadQuery(sql, "load_hud_handle", queryData, playerId, sizeof(playerId));
+}
+
+public load_hud_handle(failState, Handle:query, error[], errorNum, playerId[], dataSize)
+{
+	if (failState) {
+		log_to_file("csgo-error.log", "[CS:GO Ranks] SQL error: %s (%d)", error, errorNum);
+
+		return;
+	}
+
+	new id = playerId[0];
+
+	if (SQL_NumRows(query)) {
+		playerData[id][PLAYER_HUD_RED] = SQL_ReadResult(query, SQL_FieldNameToNum(query, "red"));
+		playerData[id][PLAYER_HUD_GREEN] = SQL_ReadResult(query, SQL_FieldNameToNum(query, "green"));
+		playerData[id][PLAYER_HUD_BLUE] = SQL_ReadResult(query, SQL_FieldNameToNum(query, "blue"));
+		playerData[id][PLAYER_HUD_POSX] = SQL_ReadResult(query, SQL_FieldNameToNum(query, "x"));
+		playerData[id][PLAYER_HUD_POSY] = SQL_ReadResult(query, SQL_FieldNameToNum(query, "y"));
+	} else {
+		new queryData[192];
+
+		formatex(queryData, charsmax(queryData), "INSERT IGNORE INTO `csgo_hud` VALUES ('%s', '%i', '%i', '%i', '%i', '%i');",
+			playerData[id][SAFE_NAME], playerData[id][PLAYER_HUD_RED], playerData[id][PLAYER_HUD_GREEN], playerData[id][PLAYER_HUD_BLUE], playerData[id][PLAYER_HUD_POSX], playerData[id][PLAYER_HUD_POSY]);
+
+		SQL_ThreadQuery(sql, "ignore_handle", queryData);
+	}
+
 	if (!task_exists(id + TASK_HUD)) set_task(1.0, "display_hud", id + TASK_HUD, .flags = "b");
 
-	set_bit(id, loaded);
+	set_bit(id, hudLoaded);
 }
 
 stock save_data(id, end = 0)
@@ -379,7 +431,7 @@ public display_hud(id)
 {
 	id -= TASK_HUD;
 
-	if (is_user_bot(id) || !is_user_connected(id)) return PLUGIN_CONTINUE;
+	if (is_user_bot(id) || !is_user_connected(id) || !get_bit(id, hudLoaded)) return PLUGIN_CONTINUE;
 
 	static clan[64], operation[64], skin[64], statTrak[64], weaponStatTrak, target;
 
@@ -390,7 +442,7 @@ public display_hud(id)
 
 		set_hudmessage(255, 255, 255, 0.7, 0.25, 0, 0.0, 1.2, 0.0, 0.0, 3);
 	} else {
-		set_hudmessage(0, 255, 0, 0.7, 0.06, 0, 0.0, 1.2, 0.0, 0.0, 3);
+		set_hudmessage(playerData[id][PLAYER_HUD_RED], playerData[id][PLAYER_HUD_GREEN], playerData[id][PLAYER_HUD_BLUE], float(playerData[id][PLAYER_HUD_POSX]) / 100.0, float(playerData[id][PLAYER_HUD_POSY]) / 100.0, 0, 0.0, 1.2, 0.0, 0.0, 3);
 	}
 
 	if (!target || !get_bit(target, loaded)) return PLUGIN_CONTINUE;
@@ -1235,6 +1287,84 @@ public cmd_sounds_handle(id, menu, item)
 	menu_destroy(menu);
 
 	return PLUGIN_HANDLED;
+}
+
+public change_hud(id)
+{
+	if (!is_user_connected(id) || !get_bit(id, hudLoaded)) return PLUGIN_HANDLED;
+
+	new menuData[64], menu = menu_create("\yKonfiguracja \rHUD\w", "change_hud_handle");
+
+	format(menuData, charsmax(menuData), "\wKolor \yCzerwony: \r%i", playerData[id][PLAYER_HUD_RED]);
+	menu_additem(menu, menuData);
+
+	format(menuData, charsmax(menuData), "\wKolor \yZielony: \r%i", playerData[id][PLAYER_HUD_GREEN]);
+	menu_additem(menu, menuData);
+
+	format(menuData, charsmax(menuData), "\wKolor \yNiebieski: \r%i", playerData[id][PLAYER_HUD_BLUE]);
+	menu_additem(menu, menuData);
+
+	format(menuData, charsmax(menuData), "\wPolozenie \yOs X: \r%i%%", playerData[id][PLAYER_HUD_POSX]);
+	menu_additem(menu, menuData);
+
+	format(menuData, charsmax(menuData), "\wPolozenie \yOs Y: \r%i%%^n", playerData[id][PLAYER_HUD_POSY]);
+	menu_additem(menu, menuData);
+
+	format(menuData, charsmax(menuData), "\yDomyslne \rUstawienia");
+	menu_additem(menu, menuData);
+
+	formatex(menuData, charsmax(menuData), "Wyjscie");
+	menu_setprop(menu, MPROP_NEXTNAME, menuData);
+
+	menu_display(id, menu);
+
+	return PLUGIN_HANDLED;
+}
+
+public change_hud_handle(id, menu, item)
+{
+	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+
+	if (item == MENU_EXIT) {
+		menu_destroy(menu);
+
+		return PLUGIN_HANDLED;
+	}
+
+	switch (item) {
+		case 0: if ((playerData[id][PLAYER_HUD_RED] += 15) > 255) playerData[id][PLAYER_HUD_RED] = 0;
+		case 1: if ((playerData[id][PLAYER_HUD_GREEN] += 15) > 255) playerData[id][PLAYER_HUD_GREEN] = 0;
+		case 2: if ((playerData[id][PLAYER_HUD_BLUE] += 15) > 255) playerData[id][PLAYER_HUD_BLUE] = 0;
+		case 3: if ((playerData[id][PLAYER_HUD_POSX] += 3) > 100) playerData[id][PLAYER_HUD_POSX] = 0;
+		case 4: if ((playerData[id][PLAYER_HUD_POSY] += 3) > 100) playerData[id][PLAYER_HUD_POSY] = 0;
+		case 5: {
+			playerData[id][PLAYER_HUD_RED] = 0;
+			playerData[id][PLAYER_HUD_GREEN] = 255;
+			playerData[id][PLAYER_HUD_BLUE] = 0;
+			playerData[id][PLAYER_HUD_POSX] = 70;
+			playerData[id][PLAYER_HUD_POSY] = 6;
+		}
+	}
+
+	menu_destroy(menu);
+
+	save_hud(id);
+
+	change_hud(id);
+
+	return PLUGIN_CONTINUE;
+}
+
+public save_hud(id)
+{
+	if (!get_bit(id, hudLoaded)) return;
+
+	new tempData[256];
+
+	formatex(tempData, charsmax(tempData), "UPDATE `csgo_hud` SET `red` = '%i', `green` = '%i', `blue` = '%i', `x` = '%i', `y` = '%i' WHERE `name` = ^"%s^"",
+			playerData[id][PLAYER_HUD_RED], playerData[id][PLAYER_HUD_GREEN], playerData[id][PLAYER_HUD_BLUE], playerData[id][PLAYER_HUD_POSX], playerData[id][PLAYER_HUD_POSY], playerData[id][PLAYER_NAME]);
+
+	SQL_ThreadQuery(sql, "ignore_handle", tempData);
 }
 
 public _csgo_add_kill(id)
