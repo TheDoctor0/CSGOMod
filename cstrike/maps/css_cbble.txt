@@ -1,0 +1,24 @@
+CSS_CBBLE (Bomb/Defuse)
+
+Map created by Tatu Eugen - www.tatueugen.info
+
+This map is a remake from de_cbble from CS:GO
+Any ideas and bugs please report at mail adress:
+contact@tatueugen.info
+
+Mission
+--------
+Counter-Terrorists: Prevent terrorists from bombing Lord William's country farmhouse. He has been the target of assassination in light of recent government proposals.
+
+Terrorists: The Terrorist carrying the C4 must place the bomb at one of the two bomb sites around the map, thereby killing Lord William and severely damaging his home.
+
+Other Notes: There are 2 bomb sites.
+
+Credits
+--------
+Textures:
+Valve
+Tatu Eugen
+
+Original Cbble Author:
+David Johnston
