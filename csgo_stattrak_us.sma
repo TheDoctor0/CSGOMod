@@ -2,7 +2,7 @@
 #include <ultimate_stats>
 
 #define PLUGIN "CS:GO StatTrak (Ultimate Stats)"
-#define VERSION "1.0"
+#define VERSION "1.4"
 #define AUTHOR "O'Zone"
 
 #define CSW_SHIELD	2

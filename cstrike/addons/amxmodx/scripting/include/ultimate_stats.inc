@@ -3,6 +3,10 @@
 #endif
 #define _ultimate_stats_included
 
+#if !defined client_print_color || !defined MAX_NAME_LENGTH
+    #error THIS VERSION IS NOT SUPPORTED! PLEASE USE AMXX 1.8.3+!
+#endif
+
 /**
  * Retrieves the client's current weapon statistics.
  *
@@ -131,15 +135,15 @@ native get_user_rstats(index, stats[8], bodyhits[8]);
  *                  all victims
  * @param stats     Buffer to copy statistics to
  * @param bodyhits  Buffer to copy body hits to
- * @param wpnname   Optional buffer to copy last used weapon name to
- * @param len       Maximum buffer size
+ * @param weapon    Optional buffer to copy last used weapon name to
+ * @param length    Maximum buffer size
  *
  * @return          1 on success, 0 if no statistics are available against the
  *                  specified victim
  * @error           If an invalid client index is provided, an error will be
  *                  thrown.
  */
-native get_user_vstats(index, victim, stats[8], bodyhits[8], wpnname[] = "", len = 0);
+native get_user_vstats(index, victim, stats[8], bodyhits[8], weapon[] = "", length = 0);
 
 /**
  * Retrieves the client's statistics received from another client from the
@@ -161,15 +165,15 @@ native get_user_vstats(index, victim, stats[8], bodyhits[8], wpnname[] = "", len
  *                  all attackers
  * @param stats     Buffer to copy statistics to
  * @param bodyhits  Buffer to copy body hits to
- * @param wpnname   Optional buffer to copy last used weapon name to
- * @param len       Maximum buffer size
+ * @param weapon    Optional buffer to copy last used weapon name to
+ * @param length    Maximum buffer size
  *
  * @return          1 on success, 0 if no statistics are available against the
  *                  specified attacker
  * @error           If an invalid client index is provided, an error will be
  *                  thrown.
  */
-native get_user_astats(index, wpnindex, stats[8], bodyhits[8], wpnname[] = "", len = 0);
+native get_user_astats(index, wpnindex, stats[8], bodyhits[8], weapon[] = "", length = 0);
 
 /**
  * Resets the current round weapon, attacker and victim statistics.
@@ -202,14 +206,14 @@ native reset_user_wstats(index);
  * @param stats         Buffer to copy statistics to
  * @param bodyhits      Buffer to copy body hits to
  * @param name          Buffer to copy client name to
- * @param len           Maximum name buffer size
+ * @param length        Maximum name buffer size
  * @param authid        Buffer to copy client auth id to
- * @param authidlen     Maximum authid buffer size
+ * @param length2       Maximum authid buffer size
  *
  * @return              Next rank index (> 0 and > index), or 0 if no more
  *                      statistics exist
  */
-native get_stats(index, stats[8], bodyhits[8], name[], len, authid[] = "", authidlen = 0);
+native get_stats(index, stats[8], bodyhits[8], name[], length, authid[] = "", length2 = 0);
 
 /**
  * Returns the number of all entries in the permanent statistics storage.
@@ -249,12 +253,22 @@ native get_user_stats2(index, stats[4]);
  * @param index         Client index
  * @param stats         Buffer to copy statistics to
  * @param authid        Buffer to copy client auth id to
- * @param authidlen     Maximum authid buffer size
+ * @param length        Maximum authid buffer size
  *
  * @return              Next rank index (> 0 and > index), or 0 if no more
  *                      statistics exist
  */
-native get_stats2(index, stats[4], authid[] = "", authidlen = 0);
+native get_stats2(index, stats[4], authid[] = "", length = 0);
+
+/**
+ * Returns current user ranking position.
+ *
+ * @param index         Client index
+ *
+ * @return              Players rank > 0 on success, or 0 if player is not ranked
+ *                      and no statistics are available
+ */
+native get_user_rank(index);
 
 /**
  * Returns total time spent on server.
@@ -287,6 +301,80 @@ native Float:get_user_elo(index);
  *                      thrown.
  */
 native add_user_elo(index, Float:elo);
+
+/**
+ * Returns weapons array size.
+ *
+ * @return              Weapons array size
+ */
+native xmod_get_maxweapons(weapon);
+
+/**
+ * Returns stats array size.
+ *
+ * @return              Stats array size
+ */
+native xmod_get_stats_size(weapon);
+
+/**
+ * Checks whether weapon is melee.
+ *
+ * @param weapon        Weapon index in CSW_ format
+ *
+ * @return              1 on if melee weapon, 0 otherwise
+ */
+native xmod_is_melee_wpn(weapon);
+
+/**
+ * Returns weapon name.
+ *
+ * @param weapon        Rank index
+ * @param name          Buffer to copy weapon name to
+ * @param length        Maximum weapon name buffer size
+ *
+ * @noreturn
+ */
+native xmod_get_wpnname(weapon, name[], length);
+
+/**
+ * Returns weapon logname.
+ *
+ * @param weapon        Rank index
+ * @param name          Buffer to copy weapon name to
+ * @param length        Maximum weapon name buffer size
+ *
+ * @noreturn
+ */
+native xmod_get_wpnlogname(weapon, name[], length);
+
+/**
+ * @error               Native not implemented
+ */
+#pragma deprecated Native not implemented!
+native custom_weapon_add(const weaponName[], melee = 0, const logName[] = "");
+
+/**
+ * @error               Native not implemented
+ */
+#pragma deprecated Native not implemented!
+native custom_weapon_dmg(weapon, attacker, victim, damage, hitPlace = 0);
+
+/**
+ * @error               Native not implemented
+ */
+#pragma deprecated Native not implemented!
+native custom_weapon_shot(weapon, index);
+
+/**
+ * @error               Native not implemented
+ */
+#pragma deprecated Native not implemented!
+native register_statsfwd(ftype);
+
+/**
+ * @error               Stock not implemented
+ */
+stock ts_weaponspawn(const weaponid[], const duration[], const extraclip[], const spawnflags[], const Float:origin[3]);
 
 /**
  * Called after a client attacks another client.

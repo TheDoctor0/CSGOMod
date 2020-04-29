@@ -4,10 +4,10 @@
 #include <engine>
 
 #define PLUGIN  "CS:GO C4"
-#define VERSION "1.1"
+#define VERSION "1.4"
 #define AUTHOR  "O'Zone"
 
-new const modelsC4[][] = { "models/ozone_csgo/c4/p_c4.mdl", "models/ozone_csgo/c4/v_c4.mdl", "models/ozone_csgo/c4/w_c4.mdl" };
+new const modelsC4[][] = { "models/ozone_csgo/c4_new/p_c4.mdl", "models/ozone_csgo/c4_new/v_c4.mdl", "models/ozone_csgo/c4_new/w_c4.mdl" };
 
 public plugin_init()
 {
@@ -22,14 +22,20 @@ public plugin_init()
 }
 
 public plugin_precache()
-	for (new i = 0; i < sizeof(modelsC4); i++) precache_model(modelsC4[i]);
+{
+	for (new i = 0; i < sizeof(modelsC4); i++) {
+		precache_model(modelsC4[i]);
+	}
+}
 
 public remove_c4()
 {
 	new entC4 = -1;
 
-	while((entC4 = engfunc(EngFunc_FindEntityByString, entC4, "classname", "grenade"))) {
-		if(pev_valid(entC4) && get_pdata_bool(entC4, 385)) engfunc(EngFunc_RemoveEntity, entC4);
+	while ((entC4 = engfunc(EngFunc_FindEntityByString, entC4, "classname", "grenade"))) {
+		if (pev_valid(entC4) && get_pdata_bool(entC4, 385)) {
+			engfunc(EngFunc_RemoveEntity, entC4);
+		}
 	}
 }
 

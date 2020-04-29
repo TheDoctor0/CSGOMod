@@ -4,7 +4,7 @@
 #include <csgomod>
 
 #define PLUGIN "CS:GO Buy Menu"
-#define VERSION "1.1"
+#define VERSION "1.4"
 #define AUTHOR "O'Zone"
 
 #define CSW_NIGHTVISION 0

@@ -1,7 +1,7 @@
 #include <amxmodx>
 
 #define PLUGIN "Free SVIP"
-#define VERSION "1.1"
+#define VERSION "1.4"
 #define AUTHOR "O'Zone"
 
 #define TASK_RELOAD 8402
@@ -32,9 +32,9 @@ public client_authorized(id)
 }
 
 public amxbans_sql_initialized(info, db)
-	if (freeSVIP) set_task(1.0, "SetVIP", TASK_RELOAD);
+	if (freeSVIP) set_task(1.0, "set_vip", TASK_RELOAD);
 
-public SetVIP()
+public set_vip()
 {
 	for (new id = 1; id <= MAX_PLAYERS; id++) {
 		if (is_user_connected(id) && !is_user_hltv(id)) {

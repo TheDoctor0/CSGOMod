@@ -4,7 +4,7 @@
 #include <csx>
 
 #define PLUGIN "CS:GO StatTrak"
-#define VERSION "1.0"
+#define VERSION "1.4"
 #define AUTHOR "O'Zone"
 
 #define CSW_SHIELD	2

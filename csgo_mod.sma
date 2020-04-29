@@ -10,15 +10,15 @@
 #include <csgomod>
 
 #define PLUGIN "CS:GO Mod"
-#define VERSION "1.3"
+#define VERSION "1.4"
 #define AUTHOR "O'Zone"
 
-#define TASK_SKINS 3045
-#define TASK_DATA 4592
-#define TASK_AIM 5309
-#define TASK_AD 6234
+#define TASK_SKINS	3045
+#define TASK_DATA	4592
+#define TASK_AIM	5309
+#define TASK_AD		6234
 
-#define WEAPON_ALL 31
+#define WEAPON_ALL	31
 
 new const commandSkins[][] = { "skiny", "say /skins", "say_team /skins", "say /skin", "say_team /skin", "say /skiny",
 	"say_team /skiny", "say /modele", "say_team /modele", "say /model", "say_team /model", "say /jackpot", "say_team /jackpot" };
@@ -33,30 +33,33 @@ new const commandSell[][] = { "wystaw", "say /wystaw", "say_team /wystaw" };
 new const commandPurchase[][] = { "wykup", "say /wykup", "say_team /wykup" };
 new const commandWithdraw[][] = { "wycofaj", "say /wycofaj", "say_team /wycofaj" };
 
-new const defaultSkin[][] = { "", "models/ozone_csgo/default/v_p228.mdl", "", "models/ozone_csgo/default/v_scout.mdl", "", "models/ozone_csgo/default/v_xm1014.mdl", "",
-	"models/ozone_csgo/default/v_mac10.mdl", "models/ozone_csgo/default/v_aug2.mdl", "", "models/ozone_csgo/default/v_elite.mdl", "models/ozone_csgo/default/v_fiveseven2.mdl",
-	"models/ozone_csgo/default/v_ump45.mdl", "models/ozone_csgo/default/v_sg5502.mdl", "models/ozone_csgo/default/v_galil.mdl", "models/ozone_csgo/default/v_famas2.mdl",
-	"models/ozone_csgo/default/v_usp2.mdl","models/ozone_csgo/default/v_glock18.mdl", "models/ozone_csgo/default/v_awp.mdl", "models/ozone_csgo/default/v_mp5navy.mdl",
-	"models/ozone_csgo/default/v_m249.mdl", "models/ozone_csgo/default/v_m3.mdl", "models/ozone_csgo/default/v_m4a12.mdl", "models/ozone_csgo/default/v_tmp2.mdl",
-	"models/ozone_csgo/default/v_g3sg1.mdl", "", "models/ozone_csgo/default/v_deagle.mdl", "models/ozone_csgo/default/v_sg552.mdl",
-	"models/ozone_csgo/default/v_ak47.mdl", "models/ozone_csgo/default/v_knife.mdl", "models/ozone_csgo/default/v_p90.mdl", "models/ozone_csgo/default/v_knife_t.mdl"
-};
+new const defaultModels[][] = { "", "models/ozone_csgo/default_new/v_p228.mdl", "", "models/ozone_csgo/default_new/v_scout.mdl", "", "models/ozone_csgo/default_new/v_xm1014.mdl", "",
+	"models/ozone_csgo/default_new/v_mac10.mdl", "models/ozone_csgo/default_new/v_aug.mdl", "", "models/ozone_csgo/default_new/v_elite.mdl", "models/ozone_csgo/default_new/v_fiveseven.mdl",
+	"models/ozone_csgo/default_new/v_ump45.mdl", "models/ozone_csgo/default_new/v_sg550.mdl", "models/ozone_csgo/default_new/v_galil.mdl", "models/ozone_csgo/default_new/v_famas.mdl",
+	"models/ozone_csgo/default_new/v_usp.mdl","models/ozone_csgo/default_new/v_glock18.mdl", "models/ozone_csgo/default_new/v_awp.mdl", "models/ozone_csgo/default_new/v_mp5navy.mdl",
+	"models/ozone_csgo/default_new/v_m249.mdl", "models/ozone_csgo/default_new/v_m3.mdl", "models/ozone_csgo/default_new/v_m4a1.mdl", "models/ozone_csgo/default_new/v_tmp.mdl",
+	"models/ozone_csgo/default_new/v_g3sg1.mdl", "", "models/ozone_csgo/default_new/v_deagle.mdl", "models/ozone_csgo/default_new/v_sg552.mdl",
+	"models/ozone_csgo/default_new/v_ak47.mdl", "models/ozone_csgo/default_new/v_knife.mdl", "models/ozone_csgo/default_new/v_p90.mdl" };
 
-new const weaponSlots[] = { -1, 2, -1, 1, 4, 1, 5, 1, 1, 4, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 4, 2, 1, 1, 3, 1 };
-new const maxBPAmmo[] = { -1, 52, -1, 90, 1, 32, 1, 100, 90, 1, 120, 100, 100, 90, 90, 90, 100, 120, 30, 120, 200, 32, 90, 120, 90, 2, 35, 90, 90, -1, 100 };
 new const ammoType[][] = { "", "357sig", "", "762nato", "", "buckshot", "", "45acp", "556nato", "", "9mm", "57mm", "45acp", "556nato", "556nato", "556nato",
 						"45acp", "9mm", "338magnum", "9mm", "556natobox", "buckshot", "556nato", "9mm", "762nato", "", "50ae", "556nato", "762nato", "", "57mm" };
 
+new const weaponSlots[] = { -1, 2, -1, 1, 4, 1, 5, 1, 1, 4, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 4, 2, 1, 1, 3, 1 };
+new const maxBPAmmo[] = { -1, 52, -1, 90, 1, 32, 1, 100, 90, 1, 120, 100, 100, 90, 90, 90, 100, 120, 30, 120, 200, 32, 90, 120, 90, 2, 35, 90, 90, -1, 100 };
+
 enum _:tempInfo { WEAPON, WEAPONS, WEAPON_ENT, EXCHANGE_PLAYER, EXCHANGE_SKIN, EXCHANGE_FOR_SKIN, GIVE_PLAYER, SALE_SKIN };
-enum _:playerInfo { ACTIVE[CSW_P90 + 1], Float:MONEY, SKIN, bool:SKINS_LOADED, bool:DATA_LOADED, bool:SKINS_DISABLED, bool:EXCHANGE_BLOCKED, bool:MENU_BLOCKED, TEMP[tempInfo], NAME[32], SAFE_NAME[64] };
+enum _:playerInfo { ACTIVE[CSW_P90 + 1], Float:MONEY, SKIN, bool:SKINS_LOADED, bool:DATA_LOADED, bool:SKINS_DISABLED,
+	bool:EXCHANGE_BLOCKED, bool:MENU_BLOCKED, TEMP[tempInfo], NAME[32], SAFE_NAME[64] };
 enum _:playerSkinsInfo { SKIN_ID, SKIN_COUNT };
 enum _:skinsInfo { SKIN_NAME[64], SKIN_WEAPON[32], SKIN_MODEL[64], SKIN_PRICE, SKIN_CHANCE };
 enum _:marketInfo { MARKET_ID, MARKET_SKIN, MARKET_OWNER, Float:MARKET_PRICE };
 
-new playerData[MAX_PLAYERS + 1][playerInfo], Array:playerSkins[MAX_PLAYERS + 1], Float:randomSkinPrice[WEAPON_ALL + 1], overallSkinChance[WEAPON_ALL + 1], Array:skins, Array:weapons, Array:market,
-	Handle:sql, Handle:connection, marketSkins, multipleSkins, defaultSkins, skinChance, skinChanceSVIP, Float:skinChancePerMember, maxMarketSkins, Float:marketCommision,
+new playerData[MAX_PLAYERS + 1][playerInfo], Array:playerSkins[MAX_PLAYERS + 1], Float:randomSkinPrice[WEAPON_ALL + 1], overallSkinChance[WEAPON_ALL + 1], Array:skins, Array:weapons,
+	Array:market, Handle:sql, Handle:connection, marketSkins, multipleSkins, defaultSkins, skinChance, skinChanceSVIP, Float:skinChancePerMember, maxMarketSkins, Float:marketCommision,
 	Float:killReward, Float:killHSReward, Float:bombReward, Float:defuseReward, Float:hostageReward, Float:winReward, minPlayers, bool:end, bool:sqlConnected,
 	sqlHost[64], sqlUser[64], sqlPassword[64], sqlDatabase[64];
+
+native csgo_get_zeus(id);
 
 public plugin_init()
 {
@@ -138,7 +141,7 @@ public plugin_precache()
 
 	if (!file_exists(file)) set_fail_state("[CS:GO] Brak pliku csgo_skins.ini!");
 
-	new skin[skinsInfo], lineData[256], tempValue[4][64], bool:error, fileOpen = fopen(file, "r");
+	new skin[skinsInfo], lineData[256], tempValue[4][64], bool:error, count = 0, fileOpen = fopen(file, "r");
 
 	while (!feof(fileOpen)) {
 		fgets(fileOpen, lineData, charsmax(lineData)); trim(lineData);
@@ -167,7 +170,11 @@ public plugin_precache()
 				log_to_file("csgo-error.log", "[CS:GO] Plik %s nie istnieje!", skin[SKIN_MODEL]);
 
 				error = true;
-			} else precache_model(skin[SKIN_MODEL]);
+			} else {
+				precache_model(skin[SKIN_MODEL]);
+
+				count++;
+			}
 
 			ArrayPushArray(skins, skin);
 		}
@@ -181,17 +188,22 @@ public plugin_precache()
 
 	for (new i = 1; i <= MAX_PLAYERS; i++) playerSkins[i] = ArrayCreate(playerSkinsInfo);
 
-	for (new i = 0; i < sizeof(defaultSkin); i++) {
-		if (!defaultSkin[i][0]) continue;
+	for (new i = 0; i < sizeof(defaultModels); i++) {
+		if (!defaultModels[i][0]) continue;
 
-		if (!file_exists(defaultSkin[i])) {
-			log_to_file("csgo-error.log", "[CS:GO] Plik %s nie istnieje!", defaultSkin[i]);
+		if (!file_exists(defaultModels[i])) {
+			log_to_file("csgo-error.log", "[CS:GO] Plik %s nie istnieje!", defaultModels[i]);
 
 			error = true;
-		} else precache_model(defaultSkin[i]);
+		} else {
+			precache_model(defaultModels[i]);
+		}
 	}
 
 	if (error) set_fail_state("[CS:GO] Nie zaladowano wszystkich standardowych skinow. Sprawdz logi bledow!");
+
+	log_amx("CS:GO Mod by O'Zone (v%s).", VERSION);
+	log_amx("Loaded %i skins.", count);
 
 	set_task(0.1, "load_skins_details");
 }
@@ -482,21 +494,31 @@ public random_skin_menu(id)
 
 public choose_weapon_menu(id, type)
 {
-	new menuData[32], tempType[2], menu = menu_create("\yWybierz \rBron\w:", "choose_weapon_menu_handle");
+	new menuData[32], tempType[2], count = 0, menu = menu_create("\yWybierz \rBron\w:", "choose_weapon_menu_handle");
 
 	num_to_str(type, tempType, charsmax(tempType));
 
-	for (new i = type == 2 ? 0 : (randomSkinPrice[WEAPON_ALL] > 0.0 ? 1 : 0); i < ArraySize(weapons); i++) {
+	for (new i = type != 2 ? 1 : (randomSkinPrice[WEAPON_ALL] > 0.0 ? 0 : 1); i < ArraySize(weapons); i++) {
 		ArrayGetString(weapons, i, menuData, charsmax(menuData));
 
-		menu_additem(menu, menuData, tempType);
+		if (type != 2 || randomSkinPrice[get_weapon_id(menuData)] > 0.0) {
+			menu_additem(menu, menuData, tempType);
+
+			count++;
+		}
 	}
 
 	menu_setprop(menu, MPROP_BACKNAME, "Wroc");
 	menu_setprop(menu, MPROP_NEXTNAME, "Dalej");
 	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
 
-	menu_display(id, menu);
+	if (!count) {
+		client_print_color(id, id, "^x04[CS:GO]^x01 Nie ma^x03 zadnych^x01 broni, dla ktorych mozna wylosowac skiny.");
+
+		menu_destroy(menu);
+	} else {
+		menu_display(id, menu);
+	}
 
 	return PLUGIN_HANDLED;
 }
@@ -528,7 +550,7 @@ public choose_weapon_menu_handle(id, menu, item)
 
 public set_weapon_skin(id, weapon[])
 {
-	new menuData[64], tempId[5], skin[skinsInfo], skinId, skinsCount, menu = menu_create("\yWybierz \rSkin\w:", "set_weapon_skin_handle"), callback = menu_makecallback("set_weapon_skin_callback");
+	new menuData[64], tempId[5], skin[skinsInfo], skinId, skinsCount, menu = menu_create("\yWybierz \rSkin\w:", "set_weapon_skin_handle");
 
 	menu_additem(menu, "Domyslny", weapon);
 
@@ -537,16 +559,19 @@ public set_weapon_skin(id, weapon[])
 
 		if (equal(weapon, skin[SKIN_WEAPON])) {
 			skinId = has_skin(id, i, 1);
+
+			if (skinId == -1) continue;
+
 			skinsCount = 0;
 
-			if (multipleSkins && skinId != -1) skinsCount = get_player_skin_info(id, skinId, SKIN_COUNT);
+			if (multipleSkins) skinsCount = get_player_skin_info(id, skinId, SKIN_COUNT);
 
 			if (skinsCount > 1) formatex(menuData, charsmax(menuData), "%s \y(%s) \r(%i)", skin[SKIN_NAME], skin[SKIN_WEAPON], skinsCount);
 			else formatex(menuData, charsmax(menuData), "%s \y(%s)", skin[SKIN_NAME], skin[SKIN_WEAPON]);
 
 			num_to_str(i, tempId, charsmax(tempId));
 
-			menu_additem(menu, menuData, tempId, _, callback);
+			menu_additem(menu, menuData, tempId);
 		}
 	}
 
@@ -557,15 +582,6 @@ public set_weapon_skin(id, weapon[])
 	menu_display(id, menu);
 
 	return PLUGIN_HANDLED;
-}
-
-public set_weapon_skin_callback(id, menu, item)
-{
-	static itemData[5], itemAccess, itemCallback;
-
-	menu_item_getinfo(menu, item, itemAccess, itemData, charsmax(itemData), _, _, itemCallback);
-
-	return has_skin(id, str_to_num(itemData), 1) > -1 ? ITEM_ENABLED : ITEM_DISABLED;
 }
 
 public set_weapon_skin_handle(id, menu, item)
@@ -592,7 +608,10 @@ public set_weapon_skin_handle(id, menu, item)
 		set_skin(id, skin[SKIN_WEAPON], skin[SKIN_NAME], skinId, 1);
 
 		client_print_color(id, id, "^x04[CS:GO]^x01 Twoj nowy skin^x03 %s^x01 to^x03 %s^x01.", skin[SKIN_WEAPON], skin[SKIN_NAME]);
-		client_print_color(id, id, "^x04[CS:GO]^x01 Wybrany skin zostanie^x03 od tego momentu^x01 ustawiony dla tej broni po kazdym zakupie^x01.");
+
+		if (!equal(skin[SKIN_WEAPON], "KNIFE")) {
+			client_print_color(id, id, "^x04[CS:GO]^x01 Wybrany skin zostanie^x03 od tego momentu^x01 ustawiony dla tej broni po kazdym zakupie^x01.");
+		}
 	} else {
 		new itemData[16], itemAccess, itemCallback;
 
@@ -603,7 +622,10 @@ public set_weapon_skin_handle(id, menu, item)
 		set_skin(id, itemData);
 
 		client_print_color(id, id, "^x04[CS:GO]^x01 Przywrociles domyslny skin broni^x03 %s^x01.", itemData);
-		client_print_color(id, id, "^x04[CS:GO]^x01 Wybrany skin zostanie^x03 od tego momentu^x01 ustawiony dla tej broni po kazdym zakupie^x01.");
+
+		if (!equal(itemData, "KNIFE")) {
+			client_print_color(id, id, "^x04[CS:GO]^x01 Wybrany skin zostanie^x03 od tego momentu^x01 ustawiony dla tej broni po kazdym zakupie^x01.");
+		}
 	}
 
 	menu_destroy(menu);
@@ -639,7 +661,9 @@ public buy_weapon_skin(id, weapon[])
 		client_print_color(id, id, "^x04[CS:GO]^x01 Do kupienia nie ma^x03 zadnych^x01 skinow tej broni.");
 
 		menu_destroy(menu);
-	} else menu_display(id, menu);
+	} else {
+		menu_display(id, menu);
+	}
 }
 
 public buy_weapon_skin_handle(id, menu, item)
@@ -1837,11 +1861,17 @@ public set_fov(id)
 	if (playerData[id][SKIN] > -1 && (!playerData[id][TEMP][WEAPON_ENT] || is_valid_ent(playerData[id][TEMP][WEAPON_ENT])) && (playerData[id][TEMP][WEAPON] == CSW_AWP || playerData[id][TEMP][WEAPON] == CSW_SCOUT)) {
 		switch (read_data(1)) {
 			case 10..55: {
-				if (playerData[id][TEMP][WEAPON] == CSW_AWP) set_pev(id, pev_viewmodel2, "models/v_awp.mdl");
-				else set_pev(id, pev_viewmodel2, "models/v_scout.mdl");
+				if (playerData[id][TEMP][WEAPON] == CSW_AWP) {
+					set_pev(id, pev_viewmodel2, "models/v_awp.mdl");
+				} else {
+					set_pev(id, pev_viewmodel2, "models/v_scout.mdl");
+				}
 			} case 90: {
-				if (is_valid_ent(playerData[id][TEMP][WEAPON_ENT])) change_skin(id, playerData[id][TEMP][WEAPON], playerData[id][TEMP][WEAPON_ENT]);
-				else change_skin(id, playerData[id][TEMP][WEAPON]);
+				if (is_valid_ent(playerData[id][TEMP][WEAPON_ENT])) {
+					change_skin(id, playerData[id][TEMP][WEAPON], playerData[id][TEMP][WEAPON_ENT]);
+				} else {
+					change_skin(id, playerData[id][TEMP][WEAPON]);
+				}
 			}
 		}
 	}
@@ -2014,7 +2044,7 @@ stock change_skin(id, weapon, ent = 0)
 	playerData[id][SKIN] = -1;
 	playerData[id][TEMP][WEAPON_ENT] = 0;
 
-	if (!is_user_alive(id) || weapon == CSW_HEGRENADE || weapon == CSW_SMOKEGRENADE || weapon == CSW_FLASHBANG || weapon == CSW_C4 || !weapon || playerData[id][SKINS_DISABLED]) return;
+	if (!is_user_alive(id) || !weapon || weapon == CSW_HEGRENADE || weapon == CSW_SMOKEGRENADE || weapon == CSW_FLASHBANG || weapon == CSW_C4 || playerData[id][SKINS_DISABLED]) return;
 
 	static skin[skinsInfo];
 
@@ -2047,7 +2077,9 @@ stock change_skin(id, weapon, ent = 0)
 					entity_set_int(ent, EV_INT_iuser1, 0);
 					entity_set_int(ent, EV_INT_iuser2, -1);
 				}
-			} else if (defaultSkins) set_pev(id, pev_viewmodel2, defaultSkin[weapon]);
+			} else if (defaultSkins) {
+				set_pev(id, pev_viewmodel2, defaultModels[weapon]);
+			}
 
 			return;
 		}
@@ -2059,12 +2091,14 @@ stock change_skin(id, weapon, ent = 0)
 		playerData[id][SKIN] = playerData[id][ACTIVE][weapon];
 
 		set_pev(id, pev_viewmodel2, skin[SKIN_MODEL]);
-	} else if (defaultSkins) set_pev(id, pev_viewmodel2, (weapon == CSW_KNIFE && get_user_team(id) == 1) ? defaultSkin[weapon + 2] : defaultSkin[weapon]);
+	} else if (defaultSkins) {
+		set_pev(id, pev_viewmodel2, defaultModels[weapon]);
+	}
 }
 
 stock get_weapon_skin(id, weapon)
 {
-	if (!is_user_connected(id) || is_user_hltv(id) || is_user_bot(id) || weapon == CSW_HEGRENADE || weapon == CSW_SMOKEGRENADE || weapon == CSW_FLASHBANG || weapon == CSW_C4 || !weapon || weapon > CSW_P90) return -1;
+	if (!is_user_connected(id) || is_user_hltv(id) || is_user_bot(id) || !weapon || weapon == CSW_HEGRENADE || weapon == CSW_SMOKEGRENADE || weapon == CSW_FLASHBANG || weapon == CSW_C4 || weapon > CSW_P90) return -1;
 
 	if (playerData[id][ACTIVE][weapon] > -1) {
 		static skin[skinsInfo];
@@ -2282,14 +2316,17 @@ stock get_weapon_skin_name(id, ent, dataReturn[], dataLength, weapon = 0, check 
 			if (weaponSkin > -1) {
 				get_skin_info(weaponSkin, SKIN_WEAPON, skinWeapon, charsmax(skinWeapon));
 
-				if (!weapon || weapon == get_weapon_id(skinWeapon)) get_skin_info(weaponSkin, SKIN_NAME, dataReturn, dataLength);
-				else {
+				if (!weapon || weapon == get_weapon_id(skinWeapon)) {
+					get_skin_info(weaponSkin, SKIN_NAME, dataReturn, dataLength);
+				} else {
 					entity_set_int(ent, EV_INT_iuser1, 0);
 					entity_set_int(ent, EV_INT_iuser2, -1);
 
 					formatex(dataReturn, dataLength, "Domyslny");
 				}
-			} else formatex(dataReturn, dataLength, "Domyslny");
+			} else {
+				formatex(dataReturn, dataLength, "Domyslny");
+			}
 
 			if (check && weaponOwner != id) {
 				get_user_name(weaponOwner, ownerName, charsmax(ownerName));
@@ -2468,7 +2505,7 @@ stock add_skin(id, skinId, weapon[], skin[])
 
 stock set_skin(id, weapon[], skin[] = "", skinId = -1, active = 0)
 {
-	if (skinId >= ArraySize(skins) || skinId < 0) return;
+	if (skinId >= ArraySize(skins) || skinId < -1) return;
 
 	playerData[id][ACTIVE][get_weapon_id(weapon)] = skinId;
 
@@ -2563,19 +2600,19 @@ stock remove_seller(id)
 	}
 }
 
-stock fm_get_user_aiming_ent(index, const sClassName[])
+stock fm_get_user_aiming_ent(index, const className[])
 {
-	new Float:vOrigin[3];
+	new Float:origin[3];
 
-	fm_get_aim_origin(index, vOrigin);
+	fm_get_aim_origin(index, origin);
 
-	new ent, sTempClass[32], iLen = sizeof(sTempClass) - 1;
+	new ent, tempClass[32];
 
 	do {
-		pev(ent, pev_classname, sTempClass, iLen);
+		pev(ent, pev_classname, tempClass, charsmax(tempClass));
 
-		if (equali(sClassName, sTempClass)) return ent;
-	} while ((ent = engfunc(EngFunc_FindEntityInSphere, ent, vOrigin, 0.005)));
+		if (equali(className, tempClass)) return ent;
+	} while ((ent = engfunc(EngFunc_FindEntityInSphere, ent, origin, 0.005)));
 
 	return 0;
 }

@@ -1,10 +1,12 @@
 #include <amxmodx>
 #include <sqlx>
 #include <fakemeta>
+#include <hamsandwich>
+#include <fun>
 #include <csgomod>
 
 #define PLUGIN "CS:GO Accounts"
-#define VERSION "1.1"
+#define VERSION "1.4"
 #define AUTHOR "O'Zone"
 
 #define TASK_PASSWORD   1945
@@ -19,7 +21,8 @@ new const accountStatus[status][] = { "Niezarejestrowany", "Niezalogowany", "Zal
 new const commandAccount[][] = { "say /haslo", "say_team /haslo", "say /password", "say_team /password",
 	"say /konto", "say_team /konto", "say /account", "say_team /account", "konto" };
 
-new playerData[MAX_PLAYERS + 1][playerInfo], setinfo[16], Handle:sql, bool:sqlConnected, dataLoaded, autoLogin, loginMaxTime, passwordMaxFails, passwordMinLength;
+new playerData[MAX_PLAYERS + 1][playerInfo], setinfo[16], Handle:sql, bool:sqlConnected, dataLoaded,
+	autoLogin, loginMaxTime, passwordMaxFails, passwordMinLength, blockMovement, loginForward;
 
 public plugin_init()
 {
@@ -30,6 +33,7 @@ public plugin_init()
 	bind_pcvar_num(create_cvar("csgo_accounts_login_max_time", "60"), loginMaxTime);
 	bind_pcvar_num(create_cvar("csgo_accounts_password_max_fails", "3"), passwordMaxFails);
 	bind_pcvar_num(create_cvar("csgo_accounts_password_min_length", "5"), passwordMinLength);
+	bind_pcvar_num(create_cvar("csgo_accounts_block_movement", "1"), blockMovement);
 	bind_pcvar_string(create_cvar("csgo_accounts_setinfo", "csgopass"), setinfo, charsmax(setinfo));
 
 	register_clcmd("WPROWADZ_SWOJE_HASLO", "login_account");
@@ -40,14 +44,10 @@ public plugin_init()
 	register_clcmd("POWTORZ_NOWE_HASLO", "change_step_three");
 	register_clcmd("WPROWADZ_SWOJE_AKTUALNE_HASLO", "delete_account");
 
-	register_concmd("joinclass", "check_account");
-	register_concmd("jointeam", "check_account");
-	register_concmd("chooseteam", "check_account");
+	RegisterHam(Ham_Spawn, "player", "player_spawn", 1);
+	RegisterHam(Ham_CS_Player_ResetMaxSpeed, "player", "block_movement", 1);
 
-	register_message(get_user_msgid("ShowMenu"), "message_show_menu");
-	register_message(get_user_msgid("VGUIMenu"), "message_vgui_menu");
-
-	register_forward(FM_PlayerPreThink, "player_prethink");
+	loginForward = CreateMultiForward("csgo_user_login", ET_IGNORE, FP_CELL);
 }
 
 public plugin_natives()
@@ -84,70 +84,29 @@ public client_disconnected(id)
 	remove_task(id);
 }
 
-public message_show_menu(msgId, dest, id)
+public player_spawn(id)
 {
-	new const Team_Select[] = "#Team_Select";
-	static menuData[sizeof(Team_Select)];
+	if (!is_user_alive(id) || playerData[id][STATUS] >= LOGGED) return;
 
-	get_msg_arg_string(4, menuData, charsmax(menuData));
-
-	if (equal(menuData, Team_Select) && get_bit(id, dataLoaded) && playerData[id][STATUS] < LOGGED && sql != Empty_Handle) {
-		set_pdata_int(id, 205, 0, 5);
-
-		set_task(0.1, "account_menu", id);
-
-		return PLUGIN_HANDLED;
-	}
-
-	return PLUGIN_CONTINUE;
-}
-
-public message_vgui_menu(msgId, dest, id)
-{
-	if (get_msg_arg_int(1) == 2 && get_bit(id, dataLoaded) && playerData[id][STATUS] < LOGGED && sql != Empty_Handle) {
-		set_task(0.1, "account_menu", id);
-
-		return PLUGIN_HANDLED;
-	}
-
-	return PLUGIN_CONTINUE;
-}
-
-public player_prethink(id)
-{
-	if (is_user_connected(id) && get_bit(id, dataLoaded) && !is_user_bot(id) && !is_user_hltv(id) && !is_user_alive(id) && playerData[id][STATUS] < LOGGED) {
-		static msgScreenFade;
-
-		if (!msgScreenFade) msgScreenFade = get_user_msgid("ScreenFade");
-
-		message_begin(MSG_ONE, msgScreenFade, {0, 0, 0}, id);
-		write_short(1<<12);
-		write_short(1<<12);
-		write_short(0x0000);
-		write_byte(0);
-		write_byte(0);
-		write_byte(0);
-		write_byte(255);
-		message_end();
-	}
-}
-
-public check_account(id)
-{
-	if (playerData[id][STATUS] < LOGGED) {
-		account_menu(id);
-
-		return PLUGIN_HANDLED;
-	}
-
-	return PLUGIN_CONTINUE;
+	account_menu(id);
 }
 
 public kick_player(id)
 {
 	id -= TASK_PASSWORD;
 
-	if (is_user_connected(id)) server_cmd("kick #%d ^"Nie zalogowales sie w ciagu %is!^"", get_user_userid(id), loginMaxTime);
+	if (!is_user_connected(id)) return;
+
+	server_cmd("kick #%d ^"Nie zalogowales sie w ciagu %is!^"", get_user_userid(id), loginMaxTime);
+}
+
+public block_movement(id)
+{
+	if (!blockMovement || !is_user_alive(id) || playerData[id][STATUS] >= LOGGED) return HAM_IGNORED;
+
+	set_user_maxspeed(id, 0.1);
+
+	return HAM_IGNORED;
 }
 
 public account_menu(id)
@@ -162,16 +121,11 @@ public account_menu(id)
 		return PLUGIN_HANDLED;
 	}
 
-	if (!get_user_team(id) && playerData[id][STATUS] == LOGGED) {
-		client_cmd(id, "chooseteam");
-		engclient_cmd(id, "chooseteam");
-
-		return PLUGIN_HANDLED;
+	if (playerData[id][STATUS] <= NOT_LOGGED && !task_exists(id + TASK_PASSWORD)) {
+		set_task(float(loginMaxTime), "kick_player", id + TASK_PASSWORD);
 	}
 
-	if (playerData[id][STATUS] <= NOT_LOGGED && !task_exists(id + TASK_PASSWORD)) set_task(float(loginMaxTime), "kick_player", id + TASK_PASSWORD);
-
-	static menuData[256];
+	new menuData[256];
 
 	formatex(menuData, charsmax(menuData), "\rSYSTEM REJESTRACJI^n^n\rNick: \w[\y%s\w]^n\rStatus: \w[\y%s\w]", playerData[id][NAME], accountStatus[playerData[id][STATUS]]);
 
@@ -185,7 +139,7 @@ public account_menu(id)
 	menu_additem(menu, "\ySkasuj \wKonto^n", _, _, callback);
 	menu_additem(menu, "\yZaloguj jako \wGosc \r(NIEZALECANE)^n", _, _, callback);
 
-	if (playerData[id][STATUS] == LOGGED) menu_additem(menu, "\wWyjdz", _, _, callback);
+	if (playerData[id][STATUS] >= LOGGED) menu_additem(menu, "\wWyjdz", _, _, callback);
 
 	menu_setprop(menu, MPROP_EXIT, MEXIT_NEVER);
 
@@ -196,7 +150,7 @@ public account_menu(id)
 
 public account_menu_callback(id, menu, item)
 {
-	switch(item) {
+	switch (item) {
 		case 0: return playerData[id][STATUS] == NOT_LOGGED ? ITEM_ENABLED : ITEM_DISABLED;
 		case 1: return (playerData[id][STATUS] == NOT_REGISTERED || playerData[id][STATUS] == GUEST) ? ITEM_ENABLED : ITEM_DISABLED;
 		case 2, 3: return playerData[id][STATUS] == LOGGED ? ITEM_ENABLED : ITEM_DISABLED;
@@ -216,8 +170,7 @@ public account_menu_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	switch(item)
-	{
+	switch (item) {
 		case 0: {
 			client_print_color(id, id, "^x04[CS:GO]^x01 Wprowadz swoje^x04 haslo^x01, aby sie^x04 zalogowac.");
 
@@ -225,8 +178,7 @@ public account_menu_handle(id, menu, item)
 			show_hudmessage(id, "Wprowadz swoje haslo.");
 
 			client_cmd(id, "messagemode WPROWADZ_SWOJE_HASLO");
-		}
-		case 1: {
+		} case 1: {
 			client_print_color(id, id, "^x04[CS:GO]^x01 Rozpoczales proces^x04 rejestracji^x01. Wprowadz wybrane^x04 haslo^x01.");
 
 			set_hudmessage(255, 128, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
@@ -235,24 +187,21 @@ public account_menu_handle(id, menu, item)
 			client_cmd(id, "messagemode WPROWADZ_WYBRANE_HASLO");
 
 			remove_task(id + TASK_PASSWORD);
-		}
-		case 2: {
+		} case 2: {
 			client_print_color(id, id, "^x04[CS:GO]^x01 Wprowadz swoje^x04 aktualne haslo^x01 w celu potwierdzenia tozsamosci.");
 
 			set_hudmessage(255, 128, 0, 0.22, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
 			show_hudmessage(id, "Wprowadz swoje aktualne haslo.");
 
 			client_cmd(id, "messagemode WPROWADZ_AKTUALNE_HASLO");
-		}
-		case 3: {
+		} case 3: {
 			client_print_color(id, id, "^x04[CS:GO]^x01 Wprowadz swoje^x04 aktualne haslo^x01 w celu potwierdzenia tozsamosci.");
 
 			set_hudmessage(255, 128, 0, 0.22, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
 			show_hudmessage(id, "Wprowadz swoje aktualne haslo.");
 
 			client_cmd(id, "messagemode WPROWADZ_SWOJE_AKTUALNE_HASLO");
-		}
-		case 4: {
+		} case 4: {
 			client_print_color(id, id, "^x04[CS:GO]^x01 Zalogowales sie jako^x04 Gosc^x01. By zabezpieczyc swoj nick^x04 zarejestruj sie^x01.");
 
 			set_hudmessage(0, 255, 0, -1.0, 0.9, 0, 0.0, 3.5, 0.0, 0.0);
@@ -262,9 +211,13 @@ public account_menu_handle(id, menu, item)
 
 			playerData[id][STATUS] = GUEST;
 
-			client_cmd(id, "chooseteam");
+			if (is_user_alive(id)) {
+				ExecuteHamB(Ham_CS_Player_ResetMaxSpeed, id);
+			}
 
-			engclient_cmd(id, "chooseteam");
+			new ret;
+
+			ExecuteForward(loginForward, ret, id);
 		}
 	}
 
@@ -284,7 +237,11 @@ public login_account(id)
 	remove_quotes(password);
 
 	if (!equal(playerData[id][PASSWORD], password)) {
-		if (++playerData[id][FAILS] >= passwordMaxFails) server_cmd("kick #%d ^"Nieprawidlowe haslo!^"", get_user_userid(id));
+		if (++playerData[id][FAILS] >= passwordMaxFails) {
+			server_cmd("kick #%d ^"Nieprawidlowe haslo!^"", get_user_userid(id));
+
+			return PLUGIN_HANDLED;
+		}
 
 		client_print_color(id, id, "^x04[CS:GO]^x01 Podane haslo jest^x04 nieprawidlowe^x01. (Bledne haslo^x04 %i/%i^x01)", playerData[id][FAILS], passwordMaxFails);
 
@@ -298,18 +255,22 @@ public login_account(id)
 	}
 
 	playerData[id][STATUS] = LOGGED;
-
 	playerData[id][FAILS] = 0;
 
 	remove_task(id + TASK_PASSWORD);
+
+	if (is_user_alive(id)) {
+		ExecuteHamB(Ham_CS_Player_ResetMaxSpeed, id);
+	}
+
+	new ret;
+
+	ExecuteForward(loginForward, ret, id);
 
 	client_print_color(id, id, "^x04[CS:GO]^x01 Zostales pomyslnie^x04 zalogowany^x01. Zyczymy milej gry.");
 
 	set_hudmessage(0, 255, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
 	show_hudmessage(id, "Zostales pomyslnie zalogowany.");
-
-	client_cmd(id, "chooseteam");
-	engclient_cmd(id, "chooseteam");
 
 	return PLUGIN_HANDLED;
 }
@@ -395,13 +356,21 @@ public register_confirmation_handle(id, menu, item)
 
 	menu_destroy(menu);
 
-	switch(item) {
+	switch (item) {
 		case 0: {
 			playerData[id][STATUS] = LOGGED;
 
 			copy(playerData[id][PASSWORD], charsmax(playerData[][PASSWORD]), playerData[id][TEMP_PASSWORD]);
 
 			account_query(id, INSERT);
+
+			if (is_user_alive(id)) {
+				ExecuteHamB(Ham_CS_Player_ResetMaxSpeed, id);
+			}
+
+			new ret;
+
+			ExecuteForward(loginForward, ret, id);
 
 			set_hudmessage(0, 255, 0, -1.0, 0.9, 0, 0.0, 3.5, 0.0, 0.0);
 			show_hudmessage(id, "Zostales pomyslnie zarejestrowany i zalogowany.");
@@ -411,9 +380,6 @@ public register_confirmation_handle(id, menu, item)
 
 			cmd_execute(id, "setinfo _%s %s", setinfo, playerData[id][PASSWORD]);
 			cmd_execute(id, "writecfg %s", setinfo);
-
-			client_cmd(id, "chooseteam");
-			engclient_cmd(id, "chooseteam");
 		} case 1: {
 			client_print_color(id, id, "^x04[CS:GO]^x01 Rozpoczales proces^x04 rejestracji^x01. Wprowadz wybrane^x04 haslo^x01.");
 
@@ -421,7 +387,9 @@ public register_confirmation_handle(id, menu, item)
 			show_hudmessage(id, "Wprowadz wybrane haslo.");
 
 			client_cmd(id, "messagemode WPROWADZ_WYBRANE_HASLO");
-		} case 2: account_menu(id);
+		} case 2: {
+			account_menu(id);
+		}
 	}
 
 	return PLUGIN_HANDLED;
@@ -437,7 +405,11 @@ public change_step_one(id)
 	remove_quotes(password);
 
 	if (!equal(playerData[id][PASSWORD], password)) {
-		if (++playerData[id][FAILS] >= passwordMaxFails) server_cmd("kick #%d ^"Nieprawidlowe haslo!^"", get_user_userid(id));
+		if (++playerData[id][FAILS] >= passwordMaxFails) {
+			server_cmd("kick #%d ^"Nieprawidlowe haslo!^"", get_user_userid(id));
+
+			return PLUGIN_HANDLED;
+		}
 
 		client_print_color(id, id, "^x04[CS:GO]^x01 Podane haslo jest^x04 nieprawidlowe^x01. (Bledne haslo^x04 %i/%i^x01)", playerData[id][FAILS], passwordMaxFails);
 
@@ -548,7 +520,11 @@ public delete_account(id)
 	remove_quotes(password);
 
 	if (!equal(playerData[id][PASSWORD], password)) {
-		if (++playerData[id][FAILS] >= passwordMaxFails) server_cmd("kick #%d ^"Nieprawidlowe haslo!^"", get_user_userid(id));
+		if (++playerData[id][FAILS] >= passwordMaxFails) {
+			server_cmd("kick #%d ^"Nieprawidlowe haslo!^"", get_user_userid(id));
+
+			return PLUGIN_HANDLED;
+		}
 
 		client_print_color(id, id, "^x04[CS:GO]^x01 Podane haslo jest^x04 nieprawidlowe^x01. (Bledne haslo^x04 %i/%i^x01)", playerData[id][FAILS], passwordMaxFails);
 
@@ -645,6 +621,7 @@ public load_account(id)
 	tempId[0] = id;
 
 	formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_accounts` WHERE name = ^"%s^"", playerData[id][SAFE_NAME]);
+
 	SQL_ThreadQuery(sql, "load_account_handle", queryData, tempId, sizeof(tempId));
 }
 
@@ -674,12 +651,12 @@ public load_account_handle(failState, Handle:query, error[], errorNum, tempId[],
 				playerData[id][STATUS] = LOGGED;
 
 				set_bit(id, autoLogin);
+
+				new ret;
+
+				ExecuteForward(loginForward, ret, id);
 			} else {
 				playerData[id][STATUS] = NOT_LOGGED;
-
-				client_print_color(id, id, "^x04[CS:GO]^x01 Musisz sie^x03 zalogowac^x01, aby miec dostep do glownych funkcji!");
-
-				account_menu(id);
 			}
 
 			cmd_execute(id, "exec config.cfg");
@@ -697,7 +674,7 @@ public account_query(id, type)
 
 	mysql_escape_string(playerData[id][PASSWORD], password, charsmax(password));
 
-	switch(type) {
+	switch (type) {
 		case INSERT: formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_accounts` VALUES (^"%s^", '%s')", playerData[id][SAFE_NAME], password);
 		case UPDATE: formatex(queryData, charsmax(queryData), "UPDATE `csgo_accounts` SET pass = '%s' WHERE name = ^"%s^"", password, playerData[id][SAFE_NAME]);
 		case DELETE: formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_accounts` WHERE name = ^"%s^"", playerData[id][SAFE_NAME]);

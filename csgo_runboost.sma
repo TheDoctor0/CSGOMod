@@ -2,12 +2,13 @@
 #include <engine>
 #include <hamsandwich>
 #include <fakemeta>
+#include <csgomod>
 
 #define PLUGIN "CS:GO Run Boost"
-#define VERSION "1.1"
+#define VERSION "1.4"
 #define AUTHOR "O'Zone"
 
-new bool:runBoost[MAX_PLAYERS + 1];
+new runBoost;
 
 public plugin_init()
 {
@@ -36,8 +37,10 @@ public player_touch(id, player)
 
 		new speed = floatround(vector_length(velocity));
 
-		if(speed >= 150) runBoost[player] = true;
-	} else runBoost[player] = false;
+		if (speed >= 150) set_bit(player, runBoost);
+	} else {
+		rem_bit(player, runBoost);
+	}
 
 	return FMRES_IGNORED;
 }
@@ -46,7 +49,7 @@ public player_jump(id)
 {
 	static buttonPressed; buttonPressed = get_pdata_int(id, 246);
 
-	if (runBoost[id] && buttonPressed & IN_JUMP) {
+	if (get_bit(id, runBoost) && buttonPressed & IN_JUMP) {
 		new Float:velocity[3];
 
 		pev(id, pev_velocity, velocity);
@@ -59,7 +62,7 @@ public player_jump(id)
 
 		set_pdata_int(id, 246, buttonPressed & ~IN_JUMP);
 
-		runBoost[id] = false;
+		rem_bit(id, runBoost);
 
 		return HAM_SUPERCEDE;
 	}

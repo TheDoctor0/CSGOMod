@@ -7,7 +7,7 @@
 #include <csgomod>
 
 #define PLUGIN "CS:GO VIP & SVIP"
-#define VERSION "1.1"
+#define VERSION "1.4"
 #define AUTHOR "O'Zone"
 
 #define ADMIN_FLAG_X (1<<23)
@@ -163,8 +163,7 @@ public client_disconnected(id)
 
 public client_infochanged(id)
 {
-	if (get_bit(id, VIP))
-	{
+	if (get_bit(id, VIP)) {
 		new playerName[32], newName[32], tempName[32], size = ArraySize(VIPs);
 
 		get_user_info(id, "name", newName,charsmax(newName));
@@ -219,9 +218,14 @@ public new_round()
 public restart_round()
 	roundNum = 0;
 
+public csgo_user_login(id)
+	player_spawn(id);
+
 public player_spawn(id)
 {
-	if (!is_user_alive(id) || !get_bit(id, VIP) || disabled) return PLUGIN_CONTINUE;
+	remove_task(id);
+
+	if (!is_user_alive(id) || !get_bit(id, VIP) || disabled || !csgo_check_account(id)) return PLUGIN_CONTINUE;
 
 	if (get_user_team(id) == 2) cs_set_user_defuse(id, 1);
 
@@ -269,8 +273,7 @@ public vip_menu(id)
 		menu_additem(menu, "\yM4A1 + Deagle");
 		menu_additem(menu, "\yAK47 + Deagle");
 		menu_additem(menu, "\yAWP + Deagle");
-	}
-	else {
+	} else {
 		menu = menu_create("\wMenu \yVIP\w: Wybierz \rZestaw\w", "vip_menu_handle");
 
 		menu_additem(menu, "\yM4A1 + Deagle");
@@ -294,7 +297,7 @@ public vip_menu_handle(id, menu, item)
 
 	used[id] = true;
 
-	switch(item) {
+	switch (item) {
 		case 0: {
 			StripWeapons(id, Secondary);
 
@@ -353,14 +356,12 @@ public close_vip_menu(id)
 {
 	if (used[id] || !is_user_alive(id)) return PLUGIN_CONTINUE;
 
-	show_menu(id, 0, "^n", 1);
-
 	if (!check_weapons(id)) {
 		client_print_color(id, id, "^x04[%sVIP]^x01 Zestaw zostal ci przydzielony losowo.", get_bit(id, SVIP) ? "S" : "");
 
 		new random = random_num(0, get_bit(id, SVIP) ? 2 : 1);
 
-		switch(random) {
+		switch (random) {
 			case 0: {
 				StripWeapons(id, Secondary);
 
@@ -422,7 +423,7 @@ public vip_menu_pistol(id)
 
 	new menu;
 
-	if(get_bit(id, SVIP)) menu = menu_create("\wMenu \ySuperVIP\w: Wybierz \rPistolet\w", "vip_menu_pistol_handle");
+	if (get_bit(id, SVIP)) menu = menu_create("\wMenu \ySuperVIP\w: Wybierz \rPistolet\w", "vip_menu_pistol_handle");
 	else menu = menu_create("\wMenu \yVIP\w: Wybierz \rPistolet\w", "vip_menu_pistol_handle");
 
 	menu_additem(menu, "\yDeagle");
@@ -446,9 +447,8 @@ public vip_menu_pistol_handle(id, menu, item)
 
 	used[id] = true;
 
-	switch(item) {
-		case 0:
-		{
+	switch (item) {
+		case 0: {
 			StripWeapons(id, Secondary);
 
 			give_item(id, "weapon_deagle");
@@ -457,9 +457,7 @@ public vip_menu_pistol_handle(id, menu, item)
 			cs_set_user_bpammo(id, CSW_DEAGLE, 35);
 
 			client_print(id, print_center, "Dostales Deagle!");
-		}
-		case 1:
-		{
+		} case 1: {
 			StripWeapons(id, Secondary);
 
 			give_item(id, "weapon_usp");
@@ -468,9 +466,7 @@ public vip_menu_pistol_handle(id, menu, item)
 			cs_set_user_bpammo(id, CSW_USP, 100);
 
 			client_print(id, print_center, "Dostales USP!");
-		}
-		case 2:
-		{
+		} case 2: {
 			StripWeapons(id, Secondary);
 
 			give_item(id, "weapon_glock18");
@@ -491,16 +487,13 @@ public close_vip_menu_pistol(id)
 {
 	if (used[id] || !is_user_alive(id)) return PLUGIN_CONTINUE;
 
-	show_menu(id, 0, "^n", 1);
-
 	if (!check_weapons(id)) {
 		client_print_color(id, id, "^x04[%sVIP]^x01 Pistolet zostal ci przydzielony losowo.", get_bit(id, SVIP) ? "S" : "");
 
 		new random = random_num(0, 2);
 
-		switch(random) {
-			case 0:
-			{
+		switch (random) {
+			case 0: {
 				StripWeapons(id, Secondary);
 
 				give_item(id, "weapon_deagle");
@@ -509,9 +502,7 @@ public close_vip_menu_pistol(id)
 				cs_set_user_bpammo(id, CSW_DEAGLE, 35);
 
 				client_print(id, print_center, "Dostales Deagle!");
-			}
-			case 1:
-			{
+			} case 1: {
 				StripWeapons(id, Secondary);
 
 				give_item(id, "weapon_usp");
@@ -520,9 +511,7 @@ public close_vip_menu_pistol(id)
 				cs_set_user_bpammo(id, CSW_USP, 100);
 
 				client_print(id, print_center, "Dostales USP!");
-			}
-			case 2:
-			{
+			} case 2: {
 				StripWeapons(id, Secondary);
 
 				give_item(id, "weapon_glock18");
@@ -605,7 +594,9 @@ public handle_status()
 {
 	new id = get_msg_arg_int(1);
 
-	if (is_user_alive(id) && get_bit(id, VIP)) set_msg_arg_int(2, ARG_BYTE, get_msg_arg_int(2)|4);
+	if (is_user_alive(id) && (get_bit(id, VIP) || get_bit(id, SVIP))) {
+		set_msg_arg_int(2, ARG_BYTE, get_msg_arg_int(2) | 4);
+	}
 }
 
 public handle_say(id)
@@ -639,10 +630,9 @@ public say_text(msgId,msgDest,msgEnt)
 	new id = get_msg_arg_int(1);
 
 	if (is_user_connected(id) && get_bit(id, VIP)) {
-		new tempMessage[192], message[192], chatPrefix[64], steamId[33], playerName[32];
+		new tempMessage[192], message[192], chatPrefix[16], playerName[32];
 
 		get_msg_arg_string(2, tempMessage, charsmax(tempMessage));
-		get_user_authid(id, steamId, charsmax(steamId));
 
 		if (get_bit(id, SVIP)) formatex(chatPrefix, charsmax(chatPrefix), "^x04[SVIP]");
 		else formatex(chatPrefix, charsmax(chatPrefix), "^x04[VIP]");

@@ -5,12 +5,8 @@
 #include <csgomod>
 
 #define PLUGIN "CS:GO Operations"
-#define VERSION "1.1"
+#define VERSION "1.4"
 #define AUTHOR "O'Zone"
-
-#define get_bit(%2,%1) (%1 & (1<<(%2&31)))
-#define set_bit(%2,%1) (%1 |= (1<<(%2&31)))
-#define rem_bit(%2,%1) (%1 &= ~(1 <<(%2&31)))
 
 new operationDescription[][] = {
 	"Brak operacji %i",
@@ -144,7 +140,7 @@ public operation_menu_handle(id, menu, item)
 		return PLUGIN_HANDLED;
     }
 
-	switch(item) {
+	switch (item) {
 		case 0: select_operation(id);
 		case 1: reset_operation(id, 0, 0);
 		case 2: check_operation(id);
@@ -155,7 +151,7 @@ public operation_menu_handle(id, menu, item)
 
 public operation_menu_callback(id, menu, item)
 {
-	switch(item) {
+	switch (item) {
 		case 0: if (playerData[id][PLAYER_TYPE]) return ITEM_DISABLED;
 		case 1, 2: if (!playerData[id][PLAYER_TYPE]) return ITEM_DISABLED;
 	}
@@ -230,7 +226,7 @@ public client_death(killer, victim, weaponId, hitPlace, teamKill)
 {
 	if (!is_user_connected(killer) || !is_user_connected(victim) || !is_user_alive(killer) || get_user_team(victim) == get_user_team(killer)) return PLUGIN_CONTINUE;
 
-	switch(playerData[killer][PLAYER_TYPE]) {
+	switch (playerData[killer][PLAYER_TYPE]) {
 		case TYPE_KILL: add_progress(killer);
 		case TYPE_HEADSHOT: if (hitPlace == HIT_HEAD) add_progress(killer);
 	}
