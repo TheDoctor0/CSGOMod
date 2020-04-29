@@ -611,14 +611,13 @@ new const models[][] = {
 	"rshell_big.mdl",
 }
 
-public PrecacheModel(const szModel[])
+public unprecache_models(const model[])
 {
-	for(new i = 0; i < sizeof(g_Models); i++)
-	{
-		if( containi(szModel, g_Models[i]) != -1 )
-		{
+	for (new i = 0; i < sizeof(models); i++) {
+		if (containi(model, models[i]) != -1) {
 			forward_return(FMV_CELL, 0);
-			return FMRES_SUPERCEDE ;
+
+			return FMRES_SUPERCEDE;
 		}
 	}
 
