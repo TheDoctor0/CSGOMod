@@ -348,7 +348,7 @@ public load_hud_handle(failState, Handle:query, error[], errorNum, playerId[], d
 		SQL_ThreadQuery(sql, "ignore_handle", queryData);
 	}
 
-	if (!task_exists(id + TASK_HUD)) set_task(1.0, "display_hud", id + TASK_HUD, .flags = "b");
+	if (!task_exists(id + TASK_HUD)) set_task(0.1, "display_hud", id + TASK_HUD, .flags = "b");
 
 	set_bit(id, hudLoaded);
 }
@@ -440,9 +440,9 @@ public display_hud(id)
 	if (!is_user_alive(id)) {
 		target = pev(id, pev_iuser2);
 
-		set_hudmessage(255, 255, 255, 0.7, 0.25, 0, 0.0, 1.2, 0.0, 0.0, 3);
+		set_hudmessage(255, 255, 255, 0.7, 0.25, 0, 0.0, 0.3, 0.0, 0.0, 3);
 	} else {
-		set_hudmessage(playerData[id][PLAYER_HUD_RED], playerData[id][PLAYER_HUD_GREEN], playerData[id][PLAYER_HUD_BLUE], float(playerData[id][PLAYER_HUD_POSX]) / 100.0, float(playerData[id][PLAYER_HUD_POSY]) / 100.0, 0, 0.0, 1.2, 0.0, 0.0, 3);
+		set_hudmessage(playerData[id][PLAYER_HUD_RED], playerData[id][PLAYER_HUD_GREEN], playerData[id][PLAYER_HUD_BLUE], float(playerData[id][PLAYER_HUD_POSX]) / 100.0, float(playerData[id][PLAYER_HUD_POSY]) / 100.0, 0, 0.0, 0.3, 0.0, 0.0, 3);
 	}
 
 	if (!target || !get_bit(target, loaded)) return PLUGIN_CONTINUE;
