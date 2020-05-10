@@ -113,7 +113,7 @@ public save_data(id)
 {
 	if (!get_bit(id, dataLoaded)) return;
 
-	new queryData[1024], queryTemp[64], weaponName[32];
+	new queryData[2048], queryTemp[128], weaponName[32];
 
 	formatex(queryData, charsmax(queryData), "UPDATE `csgo_stattrak` SET ");
 
