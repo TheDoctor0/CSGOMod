@@ -1835,7 +1835,7 @@ public round_winner(team)
 {
 	if (get_playersnum() < minPlayers) return;
 
-	for (new id = 1; id < MAX_PLAYERS; id++) {
+	for (new id = 1; id <= MAX_PLAYERS; id++) {
 		if (!is_user_connected(id) || get_user_team(id) != team) continue;
 
 		new Float:money = winReward * get_multiplier(id);
