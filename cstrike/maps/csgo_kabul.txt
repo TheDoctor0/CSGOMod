@@ -1,0 +1,28 @@
+CSS_KABUL (Bomb/Defuse)
+
+Map created by Tatu Eugen - www.tatueugen.info
+
+This map is a remake from de_kabul,
+remaked after source with improvments.
+
+Any ideas and bugs please report at mail adress:
+contact@tatueugen.info 
+
+Counter-Terrorists: Prevent Terrorists
+from bombing chemical weapon crates.
+Team members must defuse any bombs 
+that threaten targeted areas.
+
+Terrorists: The Terrorist carrying the
+C4 must destroy the chemical 
+weapon stashes. 
+
+Other Notes: There are 1 chemical 
+weapon stashes in the mission.
+
+Textures:
+Valve (CS:S Game)
+Tatu Eugen
+
+Original Kabul Author:
+Oli

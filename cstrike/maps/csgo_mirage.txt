@@ -1,0 +1,29 @@
+CSS_MIRAGE (Bomb/Defuse)
+
+Map created by Tatu Eugen - www.tatueugen.info
+
+This map is a remake from de_mirage of CS:S & CS:GO games,
+map is recreated with all buildings, and some stuff from css/go,
+and keep some things from original de_mirage of CS: 1.6
+
+Any ideas and bugs please report at mail adress:
+contact@tatueugen.info
+
+Counter-Terrorists: Prevent Terrorists
+from bombing explosive crates.
+Team members must defuse any bombs 
+that threaten targeted areas.
+
+Terrorists: The Terrorist carrying the
+C4 must destroy one of the explosive 
+crate areas.
+
+Other Notes: There are 2 bomb targets
+in the mission.
+
+Textures:
+Valve (CS:S Game)
+Tatu Eugen
+
+Original Mirage Author:
+BubkeZ (bubkez@hotmail.com)

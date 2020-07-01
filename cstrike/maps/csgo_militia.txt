@@ -1,0 +1,23 @@
+Militia - Hostage Rescue: Global Offensive Map for 1.6
+Map port by Meowth
+Original Map by Andrew Aumann
+
+Thank you to the following:
+ -Playtesters-
+  CS PRO (https://gamebanana.com/members/1383394)
+  Hellmonja (https://gamebanana.com/members/1421238)
+  Papaschlange (https://gamebanana.com/members/1477661)
+  Tigre11ify (https://gamebanana.com/members/1581869)
+
+ -Navigation File-
+  Tigre11ify
+
+Counter-Terrorists:
+The whereabouts of a militia group that kidnapped four individuals last week has been disclosed by one of our informants. Enter the militia hideout and rescue the hostages or eliminate the terrorist threat entirely.
+
+Terrorists:
+One of our lookouts has spotted several SWAT units making their way towards our base. Protect our hostages and eliminate the intruders!
+
+Other Notes: There are 4 hostages in the mission.
+
+(Press FIRE to continue)

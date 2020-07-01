@@ -1,0 +1,28 @@
+CSS_TRAIN (Bomb/Defuse)
+
+Map created by Tatu Eugen - www.tatueugen.info
+
+This map is a remake from de_train of CS: Source game,
+map is recreated with all buildings, and some stuff from css,
+and keep some things from original de_train of CS: 1.6
+
+Any ideas and bugs please report at mail adress:
+contact@tatueugen.info
+
+Counter-Terrorists: Prevent Terrorists
+from bombing the nuclear payloads on two
+trains. Team members must defuse any 
+bombs that threaten the payloads.
+
+Terrorists: The Terrorist carrying the
+C4 must destroy one of the payloads. 
+
+Other Notes: There are 2 payloads on the
+trains in the mission.
+
+Textures:
+Valve (CS:S Game)
+Tatu Eugen
+
+Original Train Author:
+Christopher Mair

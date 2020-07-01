@@ -1,0 +1,29 @@
+CSS_INFERNO (Bomb/Defuse)
+
+Map created by Tatu Eugen - www.tatueugen.info
+
+This map is a remake from de_inferno of CS: Source game,
+map is recreated with all buildings, and some stuff from css,
+and keep some things from original de_inferno of CS: 1.6
+
+Any ideas and bugs please report at mail adress:
+contact@tatueugen.info
+
+Counter-Terrorists: Prevent Terrorists
+from bombing chemical weapon crates.
+Team members must defuse any bombs 
+that threaten targeted areas.
+
+Terrorists: The Terrorist carrying the
+C4 must destroy one of the chemical 
+weapon stashes. 
+
+Other Notes: There are 2 chemical 
+weapon stashes in the mission.
+
+Textures:
+Valve (CS:S Game)
+Tatu Eugen
+
+Original Inferno Author:
+Chris Auty

@@ -1,0 +1,15 @@
+CSS_PORT (Bomb/Defuse)
+
+by Tatu Eugen (www.tatueugen.info)
+
+A map recreated after de_port from CS:Source
+Any ideas and bugs please report at mail adress: contact@tatueugen.info
+
+Counter-Terrorists: Rebel separatists seek to disrupt economically-vital shipping operations along the northern coast. They must not succeed!
+
+Terrorists: Your squad of independence fighters has been tasked with destroying economically-significant shipping targets at vulnerable coastal ports.
+
+Other Notes: There are 2 targets in this mission.
+
+Textures:
+Valve

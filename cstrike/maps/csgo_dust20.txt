@@ -1,0 +1,52 @@
+CSS_DUST20 (Bomb/Defuse)
+by Tatu Eugen - www.temaps.com
+*** GVME.org exclusive ***
+
+Most iconic map from Counter-Strike: Dust II is now back
+with a new remake by Tatu Eugen, the map was designed to
+be simple and balanced. This is a remake from css_dust2_go
+this map have a lot of improvments:
+
+- More brightness all over the map
+- New type of details
+- Almost last changes from CS:GO map
+- Map optimized by 40%
+- No dark textures/lights anymore
+- This map marks the 20th birthday of CS
+
+Any ideas and bugs please report at mail adress:
+contact@temaps.com
+
+Counter-Terrorists: Prevent Terrorists
+from bombing chemical weapon crates.
+Team members must defuse any bombs 
+that threaten targeted areas.
+
+Terrorists: The Terrorist carrying the
+C4 must destroy one of the chemical 
+weapon stashes. 
+
+Other Notes: There are 2 chemical 
+weapon stashes in the mission.
+
+Textures:
+Valve (CS:S Game)
+Tatu Eugen
+
+Original Dust2 Author:
+DaveJ (http://www.johnsto.co.uk/)
+
+Changelog:
+Current version 1.1
+- New barrel textures
+- New textures
+- Performance improved
+- Lights improved in CT/Tunnels
+- Lower space betwen wall and crate in X2
+- Lighter texture for tunnel doors
+- X2 Window crate improved for one jump only
+- Lighter walls in tunnel for most common positions
+- Some small fixes
+
+First version 1.0
+- Initial release
