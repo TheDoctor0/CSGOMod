@@ -211,7 +211,7 @@ public plugin_precache()
 			skin[SKIN_CHANCE] = (str_to_num(tempValue[4]) > 1 ? str_to_num(tempValue[4]) : 1);
 
 			if (!file_exists(skin[SKIN_MODEL])) {
-				log_to_file("csgo-error.log", "[CS:GO] Plik %s nie istnieje!", skin[SKIN_MODEL]);
+				log_to_file("csgo-error.log", "[CS:GO] Plik %s zawierajacy skin nie istnieje!", skin[SKIN_MODEL], skin[SKIN_NAME]);
 
 				error = true;
 			} else {
