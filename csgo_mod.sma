@@ -284,7 +284,7 @@ public load_skins_details()
 
 			split(lineData, skin[SKIN_WEAPON], charsmax(skin[SKIN_WEAPON]), tempPrice, charsmax(tempPrice), " - ");
 
-			randomSkinPrice[equal(skin[SKIN_WEAPON], "Wszystkie") ? WEAPON_ALL : get_weapon_id(skin[SKIN_WEAPON])] = str_to_float(tempPrice);
+			randomSkinPrice[equal(skin[SKIN_WEAPON], "RANDOM") ? WEAPON_ALL : get_weapon_id(skin[SKIN_WEAPON])] = str_to_float(tempPrice);
 
 			continue;
 		} else {
