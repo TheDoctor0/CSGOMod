@@ -12,7 +12,8 @@
 
 #define ADMIN_FLAG_X (1<<23)
 
-new Array:VIPs, Array:SVIPs, bool:used[MAX_PLAYERS + 1], bool:disabled, roundNum = 0, VIP, SVIP, smallMaps;
+new Array:VIPs, Array:SVIPs, bool:used[MAX_PLAYERS + 1], bool:disabled, roundNum = 0,
+	VIP, SVIP, smallMaps, freeType, freeEnabled, freeFrom, freeTo;
 
 new const commandVIPs[][] = { "vips", "say /vips", "say_team /vips", "say /vipy", "say_team /vipy" };
 new const commandSVIPs[][] = { "svips", "say /svips", "say_team /svips", "say /svipy", "say_team /svipy" };
@@ -27,13 +28,20 @@ enum { ammo_none, ammo_338magnum = 1, ammo_762nato, ammo_556natobox, ammo_556nat
 
 new const maxBPAmmo[] = { 0, 30, 90, 200, 90, 32, 100, 100, 35, 52, 120, 2, 1, 1, 1 };
 
+enum _:{ FREE_HOURS, FREE_ALWAYS };
+enum _:{ FREE_VIP, FREE_SVIP };
+
 forward amxbans_admin_connect(id);
 
 public plugin_init()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR);
 
-	bind_pcvar_num(register_cvar("csgo_vip_small_maps", "0"), smallMaps);
+	bind_pcvar_num(register_cvar("csgo_vip_svip_small_maps", "0"), smallMaps);
+	bind_pcvar_num(register_cvar("csgo_vip_svip_free_enabled", "0"), freeType);
+	bind_pcvar_num(register_cvar("csgo_vip_svip_free_type", "0"), freeEnabled);
+	bind_pcvar_num(register_cvar("csgo_vip_svip_free_vip_from", "23"), freeFrom);
+	bind_pcvar_num(register_cvar("csgo_vip_svip_free_to", "9"), freeTo);
 
 	for (new i; i < sizeof commandVIPs; i++) register_clcmd(commandVIPs[i], "show_vips");
 	for (new i; i < sizeof commandSVIPs; i++) register_clcmd(commandSVIPs[i], "show_svips");
@@ -85,7 +93,15 @@ public client_authorized_post(id)
 	rem_bit(id, VIP);
 	rem_bit(id, SVIP);
 
-	if (get_user_flags(id) & ADMIN_LEVEL_H || get_user_flags(id) & ADMIN_FLAG_X) {
+	new currentTime[3], hour;
+
+	get_time("%H", currentTime, charsmax(currentTime));
+
+	hour = str_to_num(currentTime);
+
+	if (get_user_flags(id) & ADMIN_LEVEL_H || get_user_flags(id) & ADMIN_FLAG_X || freeEnabled == FREE_ALWAYS
+		|| (freeEnabled == FREE_HOURS && (hour >= get_pcvar_num(freeFrom) || hour < get_pcvar_num(freeTo)))
+	) {
 		set_bit(id, VIP);
 
 		new playerName[32], tempName[32], size = ArraySize(VIPs), bool:found;
@@ -100,7 +116,7 @@ public client_authorized_post(id)
 
 		if (!found) ArrayPushString(VIPs, playerName);
 
-		if (get_user_flags(id) & ADMIN_FLAG_X) {
+		if (get_user_flags(id) & ADMIN_FLAG_X || freeType == FREE_SVIP) {
 			set_bit(id, SVIP);
 
 			new playerName[32], tempName[32], size = ArraySize(SVIPs);
@@ -223,9 +239,12 @@ public csgo_user_login(id)
 
 public player_spawn(id)
 {
-	remove_task(id);
+	if (disabled || !csgo_check_account(id)) return PLUGIN_CONTINUE;
 
-	if (!is_user_alive(id) || !get_bit(id, VIP) || disabled || !csgo_check_account(id)) return PLUGIN_CONTINUE;
+	remove_task(id);
+	client_authorized_post(id);
+
+	if (!is_user_alive(id) || !get_bit(id, VIP)) return PLUGIN_CONTINUE;
 
 	if (get_user_team(id) == 2) cs_set_user_defuse(id, 1);
 

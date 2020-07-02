@@ -26,7 +26,6 @@ All of available configuration files have proper descriptions.
 
 ## Optional
 There are some optional plugins:
-- [csgo_free_svip.sma](https://github.com/TheDoctor0/CSGOMod/blob/master/csgo_free_svip.sma) - Free SVIP for everyone (useful for server events)
 - [csgo_assist_revenge_us.sma](https://github.com/TheDoctor0/CSGOMod/blob/master/csgo_assist_revenge_us.sma), [csgo_ranks_us.sma](https://github.com/TheDoctor0/CSGOMod/blob/master/csgo_ranks_us.sma) and [csgo_stattrak_us.sma](https://github.com/TheDoctor0/CSGOMod/blob/master/csgo_stattrak_us.sma) - Alternative versions compatible with [UltimateStats](https://github.com/TheDoctor0/UltimateStats)
 - [sklepsms_usluga_euro.sma](https://github.com/TheDoctor0/CSGOMod/blob/master/sklepsms_usluga_euro.sma) - [SklepSMS](https://github.com/TheDoctor0/sklep-sms) service plugin
 
