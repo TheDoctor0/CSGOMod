@@ -19,6 +19,7 @@ $body "studio" "t_arms_05"
 
 $bodygroup "skins"
 {
+studio "template"
 studio "smd\autotronic"
 studio "smd\black_laminate"
 studio "smd\blue_steel"
