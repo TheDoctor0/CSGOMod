@@ -184,7 +184,7 @@ public plugin_precache()
 
 	if (!file_exists(file)) set_fail_state("[CS:GO] Brak pliku csgo_skins.ini!");
 
-	new skin[skinsInfo], lineData[256], tempValue[5][64], bool:error, count = 0, fileOpen = fopen(file, "r");
+	new skin[skinsInfo], lineData[256], tempValue[5][64], bool:error, count = 0, fileOpen = fopen(file, "r"), Array:files = ArrayCreate(64, 64), filePath[64];
 
 	while (!feof(fileOpen)) {
 		fgets(fileOpen, lineData, charsmax(lineData)); trim(lineData);
@@ -217,6 +217,16 @@ public plugin_precache()
 			} else {
 				precache_model(skin[SKIN_MODEL]);
 
+				new bool:found;
+
+				for (new i = 0; i < ArraySize(files); i++) {
+					ArrayGetString(files, i, filePath, charsmax(filePath));
+
+					if (equal(filePath, skin[SKIN_MODEL])) found = true;
+				}
+
+				if (!found) ArrayPushString(files, skin[SKIN_MODEL]);
+
 				count++;
 			}
 
@@ -247,7 +257,7 @@ public plugin_precache()
 	if (error) set_fail_state("[CS:GO] Nie zaladowano wszystkich standardowych skinow. Sprawdz logi bledow!");
 
 	log_amx("CS:GO Mod by O'Zone (v%s).", VERSION);
-	log_amx("Loaded %i skins.", count);
+	log_amx("Loaded %i skins from %i files.", count, ArraySize(files));
 
 	set_task(0.1, "load_skins_details");
 }
