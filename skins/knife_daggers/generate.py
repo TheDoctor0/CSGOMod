@@ -24,10 +24,6 @@ if not os.path.isfile("default.bmp"):
     print("Default weapon texture file (default.bmp) does not exists!")
     exit(0)
 
-if not os.path.isfile("default.qc"):
-    print("Default weapon QC file (default.qc) does not exists!")
-    exit(0)
-
 if not os.path.isdir("bmp"):
     print("Directory (bmp) that contains skin textures does not exists!")
     exit(0)
@@ -84,7 +80,6 @@ for index, skin in enumerate(skins, start=0):
                 print(line, end='')
 
 files = glob.glob("v_{}_*.qc".format(weapon))
-files = ["default.qc"] + files
 
 for file in files:
     os.system("{} {}".format(compiler, file))
