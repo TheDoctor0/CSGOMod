@@ -29,6 +29,7 @@ if not os.path.isdir("bmp"):
     exit(0)
 
 skins = glob.glob("bmp/*.bmp".format(weapon))
+skins = ["default.bmp"] + skins
 
 if fresh:
     files = glob.glob("v_{}_*.qc".format(weapon))
@@ -43,13 +44,17 @@ for index, skin in enumerate(skins, start=0):
     if original != skin:
         os.rename(original, skin)
 
-    smd = skin.replace("bmp", "smd")
+    if skin == "default.bmp":
+        smd = "template.smd"
+    else:
+        smd = skin.replace("bmp", "smd")
 
     if not os.path.isdir("smd"):
         os.mkdir("smd")
 
     if fresh or not os.path.isfile(smd):
-        shutil.copyfile("template.smd", smd)
+        if smd != "template.smd":
+            shutil.copyfile("template.smd", smd)
 
         with fileinput.FileInput(smd, inplace=True) as file:
             for line in file:
