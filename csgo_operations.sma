@@ -30,7 +30,7 @@ public plugin_init()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR);
 
-	bind_pcvar_num(register_cvar("csgo_operations_min_players", "4"), minPlayers);
+	bind_pcvar_num(get_cvar_pointer("csgo_min_players"), minPlayers);
 
 	for(new i; i < sizeof commandQuest; i++) register_clcmd(commandQuest[i], "operation_menu");
 	for(new i; i < sizeof commandProgress; i++) register_clcmd(commandProgress[i], "check_operation");

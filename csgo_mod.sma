@@ -108,7 +108,7 @@ public plugin_init()
 	bind_pcvar_float(create_cvar("csgo_market_commision", "5"), marketCommision);
 	bind_pcvar_float(create_cvar("csgo_clan_skin_chance_per_member", "1"), skinChancePerMember);
 	bind_pcvar_float(create_cvar("csgo_kill_reward", "0.35"), killReward);
-	bind_pcvar_float(create_cvar("csgo_killhs_reward", "0.15"), killHSReward);
+	bind_pcvar_float(create_cvar("csgo_kill_hs_reward", "0.15"), killHSReward);
 	bind_pcvar_float(create_cvar("csgo_bomb_reward", "2.0"), bombReward);
 	bind_pcvar_float(create_cvar("csgo_defuse_reward", "2.0"), defuseReward);
 	bind_pcvar_float(create_cvar("csgo_hostages_reward", "2.0"), hostageReward);

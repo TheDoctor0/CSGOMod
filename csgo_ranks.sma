@@ -88,16 +88,19 @@ enum _:winners { THIRD, SECOND, FIRST };
 
 new playerData[MAX_PLAYERS + 1][playerInfo], sprites[MAX_RANKS + 1], Handle:sql, bool:sqlConnected, bool:oneAndOnly,
 	bool:mapChange,bool:block, loaded, hudLoaded, visit, hud, aimHUD, defaultInfo, round, sounds, soundMayTheForce,
-	soundOneAndOnly, soundPrepare, soundHumiliation, soundLastLeft, forum[64], iconFlags[8], unrankedKills, minPlayers;
+	soundOneAndOnly, soundPrepare, soundHumiliation, soundLastLeft, site[64], iconFlags[8], unrankedKills, minPlayers,
+	Float:winnerReward;
 
 public plugin_init()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR);
 
-	bind_pcvar_num(create_cvar("csgo_min_players", "4"), minPlayers);
-	bind_pcvar_num(create_cvar("csgo_unranked_kills", "100"), unrankedKills);
-	bind_pcvar_string(create_cvar("csgo_forum", "AdresForum.pl"), forum, charsmax(forum));
-	bind_pcvar_string(create_cvar("csgo_icon_flags", "abcd"), iconFlags, charsmax(iconFlags));
+	bind_pcvar_num(create_cvar("csgo_ranks_unranked_kills", "100"), unrankedKills);
+	bind_pcvar_float(create_cvar("csgo_ranks_winner_reward", "10.0"), winnerReward);
+	bind_pcvar_string(create_cvar("csgo_ranks_site", ""), site, charsmax(site));
+	bind_pcvar_string(create_cvar("csgo_ranks_icon_flags", "abcd"), iconFlags, charsmax(iconFlags));
+
+	bind_pcvar_num(get_cvar_pointer("csgo_min_players"), minPlayers);
 
 	for (new i; i < sizeof commandRank; i++) register_clcmd(commandRank[i], "cmd_rank");
 	for (new i; i < sizeof commandRanks; i++) register_clcmd(commandRanks[i], "cmd_ranks");
@@ -175,7 +178,7 @@ public plugin_precache()
 
 public sql_init()
 {
-	new host[32], user[32], pass[32], database[32], error[128], errorNum;
+	new host[64], user[64], pass[64], database[64], error[128], errorNum;
 
 	get_cvar_string("csgo_sql_host", host, charsmax(host));
 	get_cvar_string("csgo_sql_user", user, charsmax(user));
@@ -433,7 +436,7 @@ public display_hud(id)
 
 	if (is_user_bot(id) || !is_user_connected(id) || !get_bit(id, hudLoaded)) return PLUGIN_CONTINUE;
 
-	static clan[64], operation[64], skin[64], statTrak[64], weaponStatTrak, target;
+	static address[64], clan[64], operation[64], skin[64], statTrak[64], weaponStatTrak, target;
 
 	target = id;
 
@@ -471,6 +474,12 @@ public display_hud(id)
 	format(operation, charsmax(operation), "^n[Operacja : %s]", operation);
 	format(clan, charsmax(clan), "^n[Klan : %s]", clan);
 
+	if (strlen(site)) {
+		formatex(address, charsmax(address), "[Forum : %s]^n", site);
+	} else {
+		address = "";
+	}
+
 	weaponStatTrak = csgo_get_weapon_stattrak(target, get_user_weapon(target));
 
 	if (weaponStatTrak > -1) {
@@ -479,12 +488,12 @@ public display_hud(id)
 		statTrak = "";
 	}
 
-	if (!playerData[target][RANK]) ShowSyncHudMsg(id, hud, "[Forum : %s]^n[Konto : %s]%s^n[Ranga : %s (%i / %i)]%s%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]",
-		forum, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), clan, rankName[playerData[target][RANK]], playerData[target][KILLS], unrankedKills, skin, statTrak, csgo_get_money(target), operation, hours, minutes, seconds);
-	else if (playerData[target][RANK] < MAX_RANKS) ShowSyncHudMsg(id, hud, "[Forum : %s]^n[Konto : %s]%s^n[Ranga : %s]^n[Punkty Elo : %.2f / %d]%s%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]",
-		forum, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), clan, rankName[playerData[target][RANK]], playerData[target][ELO_RANK], rankElo[playerData[target][RANK] + 1], skin, statTrak, csgo_get_money(target), operation, hours, minutes, seconds);
-	else ShowSyncHudMsg(id, hud, "[Forum : %s]^n[Konto : %s]%s^n[Ranga : %s]^n[Punkty Elo : %.2f]%s%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]",
-		forum, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), clan, rankName[playerData[target][RANK]], playerData[target][ELO_RANK], skin, statTrak, csgo_get_money(target), operation, hours, minutes, seconds);
+	if (!playerData[target][RANK]) ShowSyncHudMsg(id, hud, "%s[Konto : %s]%s^n[Ranga : %s (%i / %i)]%s%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]",
+		site, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), clan, rankName[playerData[target][RANK]], playerData[target][KILLS], unrankedKills, skin, statTrak, csgo_get_money(target), operation, hours, minutes, seconds);
+	else if (playerData[target][RANK] < MAX_RANKS) ShowSyncHudMsg(id, hud, "%s[Konto : %s]%s^n[Ranga : %s]^n[Punkty Elo : %.2f / %d]%s%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]",
+		site, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), clan, rankName[playerData[target][RANK]], playerData[target][ELO_RANK], rankElo[playerData[target][RANK] + 1], skin, statTrak, csgo_get_money(target), operation, hours, minutes, seconds);
+	else ShowSyncHudMsg(id, hud, "%s[Konto : %s]%s^n[Ranga : %s]^n[Punkty Elo : %.2f]%s%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]",
+		site, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), clan, rankName[playerData[target][RANK]], playerData[target][ELO_RANK], skin, statTrak, csgo_get_money(target), operation, hours, minutes, seconds);
 
 	return PLUGIN_CONTINUE;
 }
@@ -1142,7 +1151,7 @@ public message_intermission()
 			case FIRST: {
 				playerData[winnersId[i]][GOLD]++;
 
-				csgo_add_money(winnersId[i], 10.0);
+				csgo_add_money(winnersId[i], winnerReward);
 			}
 		}
 
@@ -1245,13 +1254,13 @@ public cmd_sounds(id)
 	formatex(menuData, charsmax(menuData), "\wI Am The One And Only \w[\r%s\w]", get_bit(id, soundOneAndOnly) ? "Wlaczony" : "Wylaczony");
 	menu_additem(menu, menuData);
 
-	formatex(menuData, charsmax(menuData), "\wDziabnal Mnie \w[\r%s\w]", get_bit(id, soundHumiliation) ? "Wlaczony" : "Wylaczony");
+	formatex(menuData, charsmax(menuData), "\wHumiliation \w[\r%s\w]", get_bit(id, soundHumiliation) ? "Wlaczony" : "Wylaczony");
 	menu_additem(menu, menuData);
 
-	formatex(menuData, charsmax(menuData), "\wKici Kici Tas Tas \w[\r%s\w]", get_bit(id, soundLastLeft) ? "Wlaczony" : "Wylaczony");
+	formatex(menuData, charsmax(menuData), "\wLast Left \w[\r%s\w]", get_bit(id, soundLastLeft) ? "Wlaczony" : "Wylaczony");
 	menu_additem(menu, menuData);
 
-	formatex(menuData, charsmax(menuData), "\wNie Obijac Sie \w[\r%s\w]", get_bit(id, soundPrepare) ? "Wlaczony" : "Wylaczony");
+	formatex(menuData, charsmax(menuData), "\wPrepare \w[\r%s\w]", get_bit(id, soundPrepare) ? "Wlaczony" : "Wylaczony");
 	menu_additem(menu, menuData);
 
 	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
