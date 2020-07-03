@@ -145,7 +145,8 @@ public plugin_init()
 	register_forward(FM_SetModel, "set_model", 0);
 	register_forward(FM_UpdateClientData, "update_client_data_post", 1);
 	register_forward(FM_PlaybackEvent, "client_playback_event");
-	register_forward(FM_ClientUserInfoChanged, "client_user_info_changes");
+	register_forward(FM_ClientUserInfoChanged, "client_user_info_changed");
+	register_forward(FM_EmitSound, "sound_emit");
 
 	RegisterHam(Ham_AddPlayerItem, "player", "add_player_item", 1);
 	RegisterHam(Ham_Spawn, "player", "player_spawn", 1);
@@ -2168,6 +2169,9 @@ public client_user_info_changed(id)
 
 	return FMRES_IGNORED;
 }
+
+public sound_emit(ent, channel, const sound[])
+    return equal(sound, "fans/fan3.wav") ? FMRES_SUPERCEDE : FMRES_IGNORED;
 
 public check_aim_weapon(id)
 {
