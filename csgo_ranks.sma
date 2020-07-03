@@ -190,7 +190,7 @@ public sql_init()
 	new Handle:connectHandle = SQL_Connect(sql, errorNum, error, charsmax(error));
 
 	if (errorNum) {
-		log_to_file("csgo-error.log", "error: %s (%i)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Ranks] Init SQL Error: %s (%i)", error, errorNum);
 
 		return;
 	}

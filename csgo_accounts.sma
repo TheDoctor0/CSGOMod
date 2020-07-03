@@ -585,11 +585,7 @@ public sql_init()
 	new Handle:connectHandle = SQL_Connect(sql, errorNum, error, charsmax(error));
 
 	if (errorNum) {
-		log_to_file("csgo-error.log", "Error: %s", error);
-
-		sql = Empty_Handle;
-
-		set_task(5.0, "sql_init");
+		log_to_file("csgo-error.log", "[CS:GO Accounts] Init SQL Error: %s (%i)", error, errorNum);
 
 		return;
 	}

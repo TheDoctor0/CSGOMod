@@ -2186,9 +2186,7 @@ public sql_init()
 	connection = SQL_Connect(sql, errorNum, error, charsmax(error));
 
 	if (errorNum) {
-		log_to_file("csgo-error.log", "[CS:GO Clans] Init SQL Error: %s", error);
-
-		set_task(1.0, "sql_init");
+		log_to_file("csgo-error.log", "[CS:GO Clans] Init SQL Error: %s (%i)", error, errorNum);
 
 		return;
 	}

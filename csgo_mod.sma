@@ -316,7 +316,7 @@ public plugin_cfg()
 	connection = SQL_Connect(sql, errorNum, error, charsmax(error));
 
 	if (errorNum) {
-		log_to_file("csgo-error.log", "Error: %s (%i)", error, errorNum);
+		log_to_file("csgo-error.log", "[CS:GO Mod] Init SQL Error: %s (%i)", error, errorNum);
 
 		return;
 	}
