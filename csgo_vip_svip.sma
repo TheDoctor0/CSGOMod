@@ -100,7 +100,7 @@ public client_authorized_post(id)
 	hour = str_to_num(currentTime);
 
 	if (get_user_flags(id) & ADMIN_LEVEL_H || get_user_flags(id) & ADMIN_FLAG_X || freeEnabled == FREE_ALWAYS
-		|| (freeEnabled == FREE_HOURS && (hour >= get_pcvar_num(freeFrom) || hour < get_pcvar_num(freeTo)))
+		|| (freeEnabled == FREE_HOURS && (hour >= freeFrom || hour < freeTo))
 	) {
 		set_bit(id, VIP);
 
