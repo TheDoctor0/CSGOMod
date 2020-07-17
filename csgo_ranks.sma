@@ -77,7 +77,6 @@ new const commandMedals[][] = { "medale", "say /medale", "say_team /medale"};
 new const commandTopMedals[][] = { "topmedale", "say /topmedale", "say_team /topmedale", "say /medaletop15", "say_team /medaletop15", "say /mtop15", "say_team /mtop15"};
 new const commandStats[][] = { "staty", "say /staty", "say_team /staty"};
 new const commandTopStats[][] = { "topstaty", "say /topstaty", "say_team /topstaty", "say /statytop15", "say_team /statytop15", "say /stop15", "say_team /stop15"};
-new const commandSounds[][] = { "dzwieki", "say /dzwieki", "say_team /dzwieki", "say /dzwiek", "say_team /dzwiek" };
 new const commandHud[][] = { "hud", "say /hud", "say_team /hud", "say /zmienhud", "say_team /zmienhud", "say /change_hud", "say_team /change_hud" };
 
 enum _:playerInfo { KILLS, RANK, TIME, FIRST_VISIT, LAST_VISIT, BRONZE, SILVER, GOLD, MEDALS, BEST_STATS, BEST_KILLS,
@@ -86,10 +85,9 @@ enum _:playerInfo { KILLS, RANK, TIME, FIRST_VISIT, LAST_VISIT, BRONZE, SILVER, 
 
 enum _:winners { THIRD, SECOND, FIRST };
 
-new playerData[MAX_PLAYERS + 1][playerInfo], sprites[MAX_RANKS + 1], Handle:sql, bool:sqlConnected, bool:oneAndOnly,
-	bool:mapChange,bool:block, loaded, hudLoaded, visit, hud, aimHUD, defaultInfo, round, sounds, soundMayTheForce,
-	soundOneAndOnly, soundPrepare, soundHumiliation, soundLastLeft, site[64], iconFlags[8], unrankedKills, minPlayers,
-	Float:winnerReward;
+new playerData[MAX_PLAYERS + 1][playerInfo], sprites[MAX_RANKS + 1], Handle:sql, bool:sqlConnected, bool:mapChange,
+	bool:block, loaded, hudLoaded, visit, hud, aimHUD, defaultInfo, round, site[64], iconFlags[8], unrankedKills,
+	minPlayers, Float:winnerReward;
 
 public plugin_init()
 {
@@ -111,7 +109,6 @@ public plugin_init()
 	for (new i; i < sizeof commandTopMedals; i++) register_clcmd(commandTopMedals[i], "cmd_topmedals");
 	for (new i; i < sizeof commandStats; i++) register_clcmd(commandStats[i], "cmd_stats");
 	for (new i; i < sizeof commandTopStats; i++) register_clcmd(commandTopStats[i], "cmd_topstats");
-	for (new i; i < sizeof commandSounds; i++) register_clcmd(commandSounds[i], "cmd_sounds");
 	for (new i; i < sizeof commandHud; i++) register_clcmd(commandHud[i], "change_hud");
 
 	RegisterHam(Ham_Spawn, "player", "player_spawn", 1);
@@ -130,8 +127,6 @@ public plugin_init()
 
 	hud = CreateHudSyncObj();
 	aimHUD = CreateHudSyncObj();
-
-	sounds = nvault_open("stats_sound");
 }
 
 public plugin_cfg()
@@ -168,12 +163,6 @@ public plugin_precache()
 	}
 
 	if (error) set_fail_state("Brakuje plikow sprite, zaladowanie pluginu niemozliwe! Sprawdz logi w pliku csgo/error.log!");
-
-	precache_sound("misc/maytheforce.wav");
-	precache_sound("misc/oneandonly.wav");
-	precache_sound("misc/prepare.wav");
-	precache_sound("misc/humiliation.wav");
-	precache_sound("misc/lastleft.wav");
 }
 
 public sql_init()
@@ -238,11 +227,6 @@ public client_putinserver(id)
 	rem_bit(id, loaded);
 	rem_bit(id, hudLoaded);
 	rem_bit(id, visit);
-	rem_bit(id, soundMayTheForce);
-	rem_bit(id, soundOneAndOnly);
-	rem_bit(id, soundHumiliation);
-	rem_bit(id, soundLastLeft);
-	rem_bit(id, soundPrepare);
 
 	set_task(0.1, "load_data", id);
 }
@@ -254,12 +238,6 @@ public client_disconnected(id)
 	remove_task(id);
 	remove_task(id + TASK_HUD);
 	remove_task(id + TASK_TIME);
-
-	rem_bit(id, soundMayTheForce);
-	rem_bit(id, soundOneAndOnly);
-	rem_bit(id, soundHumiliation);
-	rem_bit(id, soundLastLeft);
-	rem_bit(id, soundPrepare);
 }
 
 public load_data(id)
@@ -519,8 +497,6 @@ public new_round()
 {
 	if (mapChange) return;
 
-	oneAndOnly = false;
-
 	if (!round) {
 		set_task(30.0, "first_round");
 
@@ -572,14 +548,6 @@ public client_death(killer, victim, weapon, hitPlace, TK)
 
 	client_print_color(victim, killer, "** Zostales zabity przez^x03 %s^x01, ktoremu zostalo^x04 %i^x01 HP. **", playerData[killer][PLAYER_NAME], get_user_health(killer));
 
-	if (weapon == CSW_KNIFE) {
-		for (new i = 1; i <= MAX_PLAYERS; i++) {
-			if (!is_user_connected(i)) continue;
-
-			if ((pev(i, pev_iuser2) == victim || i == victim) && get_bit(i, soundHumiliation)) client_cmd(i, "spk misc/csr/humiliation");
-		}
-	}
-
 	if (block) return;
 
 	new tCount, ctCount, lastT, lastCT;
@@ -599,12 +567,6 @@ public client_death(killer, victim, weapon, hitPlace, TK)
 	}
 
 	if (tCount == 1 && ctCount == 1) {
-		for (new i = 1; i <= MAX_PLAYERS; i++) {
-			if (!is_user_connected(i)) continue;
-
-			if ((pev(i, pev_iuser2) == lastT || pev(i, pev_iuser2) == lastCT || i == lastT || i == lastCT) && get_bit(i, soundMayTheForce)) client_cmd(i, "spk misc/csr/maytheforce");
-		}
-
 		new nameT[32], nameCT[32];
 
 		get_user_name(lastT, nameT, charsmax(nameT));
@@ -614,43 +576,14 @@ public client_death(killer, victim, weapon, hitPlace, TK)
 		show_dhudmessage(0, "%s vs. %s", nameT, nameCT);
 	}
 
-	if (tCount == 1 && ctCount > 1 && !oneAndOnly) {
-		oneAndOnly = true;
-
-		for (new i = 1; i <= MAX_PLAYERS; i++) {
-			if (!is_user_connected(i)) continue;
-
-			if (((is_user_alive(i) && get_user_team(i) == 2) || (!is_user_alive(i) && get_user_team(pev(i, pev_iuser2)) == 2)) && get_bit(i, soundLastLeft)) client_cmd(i, "spk misc/csr/lastleft");
-
-			if ((pev(i, pev_iuser2) == lastT || i == lastT) && get_bit(i, soundOneAndOnly)) client_cmd(i, "spk misc/csr/oneandonly");
-		}
-
+	if (tCount == 1 && ctCount > 1) {
 		set_dhudmessage(255, 128, 0, -1.0, 0.30, 0, 5.0, 5.0, 0.5, 0.15);
 		show_dhudmessage(0, "%i vs %i", tCount, ctCount);
 	}
 
-	if (tCount > 1 && ctCount == 1 && !oneAndOnly) {
-		oneAndOnly = true;
-
-		for (new i = 1; i <= MAX_PLAYERS; i++) {
-			if (!is_user_connected(i)) continue;
-
-			if (((is_user_alive(i) && get_user_team(i) == 1) || (!is_user_alive(i) && get_user_team(pev(i, pev_iuser2)) == 1)) && get_bit(i, soundLastLeft)) client_cmd(i, "spk misc/csr/lastleft");
-
-			if ((pev(i, pev_iuser2) == lastCT || i == lastCT) && get_bit(i, soundOneAndOnly)) client_cmd(i, "spk misc/csr/oneandonly");
-		}
-
+	if (tCount > 1 && ctCount == 1) {
 		set_dhudmessage(255, 128, 0, -1.0, 0.30, 0, 5.0, 5.0, 0.5, 0.15);
 		show_dhudmessage(0, "%i vs %i", ctCount, tCount);
-	}
-}
-
-public bomb_planted(planter)
-{
-	for (new i = 1; i <= MAX_PLAYERS; i++) {
-		if (!is_user_connected(i)) continue;
-
-		if (((is_user_alive(i) && get_user_team(i) == 2) || (!is_user_alive(i) && get_user_team(pev(i, pev_iuser2)) == 2)) && get_bit(i, soundPrepare)) client_cmd(i, "spk misc/csr/prepare");
 	}
 }
 
@@ -1210,92 +1143,6 @@ public say_text(msgId, msgDest, msgEnt)
 	}
 
 	return PLUGIN_CONTINUE;
-}
-
-public save_sounds(id)
-{
-	new vaultKey[64], vaultData[16];
-
-	formatex(vaultKey, charsmax(vaultKey), "%s-sounds", playerData[id][PLAYER_NAME]);
-	formatex(vaultData, charsmax(vaultData), "%d %d %d %d %d", get_bit(id, soundMayTheForce), get_bit(id, soundOneAndOnly), get_bit(id, soundHumiliation), get_bit(id, soundPrepare), get_bit(id, soundLastLeft));
-
-	nvault_set(sounds, vaultKey, vaultData);
-
-	return PLUGIN_CONTINUE;
-}
-
-public load_sounds(id)
-{
-	new vaultKey[64], vaultData[16], soundsData[5][5];
-
-	formatex(vaultKey, charsmax(vaultKey), "%s-sounds", playerData[id][PLAYER_NAME]);
-
-	if (nvault_get(sounds, vaultKey, vaultData, charsmax(vaultData)))
-	{
-		parse(vaultData, soundsData[0], charsmax(soundsData), soundsData[1], charsmax(soundsData), soundsData[2], charsmax(soundsData), soundsData[3], charsmax(soundsData), soundsData[4], charsmax(soundsData));
-
-		if (str_to_num(soundsData[0])) set_bit(id, soundMayTheForce);
-		if (str_to_num(soundsData[1])) set_bit(id, soundOneAndOnly);
-		if (str_to_num(soundsData[2])) set_bit(id, soundHumiliation);
-		if (str_to_num(soundsData[3])) set_bit(id, soundPrepare);
-		if (str_to_num(soundsData[4])) set_bit(id, soundLastLeft);
-	}
-
-	return PLUGIN_CONTINUE;
-}
-
-public cmd_sounds(id)
-{
-	new menuData[64], menu = menu_create("\yUstawienia \rDzwiekow\w:", "cmd_sounds_handle");
-
-	formatex(menuData, charsmax(menuData), "\wThe Force Will Be With You \w[\r%s\w]", get_bit(id, soundMayTheForce) ? "Wlaczony" : "Wylaczony");
-	menu_additem(menu, menuData);
-
-	formatex(menuData, charsmax(menuData), "\wI Am The One And Only \w[\r%s\w]", get_bit(id, soundOneAndOnly) ? "Wlaczony" : "Wylaczony");
-	menu_additem(menu, menuData);
-
-	formatex(menuData, charsmax(menuData), "\wHumiliation \w[\r%s\w]", get_bit(id, soundHumiliation) ? "Wlaczony" : "Wylaczony");
-	menu_additem(menu, menuData);
-
-	formatex(menuData, charsmax(menuData), "\wLast Left \w[\r%s\w]", get_bit(id, soundLastLeft) ? "Wlaczony" : "Wylaczony");
-	menu_additem(menu, menuData);
-
-	formatex(menuData, charsmax(menuData), "\wPrepare \w[\r%s\w]", get_bit(id, soundPrepare) ? "Wlaczony" : "Wylaczony");
-	menu_additem(menu, menuData);
-
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
-
-	menu_display(id, menu);
-
-	return PLUGIN_HANDLED;
-}
-
-public cmd_sounds_handle(id, menu, item)
-{
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
-
-	if (item == MENU_EXIT) {
-		menu_destroy(menu);
-
-		return PLUGIN_HANDLED;
-	}
-
-
-	switch(item) {
-		case 0: get_bit(id, soundMayTheForce) ? rem_bit(id, soundMayTheForce) : set_bit(id, soundMayTheForce);
-		case 1: get_bit(id, soundOneAndOnly) ? rem_bit(id, soundOneAndOnly) : set_bit(id, soundOneAndOnly);
-		case 2: get_bit(id, soundHumiliation) ? rem_bit(id, soundHumiliation) : set_bit(id, soundHumiliation);
-		case 3: get_bit(id, soundLastLeft) ? rem_bit(id, soundLastLeft) : set_bit(id, soundLastLeft);
-		case 4: get_bit(id, soundPrepare) ? rem_bit(id, soundPrepare) : set_bit(id, soundPrepare);
-	}
-
-	save_sounds(id);
-
-	cmd_sounds(id);
-
-	menu_destroy(menu);
-
-	return PLUGIN_HANDLED;
 }
 
 public change_hud(id)
