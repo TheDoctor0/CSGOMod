@@ -38,8 +38,9 @@ csgo_add_money <nick> <amount>
 ```
 To use it you need **ADMIN_ADMIN** access, so better add yourself *"abcdefghijklmnopqrstuvxy"* flags.
 
-## Issues
+## Known issues
 Server may crash on map `csgo_dust2_new` with message `FATAL ERROR (shutting down): Cache_TryAlloc: x is greater then free hunk`.
+
 Please add `-heapsize 65536` to server starting options to solve this issue.
 
 ## Servers
