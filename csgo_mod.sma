@@ -250,8 +250,6 @@ public plugin_precache()
 			log_to_file("csgo-error.log", "[CS:GO] Plik %s nie istnieje!", defaultSkins[i]);
 
 			error = true;
-		} else {
-			precache_model(defaultSkins[i]);
 		}
 	}
 

@@ -79,7 +79,7 @@ public set_model(ent, model[])
 
 		pev(ent, pev_classname, className, charsmax(className));
 
-		if (equal(className, "grenade") && equal(model, "models/w_smokegrenade.mdl")) {
+		if (equal(className, "grenade") && containi(model, "smokegrenade") != -1) {
 			set_pev(ent, pev_iuser3, SMOKE_ID);
 		}
 	}
