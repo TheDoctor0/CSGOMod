@@ -21,8 +21,20 @@ public plugin_init()
 	register_plugin(PLUGIN, VERSION, AUTHOR);
 
 	for (new i = 0; i < sizeof grenadeNames; i++) {
+		RegisterHam(Ham_Item_Deploy, grenadeNames[i], "grenade_deploy", true);
 		RegisterHam(Ham_Weapon_SecondaryAttack, grenadeNames[i], "grenade_secondary_attack", false);
 	}
+}
+
+public grenade_deploy(weapon)
+{
+	static id; id = get_pdata_cbase(weapon, 41, 4);
+
+	if (!is_user_alive(id)) return HAM_IGNORED;
+
+	grenadeThrow[id] = NORMAL;
+
+	return HAM_IGNORED;
 }
 
 public grenade_secondary_attack(const ent)
