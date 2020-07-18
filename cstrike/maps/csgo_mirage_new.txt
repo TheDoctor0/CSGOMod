@@ -1,0 +1,40 @@
+CSS_MIRAGESKY_GO (Bomb/Defuse)
+by Tatu Eugen - www.tatueugen.info
+*** Version with original sky from CSGO ***
+
+About Mirage
+-------------
+Mirage has been popular as a custom map among 
+the ounter-Strike community for years. 
+After Global Offensive was released, 
+Valve decided to include the map as an 
+official bomb defusal map.
+As with all official maps, Valve updated 
+the visuals and tweaked the gameplay for 
+better competitive play. For instance, 
+the original versions of Mirage had textures 
+similar to Italy, but was later updated to 
+reflect a Moroccan style.
+
+Mission
+--------
+Counter-Terrorists: Prevent Terrorists
+from bombing explosive crates.
+Team members must defuse any bombs 
+that threaten targeted areas.
+
+Terrorists: The Terrorist carrying the
+C4 must destroy one of the explosive 
+crate areas.
+
+Other Notes: There are 2 bomb targets
+in the mission.
+
+Credits
+--------
+Textures:
+Valve (CS:GO Game)
+Tatu Eugen
+
+Original Mirage Author:
+BubkeZ (bubkez@hotmail.com)

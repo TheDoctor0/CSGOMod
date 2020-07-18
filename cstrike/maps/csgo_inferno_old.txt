@@ -1,0 +1,19 @@
+GO: Inferno - Defusion
+Created by Meowth
+Original Map by Chris Auty (Barney) (fragged101@yahoo.com)
+Texture/Models/Sound FX: Hidden Path Entertainment, Valve Corporation, Meowth
+Special Thanks: CSGO Ports Team (who continually supported me :)
+Special Thanks: RoOTns (for his awesome CSGO Chick)
+Special Thanks: Powerminecraft (who pushes me to continue making this map in time)
+Special Thanks: And others that wasn't mentioned above (just throw a molotov on me if you want)
+
+Official Description:
+
+Terrorists are attempting to blow up two critical gas pipelines through part of a small village.
+
+Counter-Terrorists: Prevent the terrorists from destroying the pipelines.
+Terrorists: Destroy the two gas pipelines.
+
+Other Notes: There are 2 bomb sites in this mission. 
+
+(Press FIRE to continue)

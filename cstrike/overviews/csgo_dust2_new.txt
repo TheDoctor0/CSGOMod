@@ -1,0 +1,17 @@
+//overview desc. file for CSG_DUST2.bsp
+//
+
+//Ref: Overview: Zoom 1.27, Map Origin (234.69, 168.44, 522.00), Z Min 1245.00, Z Max -201.00, Rotated 1
+
+global
+{
+	ZOOM 1.27
+	ORIGIN 234.69 168.44 522.00
+	ROTATED 1
+}
+
+layer
+{
+	IMAGE	"overviews/csgo_dust2_new.bmp"
+	HEIGHT "-201"
+}

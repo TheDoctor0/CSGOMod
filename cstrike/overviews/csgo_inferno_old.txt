@@ -1,0 +1,14 @@
+// overview desc. file for csg_inferno.bsp
+
+global 
+{
+	ZOOM	1.34
+	ORIGIN	817.25 	1290.56	941.50
+	ROTATED	1
+}
+
+layer 
+{
+	IMAGE	"overviews/csgo_inferno_old.tga"
+	HEIGHT	-49
+}

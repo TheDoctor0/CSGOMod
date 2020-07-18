@@ -1,0 +1,18 @@
+Dust II - Bomb/Defuse: Global Offensive Map for 1.6
+
+Map port by Meowth
+
+Special thanks to
+CS PRO (https://gamebanana.com/members/1383394)
+FunnkyHD (https://gamebanana.com/members/1443108) : Map testing
+workerq1 : Improvement suggestions
+
+Original Map by David Johnston
+
+Counter-Terrorists: Prevent Terrorists from bombing chemical weapon crates. Team members must defuse any bombs that threaten targeted areas.
+
+Terrorists: The Terrorists carrying the C4 must destroy one of the chemical weapon stashes.
+
+Other Notes: There are 2 chemical weapon stashes in the mission.
+
+(Press FIRE to continue)
