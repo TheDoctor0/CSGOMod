@@ -12,8 +12,8 @@ Mod was tested on AMXX builds:
 In both cases with ReHLDS and ReGameDLL also installed.
 
 ## Installation
-1. Get the lastest [release pack](https://github.com/TheDoctor0/CSGOMod/releases/latest).
-2. Upload `cstrike` directory to your server.
+1. Download `csgo_mod.zip` from the lastest [release pack](https://github.com/TheDoctor0/CSGOMod/releases/latest).
+2. Extract downloaded archive and upload `cstrike` directory to your server.
 3. Add `linux addons/unprecacher/unprecacher_mm_i386.so` to `/cstrike/addons/metamod/plugins.ini`.
 4. Configure database cvars in [csgo_mod.cfg](https://github.com/TheDoctor0/CSGOMod/blob/master/cstrike/addons/amxmodx/configs/csgo_mod.cfg).
 5. Enjoy ;)
