@@ -536,15 +536,32 @@ public random_skin_menu(id)
 
 public choose_weapon_menu(id, type)
 {
-	new menuData[32], tempType[2], count = 0, menu = menu_create("\yWybierz \rBron\w:", "choose_weapon_menu_handle");
-
-	num_to_str(type, tempType, charsmax(tempType));
+	new menuData[64], itemData[32], weapon[32], skin[skinsInfo], count = 0, skinCount = 0, playerSkinCount = 0,
+		menu = menu_create("\yWybierz \rBron\w:", "choose_weapon_menu_handle");
 
 	for (new i = type != 2 ? 1 : (randomSkinPrice[WEAPON_ALL] > 0.0 ? 0 : 1); i < ArraySize(weapons); i++) {
-		ArrayGetString(weapons, i, menuData, charsmax(menuData));
+		ArrayGetString(weapons, i, weapon, charsmax(weapon));
+
+		skinCount = 0;
+		playerSkinCount = 0;
+
+		for (new i = 0; i < ArraySize(skins); i++) {
+			ArrayGetArray(skins, i, skin);
+
+			if (equal(weapon, skin[SKIN_WEAPON])) {
+				skinCount++;
+
+				if (has_skin(id, i, 1) != -1) {
+					playerSkinCount++;
+				}
+			}
+		}
+
+		formatex(menuData, charsmax(menuData), "%s \y[\r%i \y/ \r%i\y]", weapon, playerSkinCount, skinCount);
+		formatex(itemData, charsmax(itemData), "%s#%i", weapon, type);
 
 		if (type != 2 || randomSkinPrice[get_weapon_id(menuData)] > 0.0) {
-			menu_additem(menu, menuData, tempType);
+			menu_additem(menu, menuData, itemData);
 
 			count++;
 		}
@@ -575,17 +592,19 @@ public choose_weapon_menu_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	new itemData[32], itemType[2], itemAccess, itemCallback;
+	new itemData[32], weapon[32], itemType[2], itemAccess, itemCallback;
 
-	menu_item_getinfo(menu, item, itemAccess, itemType, charsmax(itemType), itemData, charsmax(itemData), itemCallback);
-
-	switch (str_to_num(itemType)) {
-		case 0: set_weapon_skin(id, itemData);
-		case 1: buy_weapon_skin(id, itemData);
-		case 2: random_weapon_skin(id, itemData);
-	}
+	menu_item_getinfo(menu, item, itemAccess, itemData, charsmax(itemData), _, _, itemCallback);
 
 	menu_destroy(menu);
+
+	strtok(itemData, weapon, charsmax(weapon), itemType, charsmax(itemType), '#');
+
+	switch (str_to_num(itemType)) {
+		case 0: set_weapon_skin(id, weapon);
+		case 1: buy_weapon_skin(id, weapon);
+		case 2: random_weapon_skin(id, weapon);
+	}
 
 	return PLUGIN_HANDLED;
 }
