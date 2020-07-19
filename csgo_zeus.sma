@@ -174,7 +174,7 @@ public buy_zeus(id)
 	cs_set_user_money(id, money - zeusPrice);
 
 	if (get_user_weapon(id) == CSW_P228) {
-		new weapon = get_pdata_cbase(id, 373);
+		new weapon = get_pdata_cbase(id, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
 
 		ExecuteHamB(Ham_Item_Deploy, weapon);
 	} else {
@@ -210,15 +210,15 @@ public event_new_round()
 
 public weapon_attach_to_player(weapon, id)
 {
-	if (get_pdata_float(weapon, 44, 4) || !get_bit(id, zeus) || !zeusEnabled) return;
+	if (get_pdata_float(weapon, OFFSET_EMPTY_SOUND, OFFSET_ITEM_LINUX) || !get_bit(id, zeus) || !zeusEnabled) return;
 
-	set_pdata_int(weapon, 51, 1, 4);
-	set_pdata_int(id, 52, 0, 5);
+	set_pdata_int(weapon, OFFSET_CLIP, 1, OFFSET_ITEM_LINUX);
+	set_pdata_int(id, OFFSET_CLIENT_CLIP, 0, OFFSET_PLAYER_LINUX);
 }
 
 public weapon_item_deploy(weapon)
 {
-	static id; id = get_pdata_cbase(weapon, 41, 4);
+	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	if (!is_user_alive(id) || !zeusEnabled || !get_bit(id, zeus)) return HAM_IGNORED;
 
@@ -233,7 +233,7 @@ public weapon_item_deploy(weapon)
 
 public weapon_primary_attack(weapon)
 {
-	static id; id = get_pdata_cbase(weapon, 41, 4);
+	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	if (!is_user_alive(id) || !zeusEnabled || !get_bit(id, zeus)) return HAM_IGNORED;
 
@@ -272,7 +272,7 @@ public weapon_primary_attack(weapon)
 
 public weapon_item_can_drop(weapon)
 {
-	static id; id = get_pdata_cbase(weapon, 41, 4);
+	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	if (!is_user_alive(id) || !zeusEnabled || !get_bit(id, zeus)) return HAM_IGNORED;
 

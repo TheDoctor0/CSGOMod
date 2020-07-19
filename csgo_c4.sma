@@ -2,6 +2,7 @@
 #include <fakemeta>
 #include <hamsandwich>
 #include <engine>
+#include <csgomod>
 
 #define PLUGIN  "CS:GO C4"
 #define VERSION "2.0"
@@ -33,7 +34,7 @@ public remove_c4()
 	new entC4 = -1;
 
 	while ((entC4 = engfunc(EngFunc_FindEntityByString, entC4, "classname", "grenade"))) {
-		if (pev_valid(entC4) && get_pdata_bool(entC4, 385)) {
+		if (pev_valid(entC4) && get_pdata_bool(entC4, OFFSET_C4)) {
 			engfunc(EngFunc_RemoveEntity, entC4);
 		}
 	}
@@ -41,7 +42,7 @@ public remove_c4()
 
 public weapon_deploy(ent)
 {
-	static id; id = get_pdata_cbase(ent, 41, 4);
+	static id; id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	if (!is_user_alive(id)) return HAM_IGNORED;
 

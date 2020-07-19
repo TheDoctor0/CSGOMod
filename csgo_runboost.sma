@@ -47,7 +47,7 @@ public player_touch(id, player)
 
 public player_jump(id)
 {
-	static buttonPressed; buttonPressed = get_pdata_int(id, 246);
+	static buttonPressed; buttonPressed = get_pdata_int(id, OFFSET_BUTTON_PRESSED);
 
 	if (get_bit(id, runBoost) && buttonPressed & IN_JUMP) {
 		new Float:velocity[3];
@@ -60,7 +60,7 @@ public player_jump(id)
 
 		set_pev(id, pev_velocity, velocity);
 
-		set_pdata_int(id, 246, buttonPressed & ~IN_JUMP);
+		set_pdata_int(id, OFFSET_BUTTON_PRESSED, buttonPressed & ~IN_JUMP);
 
 		rem_bit(id, runBoost);
 

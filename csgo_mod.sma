@@ -84,6 +84,8 @@ enum _:playerInfo { ACTIVE[CSW_P90 + 1], Float:MONEY, SKIN, SUBMODEL, bool:SKINS
 enum _:playerSkinsInfo { SKIN_ID, SKIN_COUNT };
 enum _:skinsInfo { SKIN_NAME[64], SKIN_WEAPON[32], SKIN_MODEL[64], SKIN_SUBMODEL, SKIN_PRICE, SKIN_CHANCE };
 enum _:marketInfo { MARKET_ID, MARKET_SKIN, MARKET_OWNER, Float:MARKET_PRICE };
+enum _:offsets { OFFSET_ITEM_LINUX = 4, OFFSET_PLAYER_LINUX = 5, OFFSET_LAST_EVENT_CHECK = 38, OFFSET_PLAYER = 41, OFFSET_ID = 43, OFFSET_PRIMARY_ATTACK = 46,
+	OFFSET_CLIP = 51, OFFSET_SHELL = 57, OFFSET_SHOTS_FIRED = 64, OFFSET_SILENCER = 74, OFFSET_EJECT = 111, OFFSET_ACTIVE_ITEM = 373 };
 
 new playerData[MAX_PLAYERS + 1][playerInfo], Array:playerSkins[MAX_PLAYERS + 1], Float:randomSkinPrice[WEAPON_ALL + 1], overallSkinChance[WEAPON_ALL + 1], Array:skins, Array:weapons,
 	Array:market, Handle:sql, Handle:connection, marketSkins, multipleSkins, skinChance, skinChanceSVIP, Float:skinChancePerMember, maxMarketSkins, Float:marketCommision,
@@ -2085,7 +2087,7 @@ public event_money(id)
 
 public weapon_deploy_post(ent)
 {
-	static weapon, id; id = get_pdata_cbase(ent, 41, 4);
+	static weapon, id; id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	if (!is_user_alive(id)) return HAM_IGNORED;
 
@@ -2105,7 +2107,7 @@ public weapon_deploy_post(ent)
 
 public weapon_send_weapon_anim_post(ent, animation, skipLocal)
 {
-	static weapon, id; id = get_pdata_cbase(ent, 41, 4);
+	static weapon, id; id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	if (!is_user_alive(id)) return HAM_IGNORED;
 
@@ -2123,7 +2125,7 @@ public weapon_send_weapon_anim_post(ent, animation, skipLocal)
 
 public weapon_primary_attack(ent)
 {
-	static weapon, id; id = get_pdata_cbase(ent, 41, 4);
+	static weapon, id; id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	if (!is_user_alive(id)) return HAM_IGNORED;
 
@@ -2145,7 +2147,7 @@ public trace_attack_post(ent, attacker, Float:damage, Float:direction[3], ptr, d
 {
 	static weapon, Float:vectorEnd[3];
 
-	weapon = get_pdata_cbase(attacker, 373, 5);
+	weapon = get_pdata_cbase(attacker, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
 
 	if (!weapon || weapon_entity(weapon) == CSW_KNIFE) return HAM_IGNORED;
 
@@ -2220,7 +2222,7 @@ public update_client_data_post(id, sendWeapons, handleCD)
 
 	if (!is_user_alive(target)) return FMRES_IGNORED;
 
-	ent = get_pdata_cbase(target, 373, 5);
+	ent = get_pdata_cbase(target, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
 
 	if (!ent || !pev_valid(ent)) return FMRES_IGNORED;
 
@@ -2228,12 +2230,12 @@ public update_client_data_post(id, sendWeapons, handleCD)
 
 	if (weapon == CSW_HEGRENADE || weapon == CSW_SMOKEGRENADE || weapon == CSW_FLASHBANG || weapon == CSW_C4) return FMRES_IGNORED;
 
-	owner = get_pdata_int(ent, 43, 4);
+	owner = get_pdata_int(ent, OFFSET_ID, OFFSET_ITEM_LINUX);
 
 	if (!owner) return FMRES_IGNORED;
 
 	gameTime = get_gametime();
-	lastEventCheck = get_pdata_float(ent, 38, 4);
+	lastEventCheck = get_pdata_float(ent, OFFSET_LAST_EVENT_CHECK, OFFSET_ITEM_LINUX);
 
 	if (specMode) {
 		if (specInfo[id][SPEC_MODE] != specMode) {
@@ -2267,7 +2269,7 @@ public update_client_data_post(id, sendWeapons, handleCD)
 			send_weapon_animation(target, playerData[target][SUBMODEL], get_weapon_draw_animation(ent));
 		}
 
-		set_pdata_float(ent, 38, 0.0, 4);
+		set_pdata_float(ent, OFFSET_LAST_EVENT_CHECK, 0.0, OFFSET_ITEM_LINUX);
 	}
 
 	return FMRES_IGNORED;
@@ -2451,7 +2453,7 @@ public deploy_weapon_switch(id)
 
 	if (!is_user_alive(id)) return;
 
-	static skin[skinsInfo], weapon; weapon = get_pdata_cbase(id, 373, 5);
+	static skin[skinsInfo], weapon; weapon = get_pdata_cbase(id, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
 
 	if (!weapon || !pev_valid(weapon)) return;
 
@@ -2470,7 +2472,7 @@ public deploy_weapon_switch(id)
 		set_pev(id, pev_body, 0);
 	}
 
-	set_pdata_float(weapon, 38, get_gametime() + 0.001, 4);
+	set_pdata_float(weapon, OFFSET_LAST_EVENT_CHECK, get_gametime() + 0.001, OFFSET_ITEM_LINUX);
 
 	send_weapon_animation(id, skin[SKIN_SUBMODEL]);
 }
@@ -2510,7 +2512,7 @@ stock get_weapon_draw_animation(entity, temp = NONE)
 {
 	static animation, weaponState, weapon;
 
-	if (get_pdata_int(entity, 74, 4) & WPNSTATE_USP_SILENCED || get_pdata_int(entity, 74, 4) & WPNSTATE_M4A1_SILENCED) {
+	if (get_pdata_int(entity, OFFSET_SILENCER, OFFSET_ITEM_LINUX) & WPNSTATE_USP_SILENCED || get_pdata_int(entity, OFFSET_SILENCER, OFFSET_ITEM_LINUX) & WPNSTATE_M4A1_SILENCED) {
 		weaponState = SILENCED;
 	} else {
 		weaponState = UNSILENCED;
@@ -2582,46 +2584,46 @@ stock weapon_shoot_info(ent, animation, const soundEmpty[], const soundFire[], a
 
 	if (!pev_valid(ent)) return HAM_IGNORED;
 
-	id = get_pdata_cbase(ent, 41, 4);
-	clip = get_pdata_int(ent, 51, 4);
+	id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
+	clip = get_pdata_int(ent, OFFSET_CLIP, OFFSET_ITEM_LINUX);
 
 	if (!clip) {
 		emit_sound(id, CHAN_AUTO, soundEmpty, 0.8, ATTN_NORM, 0, PITCH_NORM);
 
-		set_pdata_float(ent, 46, 0.2, 4);
+		set_pdata_float(ent, OFFSET_PRIMARY_ATTACK, 0.2, OFFSET_ITEM_LINUX);
 
 		return HAM_SUPERCEDE;
 	}
 
-	if (get_pdata_int(ent, 64, 4) && !autoShoot) return HAM_SUPERCEDE;
+	if (get_pdata_int(ent, OFFSET_SHOTS_FIRED, OFFSET_ITEM_LINUX) && !autoShoot) return HAM_SUPERCEDE;
 
 	switch (weaponType) {
 		case WEAPONTYPE_ELITE: {
-			if (get_pdata_int(ent, 74, 4) & WPNSTATE_ELITE_LEFT) {
+			if (get_pdata_int(ent, OFFSET_SILENCER, OFFSET_ITEM_LINUX) & WPNSTATE_ELITE_LEFT) {
 				play_weapon_state(id, "weapons/elite_fire.wav", 6);
 			}
 		} case WEAPONTYPE_GLOCK18: {
-			if (get_pdata_int(ent, 74, 4) & WPNSTATE_GLOCK18_BURST_MODE) {
+			if (get_pdata_int(ent, OFFSET_SILENCER, OFFSET_ITEM_LINUX) & WPNSTATE_GLOCK18_BURST_MODE) {
 				play_weapon_state(id, "weapons/glock18-2.wav", 4);
 
 				emit_sound(id, CHAN_WEAPON, "weapons/glock18-2.wav", VOL_NORM, ATTN_IDLE, 0, PITCH_LOW);
 			}
 		} case WEAPONTYPE_FAMAS: {
-			if (get_pdata_int(ent, 74, 4) & WPNSTATE_FAMAS_BURST_MODE) {
+			if (get_pdata_int(ent, OFFSET_SILENCER, OFFSET_ITEM_LINUX) & WPNSTATE_FAMAS_BURST_MODE) {
 				play_weapon_state(id, "weapons/famas-burst.wav", 4);
 			}
 		} case WEAPONTYPE_M4A1: {
-			if (get_pdata_int(ent, 74, 4) & WPNSTATE_M4A1_SILENCED) {
+			if (get_pdata_int(ent, OFFSET_SILENCER, OFFSET_ITEM_LINUX) & WPNSTATE_M4A1_SILENCED) {
 				play_weapon_state(id, "weapons/m4a1-1.wav", 3);
 			}
 		} case WEAPONTYPE_USP: {
-			if (get_pdata_int(ent, 74, 4) & WPNSTATE_USP_SILENCED) {
+			if (get_pdata_int(ent, OFFSET_SILENCER, OFFSET_ITEM_LINUX) & WPNSTATE_USP_SILENCED) {
 				play_weapon_state(id, "weapons/usp1.wav", 3);
 			}
 		}
 	}
 
-	if (!(get_pdata_int(ent, 74, 4))) {
+	if (!(get_pdata_int(ent, OFFSET_SILENCER, OFFSET_ITEM_LINUX))) {
 		play_weapon_state(id, soundFire, animation);
 	}
 
@@ -2649,12 +2651,12 @@ stock eject_brass(id, ent)
 	}
 
 	switch (weapon_entity(ent)) {
-		case CSW_M3, CSW_XM1014: set_pdata_int(ent, 57, shotgunShell, 4);
+		case CSW_M3, CSW_XM1014: set_pdata_int(ent, OFFSET_SHELL, shotgunShell, OFFSET_ITEM_LINUX);
 		case CSW_ELITE: return;
-		default: set_pdata_int(ent, 57, shellRifle, 4);
+		default: set_pdata_int(ent, OFFSET_SHELL, shellRifle, OFFSET_ITEM_LINUX);
 	}
 
-	if (get_pdata_int(ent, 74, 4) & WPNSTATE_FAMAS_BURST_MODE || get_pdata_int(ent, 74, 4) & WPNSTATE_GLOCK18_BURST_MODE) {
+	if (get_pdata_int(ent, OFFSET_SILENCER, OFFSET_ITEM_LINUX) & WPNSTATE_FAMAS_BURST_MODE || get_pdata_int(ent, OFFSET_SILENCER, OFFSET_ITEM_LINUX) & WPNSTATE_GLOCK18_BURST_MODE) {
 		set_task(0.1, "eject_shell", id + TASK_SHELL);
 	}
 
@@ -2667,7 +2669,7 @@ public eject_shell(id)
 
 	if (!is_user_alive(id)) return;
 
-	set_pdata_float(id, 111, get_gametime(), 5);
+	set_pdata_float(id, OFFSET_EJECT, get_gametime(), OFFSET_PLAYER_LINUX);
 }
 
 stock get_weapon_skin(id, weapon)

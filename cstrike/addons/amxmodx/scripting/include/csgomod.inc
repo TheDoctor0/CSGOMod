@@ -11,7 +11,27 @@
 #define set_bit(%2,%1) (%1 |= (1<<(%2&31)))
 #define rem_bit(%2,%1) (%1 &= ~(1 <<(%2&31)))
 
-#define weapon_entity(%0) (get_pdata_int(%0, 43, 4))
+#define OFFSET_ITEM_LINUX  4
+#define OFFSET_PLAYER_LINUX  5
+#define OFFSET_LAST_EVENT_CHECK 38
+#define OFFSET_PLAYER 41
+#define OFFSET_ID 43
+#define OFFSET_EMPTY_SOUND 44
+#define OFFSET_PRIMARY_ATTACK 46
+#define OFFSET_WEAPON_IDLE 48
+#define OFFSET_CLIP 51
+#define OFFSET_CLIENT_CLIP 52
+#define OFFSET_SHELL 57
+#define OFFSET_SHOTS_FIRED 64
+#define OFFSET_SILENCER 74
+#define OFFSET_EJECT 111
+#define OFFSET_MENU 205
+#define OFFSET_BUTTON_PRESSED 246
+#define OFFSET_ACTIVE_ITEM 373
+#define OFFSET_AMMO 376
+#define OFFSET_C4 385
+
+#define weapon_entity(%0) (get_pdata_int(%0, OFFSET_ID, OFFSET_ITEM_LINUX))
 #define is_user_valid(%1) (1 <= %1 <= MAX_PLAYERS)
 
 /**

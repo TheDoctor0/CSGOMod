@@ -3,6 +3,7 @@
 #include <fakemeta>
 #include <cstrike>
 #include <xs>
+#include <csgomod>
 
 #define PLUGIN "CS:GO Nades"
 #define VERSION "2.0"
@@ -28,7 +29,7 @@ public plugin_init()
 
 public grenade_deploy(weapon)
 {
-	static id; id = get_pdata_cbase(weapon, 41, 4);
+	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	if (!is_user_alive(id)) return HAM_IGNORED;
 
@@ -40,7 +41,7 @@ public grenade_deploy(weapon)
 public grenade_secondary_attack(const ent)
 {
 	if (pev_valid(ent)) {
-		new id = get_pdata_cbase(ent, 41, 4), buttons = pev(id, pev_button);
+		new id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX), buttons = pev(id, pev_button);
 
 		grenadeThrow[id] = (buttons & IN_ATTACK) ? MEDIUM : SHORT;
 

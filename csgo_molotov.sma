@@ -192,7 +192,7 @@ public buy_molotov(id)
 	cs_set_user_money(id, money - molotovPrice);
 
 	if (get_user_weapon(id) == CSW_HEGRENADE) {
-		new weapon = get_pdata_cbase(id, 373);
+		new weapon = get_pdata_cbase(id, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
 
 		ExecuteHamB(Ham_Item_Deploy, weapon);
 	} else {
@@ -242,7 +242,7 @@ public event_new_round()
 
 public molotov_deploy_model(weapon)
 {
-	static id; id = get_pdata_cbase(weapon, 41, 4);
+	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	if (!is_user_alive(id) || !molotovEnabled || !get_bit(id, molotov)) return HAM_IGNORED;
 

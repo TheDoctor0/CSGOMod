@@ -2,6 +2,7 @@
 #include <engine>
 #include <cstrike>
 #include <fakemeta>
+#include <csgomod>
 
 #define PLUGIN	"CS:GO No Distractions"
 #define VERSION	"2.0"
@@ -9,10 +10,7 @@
 
 #define Menu_BuyItem 10
 
-const m_iMenuCode = 205;
-
-new const shield[] = "shield";
-new const nightvision[] = "nightvision";
+new const shield[] = "shield", nightvision[] = "nightvision";
 
 new textMsgId;
 
@@ -37,13 +35,13 @@ public menu_select_shield(id)
 
 public menu_select(id, const type[])
 {
-	if (is_user_alive(id) && get_pdata_int(id, m_iMenuCode) == Menu_BuyItem && cs_get_user_team(id) == CS_TEAM_CT) {
+	if (is_user_alive(id) && get_pdata_int(id, OFFSET_MENU) == Menu_BuyItem && cs_get_user_team(id) == CS_TEAM_CT) {
 		new oldMenu, newMenu;
 
 		player_menu_info(id, oldMenu, newMenu);
 
 		if (newMenu != -1 || oldMenu > 0) {
-			set_pdata_int(id, m_iMenuCode, 0);
+			set_pdata_int(id, OFFSET_MENU, 0);
 		} else {
 			message_not_available(id, type);
 

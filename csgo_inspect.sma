@@ -62,7 +62,7 @@ public plugin_init()
 
 public deagle_reload(weapon)
 {
-	static id; id = get_pdata_cbase(weapon, 41, 4);
+	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	remove_task(id);
 
@@ -75,7 +75,7 @@ public deagle_reload(weapon)
 
 public deagle_override(weapon)
 {
-	static id; id = get_pdata_cbase(weapon, 41, 4);
+	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	remove_task(id);
 
@@ -90,18 +90,18 @@ public deagle_enable(id)
 	deagleDisable[id] = false;
 
 public knife_override(weapon)
-	set_pdata_float(weapon, 48, 0.8, 4);
+	set_pdata_float(weapon, OFFSET_WEAPON_IDLE, 0.8, OFFSET_ITEM_LINUX);
 
 public inspect_weapon(id)
 {
 	if (!is_user_alive(id) || cs_get_user_shield(id) || cs_get_user_zoom(id) > 1) return PLUGIN_HANDLED;
 
 	new weaponId = get_user_weapon(id);
-	static weapon; weapon = get_pdata_cbase(id, 373);
+	static weapon; weapon = get_pdata_cbase(id, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
 
 	if (weaponsWithoutInspect & (1<<weaponId)) return PLUGIN_HANDLED;
 
-	new animation = inspectAnimation[weaponId], currentAnimation = pev(get_pdata_cbase(weapon, 41, 4), pev_weaponanim);
+	new animation = inspectAnimation[weaponId], currentAnimation = pev(get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX), pev_weaponanim);
 
 	switch (weaponId) {
 		case CSW_M4A1: {
@@ -126,7 +126,7 @@ public inspect_weapon(id)
 
 stock play_inspect(id, weapon, animation)
 {
-	set_pdata_float(weapon, 48, 7.0, 4);
+	set_pdata_float(weapon, OFFSET_WEAPON_IDLE, 7.0, OFFSET_ITEM_LINUX);
 	set_pev(id, pev_weaponanim, animation);
 
 	message_begin(MSG_ONE_UNRELIABLE, SVC_WEAPONANIM, {0, 0, 0}, id);

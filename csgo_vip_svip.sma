@@ -688,7 +688,7 @@ public handle_ammo(iMsgId, iMsgDest, id)
 
 		if (get_msg_arg_int(2) < ammo) {
 			set_msg_arg_int(2, ARG_BYTE, ammo);
-			set_pdata_int(id, 376 + ammoID, ammo, 5);
+			set_pdata_int(id, OFFSET_AMMO + ammoID, ammo, OFFSET_PLAYER_LINUX);
 		}
 	}
 }
