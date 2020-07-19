@@ -2945,7 +2945,13 @@ stock set_skin(id, weapon[], skin[] = "", skinId = -1, active = 0)
 {
 	if (skinId >= ArraySize(skins) || skinId < -1) return;
 
-	playerData[id][ACTIVE][get_weapon_id(weapon)] = skinId;
+	new weaponId = get_weapon_id(weapon);
+
+	playerData[id][ACTIVE][weaponId] = skinId;
+
+	if (weaponId == CSW_KNIFE && is_user_alive(id)) {
+		ExecuteHamB(Ham_Item_Deploy, find_ent_by_owner(-1, weapon, id));
+	}
 
 	if (active && playerData[id][SKINS_LOADED]) {
 		new queryData[192], skinSafeName[64];
