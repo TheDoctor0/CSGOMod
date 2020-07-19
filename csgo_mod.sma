@@ -16,13 +16,14 @@
 #pragma dynamic 65536
 #pragma semicolon 1
 
-#define TASK_SKINS	3045
-#define TASK_DATA	4592
-#define TASK_AIM	5309
-#define TASK_AD		6234
-#define TASK_SHELL	7892
-#define TASK_SPEC   8012
-#define TASK_DEPLOY 9321
+#define TASK_SKINS	1045
+#define TASK_DATA	2592
+#define TASK_AIM	3309
+#define TASK_AD		4234
+#define TASK_SHELL	5892
+#define TASK_SPEC   6012
+#define TASK_DEPLOY 7321
+#define TASK_FORCE  8568
 
 #define WPNSTATE_USP_SILENCED		(1<<0)
 #define WPNSTATE_GLOCK18_BURST_MODE	(1<<1)
@@ -43,6 +44,8 @@
 #define SILENCED 	1
 
 #define OBSERVER	4
+
+#define NONE		-1
 
 new const commandSkins[][] = { "skiny", "say /skins", "say_team /skins", "say /skin", "say_team /skin", "say /skiny",
 	"say_team /skiny", "say /modele", "say_team /modele", "say /model", "say_team /model", "say /jackpot", "say_team /jackpot" };
@@ -76,7 +79,7 @@ new const traceBullets[][] = { "func_breakable", "func_wall", "func_door", "func
 new const defaultShell[] = "models/pshell.mdl",
 	      shotgunShell[] = "models/shotgunshell.mdl";
 
-enum _:tempInfo { WEAPON, WEAPONS, WEAPON_ENT, EXCHANGE_PLAYER, EXCHANGE_SKIN, EXCHANGE_FOR_SKIN, GIVE_PLAYER, SALE_SKIN };
+enum _:tempInfo { WEAPON, WEAPONS, WEAPON_ENT, EXCHANGE_PLAYER, EXCHANGE_SKIN, EXCHANGE_FOR_SKIN, GIVE_PLAYER, SALE_SKIN, BUY_SKIN, BUY_WEAPON, BUY_SUBMODEL, Float:COUNTDOWN };
 enum _:playerInfo { ACTIVE[CSW_P90 + 1], Float:MONEY, SKIN, SUBMODEL, bool:SKINS_LOADED, bool:DATA_LOADED, bool:EXCHANGE_BLOCKED, bool:MENU_BLOCKED, TEMP[tempInfo], NAME[32], SAFE_NAME[64] };
 enum _:playerSkinsInfo { SKIN_ID, SKIN_COUNT };
 enum _:skinsInfo { SKIN_NAME[64], SKIN_WEAPON[32], SKIN_MODEL[64], SKIN_SUBMODEL, SKIN_PRICE, SKIN_CHANCE };
@@ -85,7 +88,7 @@ enum _:marketInfo { MARKET_ID, MARKET_SKIN, MARKET_OWNER, Float:MARKET_PRICE };
 new playerData[MAX_PLAYERS + 1][playerInfo], Array:playerSkins[MAX_PLAYERS + 1], Float:randomSkinPrice[WEAPON_ALL + 1], overallSkinChance[WEAPON_ALL + 1], Array:skins, Array:weapons,
 	Array:market, Handle:sql, Handle:connection, marketSkins, multipleSkins, skinChance, skinChanceSVIP, Float:skinChancePerMember, maxMarketSkins, Float:marketCommision,
 	Float:killReward, Float:killHSReward, Float:bombReward, Float:defuseReward, Float:hostageReward, Float:winReward, minPlayers, bool:end, bool:sqlConnected,
-	sqlHost[64], sqlUser[64], sqlPassword[64], sqlDatabase[64];
+	sqlHost[64], sqlUser[64], sqlPassword[64], sqlDatabase[64], force;
 
 native csgo_get_zeus(id);
 
@@ -374,11 +377,13 @@ public client_disconnected(id)
 
 public client_putinserver(id)
 {
-	for (new i = 1; i <= CSW_P90; i++) playerData[id][ACTIVE][i] = -1;
+	for (new i = 1; i <= CSW_P90; i++) playerData[id][ACTIVE][i] = NONE;
 
 	playerData[id][MONEY] = 0.0;
-	playerData[id][SKIN] = -1;
+	playerData[id][SKIN] = NONE;
 	playerData[id][SUBMODEL] = 0;
+
+	rem_bit(id, force);
 
 	ArrayClear(playerSkins[id]);
 
@@ -551,7 +556,7 @@ public choose_weapon_menu(id, type)
 			if (equal(weapon, skin[SKIN_WEAPON])) {
 				skinCount++;
 
-				if (has_skin(id, i, 1) != -1) {
+				if (has_skin(id, i, 1) != NONE) {
 					playerSkinCount++;
 				}
 			}
@@ -621,7 +626,7 @@ public set_weapon_skin(id, weapon[])
 		if (equal(weapon, skin[SKIN_WEAPON])) {
 			skinId = has_skin(id, i, 1);
 
-			if (skinId == -1) continue;
+			if (skinId == NONE) continue;
 
 			skinsCount = 0;
 
@@ -761,17 +766,102 @@ public buy_weapon_skin_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	playerData[id][MONEY] -= skin[SKIN_PRICE];
+	playerData[id][TEMP][BUY_SKIN] = skinId;
+	playerData[id][TEMP][BUY_SUBMODEL] = skin[SKIN_SUBMODEL];
+	playerData[id][TEMP][BUY_WEAPON] = get_weapon_id(skin[SKIN_WEAPON]);
 
-	save_data(id);
+	buy_weapon_skin_confirm(id);
 
-	add_skin(id, skinId, skin[SKIN_WEAPON], skin[SKIN_NAME]);
+	return PLUGIN_HANDLED;
+}
 
-	client_print_color(id, id, "^x04[CS:GO]^x01 Pomyslnie zakupiles skin^x03 %s^x01 do broni^x03 %s^x01.", skin[SKIN_NAME], skin[SKIN_WEAPON]);
+public buy_weapon_skin_confirm(id)
+{
+	new skin[skinsInfo], menuData[256];
 
-	log_to_file("csgo-buy.log", "Gracz %s kupil skina %s (%s)", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON]);
+	ArrayGetArray(skins, playerData[id][TEMP][BUY_SKIN], skin);
 
-	skins_menu(id);
+	formatex(menuData, charsmax(menuData), "\yPotwierdzenie \rzakupu^n\wCzy na pewno chcesz \ykupic\w tego skina?^nBron: \y%s\w^nNazwa: \y%s\w^nCena: \y%i Euro", skin[SKIN_WEAPON], skin[SKIN_NAME], skin[SKIN_PRICE]);
+
+	new menu = menu_create(menuData, "buy_weapon_skin_confirm_handle");
+
+	menu_additem(menu, "\yWyprobuj");
+	menu_additem(menu, "\rKup^n");
+	menu_additem(menu, "Wroc");
+
+	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+
+	menu_display(id, menu);
+
+	return PLUGIN_HANDLED;
+}
+
+public buy_weapon_skin_confirm_handle(id, menu, item)
+{
+	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+
+	if (item == MENU_EXIT) {
+		menu_destroy(menu);
+
+		return PLUGIN_HANDLED;
+	}
+
+	if (!multipleSkins && has_skin(id, playerData[id][TEMP][BUY_SKIN])) {
+		client_print_color(id, id, "^x04[CS:GO]^x01 Juz posiadasz ten skin!");
+
+		return PLUGIN_HANDLED;
+	}
+
+	switch (item) {
+		case 0: {
+			set_bit(id, force);
+
+			set_pev(id, pev_viewmodel2, "");
+
+			set_task(0.1, "deploy_weapon_switch", id + TASK_DEPLOY);
+
+			playerData[id][TEMP][COUNTDOWN] = get_gametime();
+
+			set_task(0.1, "show_countdown", id + TASK_FORCE, .flags = "b");
+
+			buy_weapon_skin_confirm(id);
+
+			return PLUGIN_HANDLED;
+		} case 1: {
+			new skin[skinsInfo];
+
+			ArrayGetArray(skins, playerData[id][TEMP][BUY_SKIN], skin);
+
+			if (playerData[id][MONEY] < skin[SKIN_PRICE]) {
+				client_print_color(id, id, "^x04[CS:GO]^x01 Nie masz wystarczajacej ilosci^x03 pieniedzy^x01.");
+
+				return PLUGIN_HANDLED;
+			}
+
+			playerData[id][MONEY] -= skin[SKIN_PRICE];
+
+			save_data(id);
+
+			add_skin(id, playerData[id][TEMP][BUY_SKIN], skin[SKIN_WEAPON], skin[SKIN_NAME]);
+
+			client_print_color(id, id, "^x04[CS:GO]^x01 Pomyslnie zakupiles skin^x03 %s^x01 do broni^x03 %s^x01.", skin[SKIN_NAME], skin[SKIN_WEAPON]);
+
+			log_to_file("csgo-buy.log", "Gracz %s kupil skina %s (%s)", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON]);
+
+			skins_menu(id);
+		} case 2: {
+			choose_weapon_menu(id, 1);
+		}
+	}
+
+
+	if (task_exists(id + TASK_FORCE)) {
+		client_print(id, print_center, "");
+
+		remove_task(id + TASK_FORCE);
+
+		reset_skin(id);
+	}
 
 	return PLUGIN_HANDLED;
 }
@@ -1006,7 +1096,7 @@ public exchange_skin_handle(id, menu, item)
 
 	menu_destroy(menu);
 
-	if (has_skin(id, playerData[id][TEMP][EXCHANGE_SKIN], 1) == -1) {
+	if (has_skin(id, playerData[id][TEMP][EXCHANGE_SKIN], 1) == NONE) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Nie masz juz skina, za ktory chcialbys sie zamienic.");
 
 		return PLUGIN_HANDLED;
@@ -1081,7 +1171,7 @@ public exchange_for_skin_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	if (has_skin(player, playerData[id][TEMP][EXCHANGE_FOR_SKIN], 1) == -1) {
+	if (has_skin(player, playerData[id][TEMP][EXCHANGE_FOR_SKIN], 1) == NONE) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Wybrany gracz nie ma juz tego skina.");
 
 		return PLUGIN_HANDLED;
@@ -1112,13 +1202,13 @@ public exchange_question_handle(id, key)
 		return PLUGIN_HANDLED;
 	}
 
-	if (has_skin(player, exchangeSkin, 1) == -1) {
+	if (has_skin(player, exchangeSkin, 1) == NONE) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Gracz proponujacy wymiane nie ma juz tego skina.");
 
 		return PLUGIN_HANDLED;
 	}
 
-	if (has_skin(id, exchangeForSkin, 1) == -1) {
+	if (has_skin(id, exchangeForSkin, 1) == NONE) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Nie masz juz zapronowanego w wymianie skina.");
 
 		return PLUGIN_HANDLED;
@@ -1276,7 +1366,7 @@ public give_skin_handle(id, menu, item)
 
 	menu_destroy(menu);
 
-	if (has_skin(id, skinId, 1) == -1) {
+	if (has_skin(id, skinId, 1) == NONE) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Nie masz juz skina, ktorego mialbys oddac.");
 
 		return PLUGIN_HANDLED;
@@ -1426,7 +1516,7 @@ public market_sell_skin_handle(id, menu, item)
 
 	menu_destroy(menu);
 
-	if (has_skin(id, playerData[id][SALE_SKIN], 1) == -1) {
+	if (has_skin(id, playerData[id][SALE_SKIN], 1) == NONE) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Nie masz juz tego skina.");
 
 		return PLUGIN_HANDLED;
@@ -1445,7 +1535,7 @@ public set_skin_price(id)
 {
 	if (!csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
-	if (has_skin(id, playerData[id][SALE_SKIN], 1) == -1) {
+	if (has_skin(id, playerData[id][SALE_SKIN], 1) == NONE) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Nie masz juz tego skina.");
 
 		return PLUGIN_HANDLED;
@@ -1919,7 +2009,7 @@ public message_intermission()
 
 public set_fov(id)
 {
-	if (playerData[id][SKIN] > -1 && (!playerData[id][TEMP][WEAPON_ENT] || is_valid_ent(playerData[id][TEMP][WEAPON_ENT])) && (playerData[id][TEMP][WEAPON] == CSW_AWP || playerData[id][TEMP][WEAPON] == CSW_SCOUT)) {
+	if (playerData[id][SKIN] > NONE && (!playerData[id][TEMP][WEAPON_ENT] || is_valid_ent(playerData[id][TEMP][WEAPON_ENT])) && (playerData[id][TEMP][WEAPON] == CSW_AWP || playerData[id][TEMP][WEAPON] == CSW_SCOUT)) {
 		switch (read_data(1)) {
 			case 10..55: {
 				if (playerData[id][TEMP][WEAPON] == CSW_AWP) {
@@ -1938,6 +2028,38 @@ public set_fov(id)
 	}
 }
 
+public show_countdown(id)
+{
+	id -= TASK_FORCE;
+
+	new Float:currentTime = (playerData[id][TEMP][COUNTDOWN] + 5.0) - get_gametime();
+
+	if (currentTime <= 0.0) {
+		client_print(id, print_center, "");
+
+		remove_task(id + TASK_FORCE);
+
+		reset_skin(id);
+
+		return;
+	}
+
+	client_print(id, print_center, "Skin zostanie zresetowany za %0.1fs", currentTime);
+}
+
+public reset_skin(id)
+{
+	rem_bit(id, force);
+
+	if (!is_user_alive(id)) return;
+
+	static weaponName[32];
+
+	get_weaponname(playerData[id][TEMP][WEAPON], weaponName, charsmax(weaponName));
+
+	ExecuteHamB(Ham_Item_Deploy, find_ent_by_owner(NONE, weaponName, id));
+}
+
 public client_command(id)
 {
 	static weapons[32], weaponsNum;
@@ -1954,7 +2076,7 @@ public event_money(id)
 	new newWeapon = playerData[id][TEMP][WEAPONS] & ~oldWeapons;
 
 	if (newWeapon) {
-		new x = -1;
+		new x = NONE;
 		do ++x; while ((newWeapon /= 2) >= 1);
 
 		ExecuteHamB(Ham_GiveAmmo, id, maxBPAmmo[x], ammoType[x], maxBPAmmo[x]);
@@ -1992,9 +2114,7 @@ public weapon_send_weapon_anim_post(ent, animation, skipLocal)
 	switch (weapon) {
 		case CSW_C4, CSW_HEGRENADE, CSW_FLASHBANG, CSW_SMOKEGRENADE: return HAM_IGNORED;
 		default: {
-			if (weapon == CSW_P228 && csgo_get_zeus(id)) return HAM_IGNORED;
-
-			send_weapon_animation(id, playerData[id][SUBMODEL], animation);
+			send_weapon_animation(id, get_bit(id, force) ? playerData[id][TEMP][BUY_SUBMODEL] : playerData[id][SUBMODEL], animation);
 		}
 	}
 
@@ -2126,7 +2246,7 @@ public update_client_data_post(id, sendWeapons, handleCD)
 
 			new data[3];
 			data[0] = id;
-			data[1] = playerData[target][SUBMODEL];
+			data[1] = get_bit(target, force) ? playerData[target][TEMP][BUY_SUBMODEL] : playerData[target][SUBMODEL];
 			data[2] = 0;
 
 			set_task(0.1, "observer_animation", id + TASK_SPEC, data, sizeof(data));
@@ -2141,7 +2261,11 @@ public update_client_data_post(id, sendWeapons, handleCD)
 	}
 
 	if (lastEventCheck <= gameTime) {
-		send_weapon_animation(target, playerData[target][SUBMODEL], get_weapon_draw_animation(ent));
+		if (get_bit(target, force)) {
+			send_weapon_animation(target, playerData[target][TEMP][BUY_SUBMODEL], get_weapon_draw_animation(ent, playerData[target][TEMP][BUY_WEAPON]));
+		} else {
+			send_weapon_animation(target, playerData[target][SUBMODEL], get_weapon_draw_animation(ent));
+		}
 
 		set_pdata_float(ent, 38, 0.0, 4);
 	}
@@ -2269,7 +2393,7 @@ stock change_skin(id, weapon, ent = 0)
 {
 	remove_task(id + TASK_DEPLOY);
 
-	playerData[id][SKIN] = -1;
+	playerData[id][SKIN] = NONE;
 	playerData[id][SUBMODEL] = 0;
 	playerData[id][TEMP][WEAPON_ENT] = 0;
 
@@ -2289,7 +2413,7 @@ stock change_skin(id, weapon, ent = 0)
 
 			weaponSkin = entity_get_int(ent, EV_INT_iuser2);
 
-			if (weaponSkin > -1) {
+			if (weaponSkin > NONE) {
 				static weaponName[32];
 
 				ArrayGetArray(skins, weaponSkin, skin);
@@ -2301,7 +2425,7 @@ stock change_skin(id, weapon, ent = 0)
 
 				if (weapon != get_weapon_id(skin[SKIN_WEAPON])) {
 					entity_set_int(ent, EV_INT_iuser1, 0);
-					entity_set_int(ent, EV_INT_iuser2, -1);
+					entity_set_int(ent, EV_INT_iuser2, NONE);
 				}
 			}
 
@@ -2311,7 +2435,7 @@ stock change_skin(id, weapon, ent = 0)
 		}
 	}
 
-	if (playerData[id][ACTIVE][weapon] > -1) {
+	if (playerData[id][ACTIVE][weapon] > NONE) {
 		ArrayGetArray(skins, playerData[id][ACTIVE][weapon], skin);
 
 		playerData[id][SKIN] = playerData[id][ACTIVE][weapon];
@@ -2331,7 +2455,12 @@ public deploy_weapon_switch(id)
 
 	if (!weapon || !pev_valid(weapon)) return;
 
-	if (playerData[id][SKIN] > -1) {
+	if (get_bit(id, force) && playerData[id][TEMP][BUY_SKIN] > NONE) {
+		ArrayGetArray(skins, playerData[id][TEMP][BUY_SKIN], skin);
+
+		set_pev(id, pev_viewmodel2, skin[SKIN_MODEL]);
+		set_pev(id, pev_body, skin[SKIN_SUBMODEL]);
+	} else if (playerData[id][SKIN] > NONE) {
 		ArrayGetArray(skins, playerData[id][SKIN], skin);
 
 		set_pev(id, pev_viewmodel2, skin[SKIN_MODEL]);
@@ -2377,9 +2506,9 @@ stock send_weapon_animation(id, submodel, animation = 0)
 	}
 }
 
-stock get_weapon_draw_animation(entity)
+stock get_weapon_draw_animation(entity, temp = NONE)
 {
-	static animation, weaponState;
+	static animation, weaponState, weapon;
 
 	if (get_pdata_int(entity, 74, 4) & WPNSTATE_USP_SILENCED || get_pdata_int(entity, 74, 4) & WPNSTATE_M4A1_SILENCED) {
 		weaponState = SILENCED;
@@ -2387,7 +2516,9 @@ stock get_weapon_draw_animation(entity)
 		weaponState = UNSILENCED;
 	}
 
-	switch (weapon_entity(entity)) {
+	weapon = temp != NONE ? temp : weapon_entity(entity);
+
+	switch (weapon) {
 		case CSW_P228, CSW_XM1014, CSW_M3: animation = 6;
 		case CSW_SCOUT, CSW_SG550, CSW_M249, CSW_G3SG1: animation = 4;
 		case CSW_MAC10, CSW_AUG, CSW_UMP45, CSW_GALIL, CSW_FAMAS, CSW_MP5NAVY, CSW_TMP, CSW_SG552, CSW_AK47, CSW_P90: animation = 2;
@@ -2541,13 +2672,13 @@ public eject_shell(id)
 
 stock get_weapon_skin(id, weapon)
 {
-	if (!is_user_connected(id) || is_user_hltv(id) || is_user_bot(id) || weapon == CSW_HEGRENADE || weapon == CSW_SMOKEGRENADE || weapon == CSW_FLASHBANG || weapon == CSW_C4 || !weapon || weapon > CSW_P90) return -1;
+	if (!is_user_connected(id) || is_user_hltv(id) || is_user_bot(id) || weapon == CSW_HEGRENADE || weapon == CSW_SMOKEGRENADE || weapon == CSW_FLASHBANG || weapon == CSW_C4 || !weapon || weapon > CSW_P90) return NONE;
 
-	if (playerData[id][ACTIVE][weapon] > -1) {
+	if (playerData[id][ACTIVE][weapon] > NONE) {
 		return playerData[id][ACTIVE][weapon];
 	}
 
-	return -1;
+	return NONE;
 }
 
 public load_data(id)
@@ -2663,14 +2794,14 @@ public load_skins_handle(failState, Handle:query, error[], errorNum, playerId[],
 		SQL_ReadResult(query, SQL_FieldNameToNum(query, "skin"), skin[SKIN_NAME], charsmax(skin[SKIN_NAME]));
 		SQL_ReadResult(query, SQL_FieldNameToNum(query, "weapon"), skin[SKIN_WEAPON], charsmax(skin[SKIN_WEAPON]));
 
-		if (contain(skin[SKIN_WEAPON], "ACTIVE") != -1) {
+		if (contain(skin[SKIN_WEAPON], "ACTIVE") != NONE) {
 			replace(skin[SKIN_WEAPON], charsmax(skin[SKIN_WEAPON]), " ACTIVE", "");
 
 			set_skin(id, skin[SKIN_WEAPON], skin[SKIN_NAME], get_skin_id(skin[SKIN_NAME], skin[SKIN_WEAPON]));
 		} else {
 			new skinId = get_skin_id(skin[SKIN_NAME], skin[SKIN_WEAPON]);
 
-			if (skinId > -1) {
+			if (skinId > NONE) {
 				static playerSkin[playerSkinsInfo];
 
 				playerSkin[SKIN_ID] = skinId;
@@ -2726,7 +2857,7 @@ public _csgo_get_skin_name(skin, dataReturn[], dataLength)
 {
 	param_convert(2);
 
-	if (skin > -1) get_skin_info(skin, SKIN_NAME, dataReturn, dataLength);
+	if (skin > NONE) get_skin_info(skin, SKIN_NAME, dataReturn, dataLength);
 	else formatex(dataReturn, dataLength, "Domyslny");
 }
 
@@ -2736,14 +2867,14 @@ public _csgo_get_current_skin_name(id, dataReturn[], dataLength)
 
 	if (get_weapon_skin_name(id, playerData[id][TEMP][WEAPON_ENT], dataReturn, dataLength, 0, 1)) return;
 
-	if (playerData[id][SKIN] > -1) get_skin_info(playerData[id][SKIN], SKIN_NAME, dataReturn, dataLength);
+	if (playerData[id][SKIN] > NONE) get_skin_info(playerData[id][SKIN], SKIN_NAME, dataReturn, dataLength);
 	else formatex(dataReturn, dataLength, "Domyslny");
 }
 
 stock get_weapon_skin_name(id, ent, dataReturn[], dataLength, weapon = 0, check = 0)
 {
 	static ownerName[32], weaponName[32], skinWeapon[32], weaponOwner, weaponSkin;
-	weaponOwner = 0, weaponSkin = -1;
+	weaponOwner = 0, weaponSkin = NONE;
 
 	if (is_valid_ent(ent)) {
 		weaponOwner = entity_get_int(ent, EV_INT_iuser1);
@@ -2751,14 +2882,14 @@ stock get_weapon_skin_name(id, ent, dataReturn[], dataLength, weapon = 0, check 
 		if (is_user_connected(weaponOwner) && !is_user_hltv(weaponOwner) && !is_user_bot(weaponOwner)) {
 			weaponSkin = entity_get_int(ent, EV_INT_iuser2);
 
-			if (weaponSkin > -1) {
+			if (weaponSkin > NONE) {
 				get_skin_info(weaponSkin, SKIN_WEAPON, skinWeapon, charsmax(skinWeapon));
 
 				if (!weapon || weapon == get_weapon_id(skinWeapon)) {
 					get_skin_info(weaponSkin, SKIN_NAME, dataReturn, dataLength);
 				} else {
 					entity_set_int(ent, EV_INT_iuser1, 0);
-					entity_set_int(ent, EV_INT_iuser2, -1);
+					entity_set_int(ent, EV_INT_iuser2, NONE);
 
 					formatex(dataReturn, dataLength, "Domyslny");
 				}
@@ -2860,14 +2991,14 @@ stock has_skin(id, skin, check = 0)
 		if (get_player_skin_info(id, i, SKIN_ID) == skin) return check ? i : 1;
 	}
 
-	return check ? -1 : 0;
+	return check ? NONE : 0;
 }
 
 stock change_local_skin(id, skinId, add = 0)
 {
 	new playerSkin[playerSkinsInfo], skinIndex = has_skin(id, skinId, 1);
 
-	if (skinIndex > -1) {
+	if (skinIndex > NONE) {
 		ArrayGetArray(playerSkins[id], skinIndex, playerSkin);
 
 		if (!add) {
@@ -2934,23 +3065,25 @@ stock add_skin(id, skinId, weapon[], skin[])
 
 	SQL_ThreadQuery(sql, "ignore_handle", queryData);
 
-	if (skinId > -1) {
+	if (skinId > NONE) {
 		change_local_skin(id, skinId, 1);
 
-		if (playerData[id][ACTIVE][get_weapon_id(weapon)] == -1) set_skin(id, weapon, skin, skinId, 1);
+		if (playerData[id][ACTIVE][get_weapon_id(weapon)] == NONE) {
+			set_skin(id, weapon, skin, skinId, 1);
+		}
 	}
 }
 
-stock set_skin(id, weapon[], skin[] = "", skinId = -1, active = 0)
+stock set_skin(id, weapon[], skin[] = "", skinId = NONE, active = 0)
 {
-	if (skinId >= ArraySize(skins) || skinId < -1) return;
+	if (skinId >= ArraySize(skins) || skinId < NONE) return;
 
 	new weaponId = get_weapon_id(weapon);
 
 	playerData[id][ACTIVE][weaponId] = skinId;
 
-	if (weaponId == CSW_KNIFE && is_user_alive(id)) {
-		ExecuteHamB(Ham_Item_Deploy, find_ent_by_owner(-1, weapon, id));
+	if (playerData[id][TEMP][WEAPON] == weaponId) {
+		reset_skin(id);
 	}
 
 	if (active && playerData[id][SKINS_LOADED]) {
@@ -2974,7 +3107,7 @@ stock get_skin_id(const name[], const weapon[])
 		if (equal(name, skin[SKIN_NAME]) && equal(weapon, skin[SKIN_WEAPON])) return i;
 	}
 
-	return -1;
+	return NONE;
 }
 
 stock get_skin_info(skinId, info, dataReturn[] = "", dataLength = 0)
@@ -3026,7 +3159,7 @@ stock check_market_skin(marketId, skinId, ownerId)
 		if (marketSkin[MARKET_ID] == marketId && marketSkin[MARKET_SKIN] == skinId && marketSkin[MARKET_OWNER] == ownerId) return i;
 	}
 
-	return -1;
+	return NONE;
 }
 
 stock remove_seller(id)
