@@ -84,8 +84,6 @@ enum _:playerInfo { ACTIVE[CSW_P90 + 1], Float:MONEY, SKIN, SUBMODEL, bool:SKINS
 enum _:playerSkinsInfo { SKIN_ID, SKIN_COUNT };
 enum _:skinsInfo { SKIN_NAME[64], SKIN_WEAPON[32], SKIN_MODEL[64], SKIN_SUBMODEL, SKIN_PRICE, SKIN_CHANCE };
 enum _:marketInfo { MARKET_ID, MARKET_SKIN, MARKET_OWNER, Float:MARKET_PRICE };
-enum _:offsets { OFFSET_ITEM_LINUX = 4, OFFSET_PLAYER_LINUX = 5, OFFSET_LAST_EVENT_CHECK = 38, OFFSET_PLAYER = 41, OFFSET_ID = 43, OFFSET_PRIMARY_ATTACK = 46,
-	OFFSET_CLIP = 51, OFFSET_SHELL = 57, OFFSET_SHOTS_FIRED = 64, OFFSET_SILENCER = 74, OFFSET_EJECT = 111, OFFSET_ACTIVE_ITEM = 373 };
 
 new playerData[MAX_PLAYERS + 1][playerInfo], Array:playerSkins[MAX_PLAYERS + 1], Float:randomSkinPrice[WEAPON_ALL + 1], overallSkinChance[WEAPON_ALL + 1], Array:skins, Array:weapons,
 	Array:market, Handle:sql, Handle:connection, marketSkins, multipleSkins, skinChance, skinChanceSVIP, Float:skinChancePerMember, maxMarketSkins, Float:marketCommision,
