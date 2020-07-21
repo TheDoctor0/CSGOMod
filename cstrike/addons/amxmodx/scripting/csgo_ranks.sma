@@ -480,7 +480,7 @@ public player_spawn(id)
 {
 	if (!is_user_alive(id)) return;
 
-	if (!task_exists(id + TASK_HUD)) set_task(1.0, "display_hud", id + TASK_HUD, .flags="b");
+	if (!task_exists(id + TASK_HUD)) set_task(0.1, "display_hud", id + TASK_HUD, .flags="b");
 
 	if (!get_bit(id, visit)) set_task(3.0, "check_time", id + TASK_TIME);
 
