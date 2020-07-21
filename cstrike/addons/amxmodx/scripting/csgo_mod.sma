@@ -565,7 +565,7 @@ public choose_weapon_menu(id, type)
 		formatex(menuData, charsmax(menuData), "%s \y[\r%i \y/ \r%i\y]", weapon, playerSkinCount, skinCount);
 		formatex(itemData, charsmax(itemData), "%s#%i", weapon, type);
 
-		if (type != 2 || randomSkinPrice[get_weapon_id(menuData)] > 0.0) {
+		if (type != 2 || randomSkinPrice[get_weapon_id(weapon)] > 0.0) {
 			menu_additem(menu, menuData, itemData);
 
 			count++;
