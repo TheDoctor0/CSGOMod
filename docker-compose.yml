@@ -1,0 +1,43 @@
+version: '2.1'
+
+networks:
+  csgomod:
+    driver: bridge
+
+services:
+  server:
+    depends_on:
+      mysql:
+        condition: service_healthy
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - csgomod
+    ports:
+      - "27015:27015"
+      - "27016:27015/tcp"
+      - "27015:27015/udp"
+      - "27016:27015/udp"
+      - "26900:26900/udp"
+      - "27020:27020/udp"
+    environment:
+      - RCON_PASSWORD=""
+      - SV_PASSWORD=""
+      - HOST_NAME="Development"
+      - MAP_NAME="de_dust2"
+      - MAX_PLAYERS="32"
+      - START_OPTIONS="+sv_lan 1 -debug"
+  mysql:
+    image: 'bitnami/mariadb:latest'
+    networks:
+      - csgomod
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - MARIADB_USER=user
+      - MARIADB_PASSWORD=password
+      - MARIADB_DATABASE=database
