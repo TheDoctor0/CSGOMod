@@ -146,7 +146,7 @@ public ignore_handle(failState, Handle:query, error[], errorNum, data[], dataSiz
 
 public sql_init()
 {
-	new host[64], user[64], pass[64], db[64], queryData[1024], error[128], queryTemp[64], weaponName[32], errorNum;
+	new host[64], user[64], pass[64], db[64], queryData[2048], error[128], queryTemp[64], weaponName[32], errorNum;
 
 	get_cvar_string("csgo_sql_host", host, charsmax(host));
 	get_cvar_string("csgo_sql_user", user, charsmax(user));
@@ -170,7 +170,7 @@ public sql_init()
 
 		get_weaponname(weapon, weaponName, charsmax(weaponName));
 
-		formatex(queryTemp, charsmax(queryTemp), "`%s` int(10) NOT NULL, ", weaponName);
+		formatex(queryTemp, charsmax(queryTemp), "`%s` int(10) NOT NULL DEFAULT(0), ", weaponName);
 
 		add(queryData, charsmax(queryData), queryTemp);
 	}
