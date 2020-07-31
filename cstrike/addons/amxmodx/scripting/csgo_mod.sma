@@ -2212,6 +2212,8 @@ public set_model(ent, model[])
 
 public update_client_data_post(id, sendWeapons, handleCD)
 {
+	if (!pev_valid(id)) return FMRES_IGNORED;
+
 	enum { SPEC_MODE, SPEC_TARGET, SPEC_END };
 
 	static specInfo[MAX_PLAYERS + 1][SPEC_END], Float:gameTime, Float:lastEventCheck, specMode, ent, weapon, target, owner;
