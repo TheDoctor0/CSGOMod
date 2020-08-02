@@ -324,7 +324,7 @@ public members_online_menu(id)
 	new menu = menu_create("\yCzlonkowie \rOnline:", "members_online_menu_handle");
 
 	for (new player = 1; player <= MAX_PLAYERS; player++) {
-		if (!is_user_connected(id) || clan[id] != clan[player]) continue;
+		if (!is_user_connected(player) || clan[id] != clan[player]) continue;
 
 		playersAvailable++;
 
@@ -504,7 +504,7 @@ public leader_menu_handle(id, menu, item)
 			get_user_name(id, name, charsmax(name));
 
 			for (new player = 1; player <= MAX_PLAYERS; player++) {
-				if (!is_user_connected(id) || player == id || clan[player] != clan[id]) continue;
+				if (!is_user_connected(player) || player == id || clan[player] != clan[id]) continue;
 
 				client_print_color(player, player, "^x04[CS:GO]^x03 %s^x01 rozbudowal klan do^x03 %i Poziomu^x01!", name, csgoClan[CLAN_LEVEL]);
 			}
