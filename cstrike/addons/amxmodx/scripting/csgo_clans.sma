@@ -296,7 +296,7 @@ public leave_confim_menu_handle(id, menu, item)
 	switch (item) {
 		case 0: {
 			if (get_user_status(id) == STATUS_LEADER) {
-				client_print_color(id, id, "^x04[CS:GO]^x01 Oddaj przywodctwo klanu jednemu z czlonkow zanim go upuscisz.");
+				client_print_color(id, id, "^x04[CS:GO]^x01 Oddaj przywodctwo klanu jednemu z czlonkow zanim go opuscisz.");
 
 				show_clan_menu(id);
 
