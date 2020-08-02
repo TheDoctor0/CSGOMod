@@ -692,7 +692,7 @@ public invite_confirm_menu_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	if (get_clan_money(clan[id]) < cvarJoinFee) {
+	if (get_clan_money(clan[player]) < cvarJoinFee) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 W banku klanu nie ma wystarczajaco pieniedzy na oplate wpisowa (^x04Wymagane %i Euro^x01).", floatround(cvarJoinFee));
 
 		return PLUGIN_HANDLED;
