@@ -452,7 +452,7 @@ public leader_menu(id)
 public leader_menu_callback(id, menu, item)
 {
 	switch (item) {
-		case 0: get_user_status(id) == STATUS_LEADER ? ITEM_ENABLED : ITEM_DISABLED;
+		case 0: if (get_user_status(id) != STATUS_LEADER) return ITEM_DISABLED;
 		case 2: if (((get_clan_info(clan[id], CLAN_LEVEL) * cvarMembersPerLevel) + cvarMembersStart) <= get_clan_info(clan[id], CLAN_MEMBERS)) return ITEM_DISABLED;
 		case 4: if (((get_clan_info(clan[id], CLAN_LEVEL) * cvarMembersPerLevel) + cvarMembersStart) <= get_clan_info(clan[id], CLAN_MEMBERS) || !get_applications_count(clan[id])) return ITEM_DISABLED;
 	}
