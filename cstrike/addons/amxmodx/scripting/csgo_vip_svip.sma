@@ -28,7 +28,7 @@ enum { ammo_none, ammo_338magnum = 1, ammo_762nato, ammo_556natobox, ammo_556nat
 
 new const maxBPAmmo[] = { 0, 30, 90, 200, 90, 32, 100, 100, 35, 52, 120, 2, 1, 1, 1 };
 
-enum _:{ FREE_HOURS, FREE_ALWAYS };
+enum _:{ FREE_NONE, FREE_HOURS, FREE_ALWAYS };
 enum _:{ FREE_VIP, FREE_SVIP };
 
 forward amxbans_admin_connect(id);
@@ -38,8 +38,8 @@ public plugin_init()
 	register_plugin(PLUGIN, VERSION, AUTHOR);
 
 	bind_pcvar_num(register_cvar("csgo_vip_svip_small_maps", "0"), smallMaps);
-	bind_pcvar_num(register_cvar("csgo_vip_svip_free_enabled", "0"), freeType);
-	bind_pcvar_num(register_cvar("csgo_vip_svip_free_type", "0"), freeEnabled);
+	bind_pcvar_num(register_cvar("csgo_vip_svip_free_enabled", "0"), freeEnabled);
+	bind_pcvar_num(register_cvar("csgo_vip_svip_free_type", "0"), freeType);
 	bind_pcvar_num(register_cvar("csgo_vip_svip_free_vip_from", "23"), freeFrom);
 	bind_pcvar_num(register_cvar("csgo_vip_svip_free_to", "9"), freeTo);
 
