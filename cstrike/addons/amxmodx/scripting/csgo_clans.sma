@@ -578,7 +578,7 @@ public invite_menu(id)
 	new menu = menu_create("\yWybierz \rGracza \ydo zaproszenia:", "invite_menu_handle");
 
 	for (new player = 1; player <= MAX_PLAYERS; player++) {
-		if (!is_user_connected(player) || is_user_hltv(player) || is_user_bot(id) || player == id || clan[player]) continue;
+		if (!is_user_connected(player) || is_user_hltv(player) || is_user_bot(player) || player == id || clan[player]) continue;
 
 		playersAvailable++;
 
@@ -2767,7 +2767,7 @@ stock create_clan(id, const clanName[])
 stock remove_clan(id)
 {
 	for (new player = 1; player <= MAX_PLAYERS; player++) {
-		if (!is_user_connected(player) || is_user_hltv(player) || is_user_bot(id) || player == id) continue;
+		if (!is_user_connected(player) || is_user_hltv(player) || is_user_bot(player) || player == id) continue;
 
 		if (clan[player] == clan[id]) {
 			clan[player] = 0;
