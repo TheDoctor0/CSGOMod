@@ -30,17 +30,15 @@ new const zeusWeaponName[] = "weapon_p228";
 new const beamSprite[] = "sprites/laserbeam.spr";
 new const worldModel[] = "models/w_p228.mdl";
 
+new const commandBuy[][] = { "say /zeus", "say_team /zeus", "say /z", "say_team /z", "zeus" };
+
 new Float:gameTime, bool:restarted, zeus, zeusEnabled, zeusPrice, mapBuyBlock, boltSprite;
 
 public plugin_init()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR);
 
-	register_clcmd("zeus", "buy_zeus");
-	register_clcmd("say /z", "buy_zeus");
-	register_clcmd("say_team /z", "buy_zeus");
-	register_clcmd("say /zeus", "buy_zeus");
-	register_clcmd("say_team /zeus", "buy_zeus");
+	for (new i; i < sizeof commandBuy; i++) register_clcmd(commandBuy[i], "buy_zeus");
 
 	bind_pcvar_num(create_cvar("csgo_zeus_enabled", "1"), zeusEnabled);
 	bind_pcvar_num(create_cvar("csgo_zeus_price", "300"), zeusPrice);

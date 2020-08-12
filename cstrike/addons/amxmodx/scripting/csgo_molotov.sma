@@ -37,6 +37,8 @@ new const sounds[][] = {
 
 new const molotovWeaponName[] = "weapon_hegrenade";
 
+new const commandBuy[][] = { "say /molotov", "say_team /molotov", "say /m", "say_team /m", "molotov" };
+
 new molotovEnabled, molotovPrice, Float:molotovRadius, Float:molotovFireTime, Float:molotovFireDamage;
 
 new molotov, molotovOffset[MAX_PLAYERS + 1], bool:restarted, bool:reset,
@@ -46,11 +48,7 @@ public plugin_init()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR);
 
-	register_clcmd("molotov", "buy_molotov");
-	register_clcmd("say /m", "buy_molotov");
-	register_clcmd("say_team /m", "buy_molotov");
-	register_clcmd("say /molotov", "buy_molotov");
-	register_clcmd("say_team /molotov", "buy_molotov");
+	for (new i; i < sizeof commandBuy; i++) register_clcmd(commandBuy[i], "buy_molotov");
 
 	bind_pcvar_num(create_cvar("csgo_molotov_enabled", "1"), molotovEnabled);
 	bind_pcvar_num(create_cvar("csgo_molotov_price", "500"), molotovPrice);
