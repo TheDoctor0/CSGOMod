@@ -7,7 +7,8 @@
 
 new Array:titles, Array:commands;
 
-new const menuCommands[][] = { "say /menu", "say_team /menu", "menu", "say /komendy", "say_team /komendy" };
+new const menuCommands[][] = { "say /menu", "say_team /menu", "menu", "say /komendy", "say_team /komendy",
+	"say /pomoc", "say_team /pomoc", "say /commands", "say_team /commands", "say /help", "say_team /help" };
 
 public plugin_init()
 {
@@ -26,7 +27,13 @@ public plugin_cfg()
 	get_localinfo("amxx_configsdir", filePath, charsmax(filePath));
 	format(filePath, charsmax(filePath), "%s/csgo_menu.ini", filePath);
 
-	if (!file_exists(filePath)) set_fail_state("[CS:GO Menu] Brak pliku z zawartoscia menu serwera!");
+	if (!file_exists(filePath)) {
+		new error[128];
+
+		formatex(error, charsmax(error), "[CS:GO] Config file csgo_menu.ini has not been found in %s", filePath);
+
+		set_fail_state(error);
+	}
 
 	new content[128], title[64], command[64], file = fopen(filePath, "r");
 
@@ -52,7 +59,10 @@ public client_putinserver(id)
 
 public server_menu(id)
 {
-	new title[64], menu = menu_create("\yMenu \rSerwera\w:", "server_menu_handler");
+	new title[64], menu;
+
+	formatex(title, charsmax(title), "%L", id, "SERVER_MENU");
+	menu = menu_create(title, "server_menu_handler");
 
 	for (new i; i < ArraySize(titles); i++) {
 		ArrayGetString(titles, i, title, charsmax(title));
@@ -60,9 +70,14 @@ public server_menu(id)
 		menu_additem(menu, title);
 	}
 
-	menu_setprop(menu, MPROP_BACKNAME, "Wroc");
-	menu_setprop(menu, MPROP_NEXTNAME, "Dalej");
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	formatex(title, charsmax(title), "%L", id, "MENU_TITLE_PREVIOUS");
+	menu_setprop(menu, MPROP_BACKNAME, title);
+
+	formatex(title, charsmax(title), "%L", id, "MENU_TITLE_NEXT");
+	menu_setprop(menu, MPROP_NEXTNAME, title);
+
+	formatex(title, charsmax(title), "%L", id, "MENU_TITLE_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, title);
 
 	menu_display(id, menu, 0);
 

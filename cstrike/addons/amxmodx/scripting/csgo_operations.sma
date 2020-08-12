@@ -65,7 +65,7 @@ public plugin_cfg()
 	if (!file_exists(filePath)) {
 		new error[128];
 
-		formatex(error, charsmax(error), "[CS:GO] Nie mozna znalezc pliku csgo_operations.ini w lokalizacji %s", filePath);
+		formatex(error, charsmax(error), "[CS:GO Operations] Config file csgo_operations.ini has not been found in %s", filePath);
 
 		set_fail_state(error);
 	}

@@ -27,6 +27,7 @@ MENU_TITLE_EXIT=Exit
 MENU_TITLE_PREVIOUS=Previous
 MENU_TITLE_NEXT=Next
 MENU_TITLE_Back=Back
+SERVER_MENU=\yServer \rMenu\w:
 
 [pl]
 VIP_SVIP_SVIP_MOTD=Informacje o SVIPie
@@ -57,3 +58,4 @@ MENU_TITLE_EXIT=Wyjscie
 MENU_TITLE_PREVIOUS=Poprzednie
 MENU_TITLE_NEXT=Nastepne
 MENU_TITLE_Back=Wroc
+SERVER_MENU=\yMenu \rSerwera\w:
