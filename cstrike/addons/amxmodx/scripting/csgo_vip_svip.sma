@@ -223,10 +223,22 @@ public client_infochanged(id)
 }
 
 public show_vipmotd(id)
-	show_motd(id, "vip.txt", "Informacje o VIPie");
+{
+	new motdTitle[32];
+
+	formatex(motdTitle, charsmax(motdTitle), "%L", id, "VIP_SVIP_VIP_MOTD");
+
+	show_motd(id, "vip.txt", motdTitle);
+}
 
 public show_svipmotd(id)
-	show_motd(id, "svip.txt", "Informacje o SuperVIPie");
+{
+	new motdTitle[32];
+
+	formatex(motdTitle, charsmax(motdTitle), "%L", id, "VIP_SVIP_SVIP_MOTD");
+
+	show_motd(id, "svip.txt", motdTitle);
+}
 
 public new_round()
 	++roundNum;
@@ -284,22 +296,24 @@ public vip_menu(id)
 
 	set_task(15.0, "close_vip_menu", id);
 
-	new menu;
+	new menu, title[64];
+
+	formatex(title, charsmax(title), "%L", id, get_bit(id, SVIP) ? "VIP_SVIP_MENU_WEAPONS_SVIP" : "VIP_SVIP_MENU_WEAPONS_VIP");
+	menu = menu_create(title, "vip_menu_handle");
+
+	formatex(title, charsmax(title), "%L", id, "VIP_SVIP_MENU_M4A1");
+	menu_additem(menu, title);
+
+	formatex(title, charsmax(title), "%L", id, "VIP_SVIP_MENU_AK47");
+	menu_additem(menu, title);
 
 	if (get_bit(id, SVIP)) {
-		menu = menu_create("\wMenu \ySuperVIP\w: Wybierz \rZestaw\w", "vip_menu_handle");
-
-		menu_additem(menu, "\yM4A1 + Deagle");
-		menu_additem(menu, "\yAK47 + Deagle");
-		menu_additem(menu, "\yAWP + Deagle");
-	} else {
-		menu = menu_create("\wMenu \yVIP\w: Wybierz \rZestaw\w", "vip_menu_handle");
-
-		menu_additem(menu, "\yM4A1 + Deagle");
-		menu_additem(menu, "\yAK47 + Deagle");
+		formatex(title, charsmax(title), "%L", id, "VIP_SVIP_MENU_AWP");
+		menu_additem(menu, title);
 	}
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	formatex(title, charsmax(title), "%L", id, "MENU_TITLE_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, title);
 
 	menu_display(id, menu);
 }
@@ -332,7 +346,7 @@ public vip_menu_handle(id, menu, item)
 
 			cs_set_user_bpammo(id, CSW_M4A1, 90);
 
-			client_print(id, print_center, "Dostales M4A1 + Deagle!");
+			client_print(id, print_center, "%L", id, "VIP_SVIP_M4A1");
 		} case 1: {
 			StripWeapons(id, Secondary);
 
@@ -348,7 +362,7 @@ public vip_menu_handle(id, menu, item)
 
 			cs_set_user_bpammo(id, CSW_AK47, 90);
 
-			client_print(id, print_center, "Dostales AK47 + Deagle!");
+			client_print(id, print_center, "%L", id, "VIP_SVIP_AK47");
 		} case 2: {
 			give_item(id, "weapon_deagle");
 			give_item(id, "ammo_50ae");
@@ -362,7 +376,7 @@ public vip_menu_handle(id, menu, item)
 
 			cs_set_user_bpammo(id, CSW_AWP, 30);
 
-			client_print(id, print_center, "Dostales AWP + Deagle!");
+			client_print(id, print_center, "%L", id, "VIP_SVIP_AWP");
 		}
 	}
 
@@ -376,7 +390,7 @@ public close_vip_menu(id)
 	if (used[id] || !is_user_alive(id)) return PLUGIN_CONTINUE;
 
 	if (!check_weapons(id)) {
-		client_print_color(id, id, "^x04[%sVIP]^x01 Zestaw zostal ci przydzielony losowo.", get_bit(id, SVIP) ? "S" : "");
+		client_print_color(id, id, "%L", id, get_bit(id, SVIP) ? "VIP_SVIP_RANDOM_WEAPONS_SVIP" : "VIP_SVIP_RANDOM_WEAPONS_VIP");
 
 		new random = random_num(0, get_bit(id, SVIP) ? 2 : 1);
 
@@ -396,7 +410,7 @@ public close_vip_menu(id)
 
 				cs_set_user_bpammo(id, CSW_M4A1, 90);
 
-				client_print(id, print_center, "Dostales M4A1 + Deagle!");
+				client_print(id, print_center, "%L", id, "VIP_SVIP_M4A1");
 			} case 1: {
 				StripWeapons(id, Secondary);
 
@@ -412,7 +426,7 @@ public close_vip_menu(id)
 
 				cs_set_user_bpammo(id, CSW_AK47, 90);
 
-				client_print(id, print_center, "Dostales AK47 + Deagle!");
+				client_print(id, print_center, "%L", id, "VIP_SVIP_AK47");
 			} case 2: {
 				give_item(id, "weapon_deagle");
 				give_item(id, "ammo_50ae");
@@ -426,7 +440,7 @@ public close_vip_menu(id)
 
 				cs_set_user_bpammo(id, CSW_AWP, 30);
 
-				client_print(id, print_center, "Dostales AWP + Deagle!");
+				client_print(id, print_center, "%L", id, "VIP_SVIP_AWP");
 			}
 		}
 	}
@@ -440,16 +454,22 @@ public vip_menu_pistol(id)
 
 	set_task(15.0, "close_vip_menu_pistol", id);
 
-	new menu;
+	new menu, title[64];
 
-	if (get_bit(id, SVIP)) menu = menu_create("\wMenu \ySuperVIP\w: Wybierz \rPistolet\w", "vip_menu_pistol_handle");
-	else menu = menu_create("\wMenu \yVIP\w: Wybierz \rPistolet\w", "vip_menu_pistol_handle");
+	formatex(title, charsmax(title), "%L", id, get_bit(id, SVIP) ? "VIP_SVIP_MENU_PISTOL_SVIP" : "VIP_SVIP_MENU_PISTOL_VIP");
+	menu = menu_create(title, "vip_menu_pistol_handle");
 
-	menu_additem(menu, "\yDeagle");
-	menu_additem(menu, "\yUSP");
-	menu_additem(menu, "\yGlock");
+	formatex(title, charsmax(title), "%L", id, "VIP_SVIP_MENU_DEAGLE");
+	menu_additem(menu, title);
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	formatex(title, charsmax(title), "%L", id, "VIP_SVIP_MENU_USP");
+	menu_additem(menu, title);
+
+	formatex(title, charsmax(title), "%L", id, "VIP_SVIP_MENU_GLOCK");
+	menu_additem(menu, title);
+
+	formatex(title, charsmax(title), "%L", id, "MENU_TITLE_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, title);
 
 	menu_display(id, menu);
 }
@@ -475,7 +495,7 @@ public vip_menu_pistol_handle(id, menu, item)
 
 			cs_set_user_bpammo(id, CSW_DEAGLE, 35);
 
-			client_print(id, print_center, "Dostales Deagle!");
+			client_print(id, print_center, "%L", id, "VIP_SVIP_DEAGLE");
 		} case 1: {
 			StripWeapons(id, Secondary);
 
@@ -484,7 +504,7 @@ public vip_menu_pistol_handle(id, menu, item)
 
 			cs_set_user_bpammo(id, CSW_USP, 100);
 
-			client_print(id, print_center, "Dostales USP!");
+			client_print(id, print_center, "%L", id, "VIP_SVIP_USP");
 		} case 2: {
 			StripWeapons(id, Secondary);
 
@@ -493,7 +513,7 @@ public vip_menu_pistol_handle(id, menu, item)
 
 			cs_set_user_bpammo(id, CSW_GLOCK18, 120);
 
-			client_print(id, print_center, "Dostales Glocka!");
+			client_print(id, print_center, "%L", id, "VIP_SVIP_GLOCK");
 		}
 	}
 
@@ -507,7 +527,7 @@ public close_vip_menu_pistol(id)
 	if (used[id] || !is_user_alive(id)) return PLUGIN_CONTINUE;
 
 	if (!check_weapons(id)) {
-		client_print_color(id, id, "^x04[%sVIP]^x01 Pistolet zostal ci przydzielony losowo.", get_bit(id, SVIP) ? "S" : "");
+		client_print_color(id, id, "%L", id, get_bit(id, SVIP) ? "VIP_SVIP_RANDOM_PISTOL_SVIP" : "VIP_SVIP_RANDOM_PISTOL_VIP");
 
 		new random = random_num(0, 2);
 
@@ -520,7 +540,7 @@ public close_vip_menu_pistol(id)
 
 				cs_set_user_bpammo(id, CSW_DEAGLE, 35);
 
-				client_print(id, print_center, "Dostales Deagle!");
+				client_print(id, print_center, "%L", id, "VIP_SVIP_DEAGLE");
 			} case 1: {
 				StripWeapons(id, Secondary);
 
@@ -529,7 +549,7 @@ public close_vip_menu_pistol(id)
 
 				cs_set_user_bpammo(id, CSW_USP, 100);
 
-				client_print(id, print_center, "Dostales USP!");
+				client_print(id, print_center, "%L", id, "VIP_SVIP_USP");
 			} case 2: {
 				StripWeapons(id, Secondary);
 
@@ -538,7 +558,7 @@ public close_vip_menu_pistol(id)
 
 				cs_set_user_bpammo(id, CSW_GLOCK18, 120);
 
-				client_print(id, print_center, "Dostales Glocka!");
+				client_print(id, print_center, "%L", id, "VIP_SVIP_GLOCK");
 			}
 		}
 	}
@@ -553,14 +573,14 @@ public player_death()
 	if (get_bit(killer, VIP) && is_user_alive(killer) && get_user_team(killer) != get_user_team(victim) && !disabled) {
 		if (headShot) {
 			set_dhudmessage(38, 218, 116, 0.50, 0.35, 0, 0.0, 1.0, 0.0, 0.0);
-			show_dhudmessage(killer, "HeadShot! +15 HP");
+			show_dhudmessage(killer, "%L", killer, "VIP_SVIP_KILL_HS");
 
 			set_user_health(killer, get_user_health(killer) > 100 ? get_user_health(killer) + 15 : min(get_user_health(killer) + 15, 100));
 
 			cs_set_user_money(killer, cs_get_user_money(killer) + 350);
 		} else  {
 			set_dhudmessage(255, 212, 0, 0.50, 0.31, 0, 0.0, 1.0, 0.0, 0.0);
-			show_dhudmessage(killer, "Zabiles! +10 HP");
+			show_dhudmessage(killer, "%L", killer, "VIP_SVIP_KILL");
 
 			set_user_health(killer, get_user_health(killer) > 100 ? get_user_health(killer) + 10 : min(get_user_health(killer) + 10, 100));
 

@@ -98,6 +98,8 @@ public plugin_init()
 
 	register_cvar("csgo_version", VERSION, FCVAR_SERVER);
 
+	register_dictionary("csgomod.txt");
+
 	bind_pcvar_string(create_cvar("csgo_sql_host", "localhost", FCVAR_SPONLY | FCVAR_PROTECTED), sqlHost, charsmax(sqlHost));
 	bind_pcvar_string(create_cvar("csgo_sql_user", "user", FCVAR_SPONLY | FCVAR_PROTECTED), sqlUser, charsmax(sqlUser));
 	bind_pcvar_string(create_cvar("csgo_sql_pass", "password", FCVAR_SPONLY | FCVAR_PROTECTED), sqlPassword, charsmax(sqlPassword));
@@ -321,15 +323,15 @@ public plugin_cfg()
 		return;
 	}
 
-	new queryData[192];
+	new queryData[256];
 
-	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_skins` (name VARCHAR(35), weapon VARCHAR(35), skin VARCHAR(64), count INT NOT NULL DEFAULT 1, PRIMARY KEY(name, weapon, skin))");
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_skins` (name VARCHAR(35), weapon VARCHAR(35), skin VARCHAR(64), count INT NOT NULL DEFAULT 1, PRIMARY KEY(name, weapon, skin));");
 
 	new Handle:query = SQL_PrepareQuery(connection, queryData);
 
 	SQL_Execute(query);
 
-	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_data` (name VARCHAR(35), money FLOAT NOT NULL, exchange INT NOT NULL, menu INT NOT NULL, online INT NOT NULL, PRIMARY KEY(name))");
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_data` (name VARCHAR(35), money FLOAT NOT NULL DEFAULT 0, exchange INT NOT NULL DEFAULT 0, menu INT NOT NULL DEFAULT 0, online INT NOT NULL DEFAULT 0, PRIMARY KEY(name));");
 
 	query = SQL_PrepareQuery(connection, queryData);
 
