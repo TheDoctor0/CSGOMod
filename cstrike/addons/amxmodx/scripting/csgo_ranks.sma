@@ -186,15 +186,15 @@ public sql_init()
 
 	new queryData[512];
 
-	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_ranks` (`name` varchar(32) NOT NULL, `kills` int(10) NOT NULL, `rank` int(10) NOT NULL, `time` int(10) NOT NULL, ");
-	add(queryData, charsmax(queryData), "`firstvisit` int(10) NOT NULL, `lastvisit` int(10) NOT NULL, `gold` int(10) NOT NULL, `silver` int(10) NOT NULL, `bronze` int(10) NOT NULL, `medals` int(10) NOT NULL, ");
-	add(queryData, charsmax(queryData), "`bestkills` int(10) NOT NULL, `bestdeaths` int(10) NOT NULL, `besths` int(10) NOT NULL, `beststats` int(10) NOT NULL, `elorank` double NOT NULL, PRIMARY KEY (`name`));");
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_ranks` (`name` varchar(32) NOT NULL, `kills` int(10) NOT NULL DEFAULT 0, `rank` int(10) NOT NULL DEFAULT 0, `time` int(10) NOT NULL DEFAULT 0, ");
+	add(queryData, charsmax(queryData), "`firstvisit` int(10) NOT NULL DEFAULT 0, `lastvisit` int(10) NOT NULL DEFAULT 0, `gold` int(10) NOT NULL DEFAULT 0, `silver` int(10) NOT NULL DEFAULT 0, `bronze` int(10) NOT NULL DEFAULT 0, `medals` int(10) NOT NULL DEFAULT 0, ");
+	add(queryData, charsmax(queryData), "`bestkills` int(10) NOT NULL DEFAULT 0, `bestdeaths` int(10) NOT NULL DEFAULT 0, `besths` int(10) NOT NULL DEFAULT 0, `beststats` int(10) NOT NULL DEFAULT 0, `elorank` double NOT NULL DEFAULT 0, PRIMARY KEY (`name`));");
 
 	new Handle:query = SQL_PrepareQuery(connectHandle, queryData);
 
 	SQL_Execute(query);
 
-	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_hud` (`name` varchar(32) NOT NULL, `red` int(10) NOT NULL, `green` int(10) NOT NULL, `blue` int(10) NOT NULL, `x` int(10) NOT NULL, `y` int(10) NOT NULL, PRIMARY KEY (`name`));");
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_hud` (`name` varchar(32) NOT NULL, `red` int(10) NOT NULL DEFAULT 0, `green` int(10) NOT NULL DEFAULT 0, `blue` int(10) NOT NULL DEFAULT 0, `x` int(10) NOT NULL DEFAULT 0, `y` int(10) NOT NULL DEFAULT 0, PRIMARY KEY (`name`));");
 
 	query = SQL_PrepareQuery(connectHandle, queryData);
 

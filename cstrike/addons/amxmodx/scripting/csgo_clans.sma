@@ -2193,15 +2193,15 @@ public sql_init()
 
 	sqlConnected = true;
 
-	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_clans` (`id` INT NOT NULL AUTO_INCREMENT, `name` VARCHAR(64) NOT NULL, `members` INT DEFAULT 1 NOT NULL, ");
-	add(queryData, charsmax(queryData), "`money` DOUBLE(16, 2) NOT NULL, `kills` INT NOT NULL, `level` INT NOT NULL, `wins` INT NOT NULL, PRIMARY KEY (`id`));");
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_clans` (`id` INT NOT NULL AUTO_INCREMENT, `name` VARCHAR(64) NOT NULL, `members` INT NOT NULL DEFAULT 1, ");
+	add(queryData, charsmax(queryData), "`money` DOUBLE(16, 2) NOT NULL DEFAULT 0, `kills` INT NOT NULL DEFAULT 0, `level` INT NOT NULL DEFAULT 0, `wins` INT NOT NULL DEFAULT 0, PRIMARY KEY (`id`));");
 
 	new Handle:query = SQL_PrepareQuery(connection, queryData);
 
 	SQL_Execute(query);
 
 	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_clans_members` (`name` varchar(64) NOT NULL, `clan` INT NOT NULL, ");
-	add(queryData, charsmax(queryData), "`flag` INT NOT NULL, `deposit` DOUBLE(16, 2) NOT NULL, `withdraw` DOUBLE(16, 2) NOT NULL, PRIMARY KEY (`name`));");
+	add(queryData, charsmax(queryData), "`flag` INT NOT NULL DEFAULT 0, `deposit` DOUBLE(16, 2) NOT NULL DEFAULT 0, `withdraw` DOUBLE(16, 2) NOT NULL DEFAULT 0, PRIMARY KEY (`name`));");
 
 	query = SQL_PrepareQuery(connection, queryData);
 
@@ -2213,8 +2213,8 @@ public sql_init()
 
 	SQL_Execute(query);
 
-	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_clans_wars` (`id` INT NOT NULL AUTO_INCREMENT, `clan` INT NOT NULL, `clan2` INT NOT NULL, ");
-	add(queryData, charsmax(queryData), "`progress` INT NOT NULL, `progress2` INT NOT NULL, `duration` INT NOT NULL, `reward` INT NOT NULL, `started` INT NOT NULL, PRIMARY KEY (`id`));");
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_clans_wars` (`id` INT NOT NULL AUTO_INCREMENT, `clan` INT NOT NULL DEFAULT 0, `clan2` INT NOT NULL DEFAULT 0, ");
+	add(queryData, charsmax(queryData), "`progress` INT NOT NULL DEFAULT 0, `progress2` INT NOT NULL DEFAULT 0, `duration` INT NOT NULL DEFAULT 0, `reward` INT NOT NULL DEFAULT 0, `started` INT NOT NULL DEFAULT 0, PRIMARY KEY (`id`));");
 
 	query = SQL_PrepareQuery(connection, queryData);
 
