@@ -8,21 +8,15 @@
 #define VERSION "2.0"
 #define AUTHOR "O'Zone"
 
-new operationDescription[][] = {
-	"Brak operacji %i",
-	"Musisz zabic jeszcze %i osob",
-	"Musisz zabic jeszcze %i osob headshotem",
-	"Musisz podlozyc/rozbroic bombe jeszcze %i razy",
-	"Musisz zadac jeszcze %i obrazen"
-};
-
 enum _:operationType { TYPE_NONE, TYPE_KILL, TYPE_HEADSHOT, TYPE_BOMB, TYPE_DAMAGE };
 enum _:playerInfo { PLAYER_ID, PLAYER_TYPE, PLAYER_ADDITIONAL, PLAYER_PROGRESS, PLAYER_NAME[32] };
 enum _:operationsInfo { OPERATION_AMOUNT, OPERATION_TYPE, OPERATION_REWARD };
 
-new const commandQuest[][] = { "say /operacja", "say_team /operacja", "say /misja", "say_team /misja", "say /misje", "say_team /misje", "say /operacje", "say_team /operacje", "misje" };
+new const commandQuest[][] = { "say /operation", "say_team /operation", "say /mission", "say_team /mission", "say /operacja", "say_team /operacja", "say /misja", "say_team /misja",
+	"say /misje", "say_team /misje", "say /operacje", "say_team /operacje", "say /operations", "say_team /operations", "say /missions", "say_team /missions", "misje" };
 new const commandProgress[][] = { "say /progress", "say_team /progress", "say /progres", "say_team /progres", "say /postep", "say_team /postep", "postep" };
-new const commandEnd[][] = { "say /koniec", "say_team /koniec", "say /zakoncz", "say_team /zakoncz", "zakoncz", "say_team /przerwij", "say /przerwij", "przerwij" };
+new const commandEnd[][] = { "say /koniec", "say_team /koniec", "say /zakoncz", "say_team /zakoncz", "zakoncz", "say_team /przerwij", "say /przerwij",
+	"say_team /cancel", "say /cancel", "say_team /end", "say /end", "przerwij" };
 
 new playerData[MAX_PLAYERS + 1][playerInfo], Array:operationList, minPlayers, operations, loaded;
 
@@ -114,16 +108,28 @@ public operation_menu(id)
 {
 	if (!csgo_check_account(id)) return PLUGIN_HANDLED;
 
-	new menu = menu_create("\yMenu \rOperacji\w:", "operation_menu_handle"), callback = menu_makecallback("operation_menu_callback");
+	new title[64], menu, callback = menu_makecallback("operation_menu_callback");
 
-	menu_additem(menu, "Wybierz \yOperacje", _, _, callback);
-	menu_additem(menu, "Przerwij \yOperacje", _, _, callback);
-	menu_additem(menu, "Postep \yOperacji", _, _, callback);
+	formatex(title, charsmax(title), "%L", id, "OPERATIONS_TITLE_MENU");
+	menu = menu_create(title, "operation_menu_handle");
 
-	menu_addtext(menu, "^n\wPo ukonczeniu \yoperacji\w zostaniesz wynagrodzony \rpieniedzmi\w.", 0);
-	menu_addtext(menu, "\wMozesz \ywielokrotnie\w wykonywac ta sama operacje.", 0);
+	formatex(title, charsmax(title), "%L", id, "OPERATIONS_ITEM_SELECT");
+	menu_additem(menu, title, _, _, callback);
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	formatex(title, charsmax(title), "%L", id, "OPERATIONS_ITEM_CANCEL");
+	menu_additem(menu, title, _, _, callback);
+
+	formatex(title, charsmax(title), "%L", id, "OPERATIONS_ITEM_PROGRESS");
+	menu_additem(menu, title, _, _, callback);
+
+	formatex(title, charsmax(title), "%L", id, "OPERATIONS_PRICE_INFO_FIRST");
+	menu_addtext(menu, title, 0);
+
+	formatex(title, charsmax(title), "%L", id, "OPERATIONS_PRICE_INFO_SECOND");
+	menu_addtext(menu, title, 0);
+
+	formatex(title, charsmax(title), "%L", id, "MENU_TITLE_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, title);
 
 	menu_display(id, menu);
 
@@ -164,21 +170,24 @@ public select_operation(id)
 	if (!is_user_connected(id)) return PLUGIN_HANDLED;
 
 	if (playerData[id][PLAYER_TYPE]) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Najpierw dokoncz lub zrezygnuj z obecnej^x03 operacji^x01.");
+		client_print_color(id, id, "%L", id, "OPERATIONS_ALREADY_IN_PROGRESS");
 
 		return PLUGIN_HANDLED;
 	}
 
-	new menuData[128], operationId[3], operationInfo[operationsInfo], menu = menu_create("\yWybierz \rMisje\w:", "select_operation_handle");
+	new menuData[128], operationId[3], operationInfo[operationsInfo], menu;
+
+	formatex(menuData, charsmax(menuData), "%L", id, "OPERATIONS_TITLE_SELECT");
+	menu = menu_create(menuData, "select_operation_handle");
 
 	for (new i = 0; i < ArraySize(operationList); i++) {
 		ArrayGetArray(operationList, i, operationInfo);
 
-		switch(operationInfo[OPERATION_TYPE]) {
-			case TYPE_KILL: formatex(menuData, charsmax(menuData), "Zabij %i osob \y(Nagroda: %i Euro)", operationInfo[OPERATION_AMOUNT], operationInfo[OPERATION_REWARD]);
-			case TYPE_HEADSHOT: formatex(menuData, charsmax(menuData), "Zabij %i osob z HS \y(Nagroda: %i Euro)",  operationInfo[OPERATION_AMOUNT], operationInfo[OPERATION_REWARD]);
-			case TYPE_BOMB: formatex(menuData, charsmax(menuData), "Podloz/Rozbroj %i bomb \y(Nagroda: %i Euro)",  operationInfo[OPERATION_AMOUNT], operationInfo[OPERATION_REWARD]);
-			case TYPE_DAMAGE: formatex(menuData, charsmax(menuData), "Zadaj %i obrazen \y(Nagroda: %i Euro)",  operationInfo[OPERATION_AMOUNT], operationInfo[OPERATION_REWARD]);
+		switch (operationInfo[OPERATION_TYPE]) {
+			case TYPE_KILL: formatex(menuData, charsmax(menuData), "%L", id, "OPERATIONS_TYPE_KILL", operationInfo[OPERATION_AMOUNT], operationInfo[OPERATION_REWARD]);
+			case TYPE_HEADSHOT: formatex(menuData, charsmax(menuData), "%L", id, "OPERATIONS_TYPE_HEADSHOT",  operationInfo[OPERATION_AMOUNT], operationInfo[OPERATION_REWARD]);
+			case TYPE_BOMB: formatex(menuData, charsmax(menuData), "%L", id, "OPERATIONS_TYPE_BOMB",  operationInfo[OPERATION_AMOUNT], operationInfo[OPERATION_REWARD]);
+			case TYPE_DAMAGE: formatex(menuData, charsmax(menuData), "%L", id, "OPERATIONS_TYPE_DAMAGE",  operationInfo[OPERATION_AMOUNT], operationInfo[OPERATION_REWARD]);
 			case TYPE_NONE: continue;
 		}
 
@@ -187,7 +196,8 @@ public select_operation(id)
 		menu_additem(menu, menuData, operationId);
 	}
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	formatex(menuData, charsmax(menuData), "%L", id, "MENU_TITLE_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	menu_display(id, menu);
 
@@ -215,7 +225,7 @@ public select_operation_handle(id, menu, item)
 
 	save_operation(id);
 
-	client_print_color(id, id, "^x04[CS:GO]^x01 Rozpoczales nowa^x03 operacje^x01. Powodzenia!");
+	client_print_color(id, id, "%L", id, "OPERATIONS_STARTED");
 
 	menu_destroy(menu);
 
@@ -270,20 +280,26 @@ public give_reward(id)
 
 	reset_operation(id, 0, 1);
 
-	client_print_color(id, id, "^x04[CS:GO]^x01 Gratulacje! Ukonczyles operacje - w nagrode otrzymujesz^x03 %i Euro^x01.", reward);
+	client_print_color(id, id, "%L", id, "OPERATIONS_COMPLETED", reward);
 
 	return PLUGIN_HANDLED;
 }
 
 public check_operation(id)
 {
-	if (!playerData[id][PLAYER_TYPE]) client_print_color(id, id, "^x04[CS:GO]^x01 Nie jestes w trakcie wykonywania zadnej operacji.");
+	if (!playerData[id][PLAYER_TYPE]) client_print_color(id, id, "%L", id, "OPERATIONS_NONE");
 	else {
 		new message[128];
 
-		formatex(message, charsmax(message), operationDescription[playerData[id][PLAYER_TYPE]], (get_progress_need(id) - get_progress(id)));
+		switch (playerData[id][PLAYER_TYPE]) {
+			case TYPE_KILL: formatex(message, charsmax(message), "%L", id, "OPERATIONS_TYPE_KILL_INFO", (get_progress_need(id) - get_progress(id)));
+			case TYPE_HEADSHOT: formatex(message, charsmax(message), "%L", id, "OPERATIONS_TYPE_HEADSHOT_INFO",  (get_progress_need(id) - get_progress(id)));
+			case TYPE_BOMB: formatex(message, charsmax(message), "%L", id, "OPERATIONS_TYPE_BOMB_INFO",  (get_progress_need(id) - get_progress(id)));
+			case TYPE_DAMAGE: formatex(message, charsmax(message), "%L", id, "OPERATIONS_TYPE_DAMAGE_INFO", (get_progress_need(id) - get_progress(id)));
+			case TYPE_NONE: formatex(message, charsmax(message), "%L", id, "OPERATIONS_TYPE_NONE_INFO");
+		}
 
-		client_print_color(id, id, "^x04[CS:GO]^x01 Postep operacji:^x03 %s^x01.", message);
+		client_print_color(id, id, "%L", id, "OPERATIONS_PROGRESS", message);
 	}
 
 	return PLUGIN_HANDLED;
@@ -335,7 +351,7 @@ public reset_operation(id, data, silent)
 
 	if (!data) save_operation(id);
 
-	if (!silent) client_print_color(id, id, "^x04[CS:GO]^x01 Zrezygnowales z wykonywania rozpoczetej przez ciebie^x03 operacji^x01.");
+	if (!silent) client_print_color(id, id, "%L", id, "OPERATIONS_CANCELLED");
 
 	return PLUGIN_HANDLED;
 }
@@ -374,8 +390,8 @@ public _csgo_get_user_operation_text(id, dataReturn[], dataLength)
 {
 	param_convert(2);
 
-	if (playerData[id][PLAYER_ID] > -1) formatex(dataReturn, dataLength, "%i/%i (%0.1f%s)", get_progress(id), get_progress_need(id), float(get_progress(id)) / float(get_progress_need(id)) * 100.0, "%");
-	else formatex(dataReturn, dataLength, "Wpisz /operacja");
+	if (playerData[id][PLAYER_ID] > -1) formatex(dataReturn, dataLength, "%L", id, "OPERATIONS_TEXT_PROGRESS", get_progress(id), get_progress_need(id), float(get_progress(id)) / float(get_progress_need(id)) * 100.0, "%");
+	else formatex(dataReturn, dataLength, "%L", id, "OPERATIONS_TEXT_COMMAND");
 }
 
 public _csgo_get_user_operation_progress(id)
