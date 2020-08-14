@@ -61,6 +61,9 @@ OPERATIONS_TYPE_HEADSHOT_INFO=You have to kill with headshot %i more people
 OPERATIONS_TYPE_BOMB_INFO=You have to plant or defuse the bomb %i more times
 OPERATIONS_TYPE_DAMAGE_INFO=You have to inflict %i more damage
 OPERATIONS_TYPE_NONE_INFO=No operation
+ASSIST_INFO_HUD=%s helped %s to kill %s
+ASSIST_INFO_CHAT=^x04[CS:GO]^x01 You assisted^x03 %s^x01 in killing^x03 %s^x01. You get the kill!
+REVENGE_INFO_CHAT=^x04[CS:GO]^x01 You took revenge on the^x03 %s^x01. You get the kill!
 
 [pl]
 VIP_SVIP_SVIP_MOTD=Informacje o SVIPie
@@ -125,3 +128,6 @@ OPERATIONS_TYPE_HEADSHOT_INFO=Musisz zabic jeszcze %i osob headshotem
 OPERATIONS_TYPE_BOMB_INFO=Musisz podlozyc/rozbroic bombe jeszcze %i razy
 OPERATIONS_TYPE_DAMAGE_INFO=Musisz zadac jeszcze %i obrazen
 OPERATIONS_TYPE_NONE_INFO=Brak operacji %i
+ASSIST_INFO_HUD=%s pomogl %s w  zabiciu %s
+ASSIST_INFO_CHAT=^x04[CS:GO]^x01 Asystowales^x03 %s^x01 w zabiciu^x03 %s^x01. Dostajesz fraga!
+REVENGE_INFO_CHAT=^x04[CS:GO]^x01 Zemsciles sie na^x03 %s^x01. Dostajesz fraga!
