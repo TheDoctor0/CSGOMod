@@ -154,7 +154,7 @@ public plugin_precache()
 		formatex(spriteFile, charsmax(spriteFile), "sprites/csgo_ranks/%d.spr", i);
 
 		if (!file_exists(spriteFile)) {
-			log_to_file("csgo-error.log", "[CS:GO] Brakujacy plik sprite: ^"%s^"", spriteFile);
+			log_to_file("csgo-error.log", "[CS:GO] Missing sprite file: ^"%s^"", spriteFile);
 
 			error = true;
 		} else {
@@ -162,7 +162,7 @@ public plugin_precache()
 		}
 	}
 
-	if (error) set_fail_state("Brakuje plikow sprite, zaladowanie pluginu niemozliwe! Sprawdz logi w pliku csgo/error.log!");
+	if (error) set_fail_state("Missing sprite files, loading the plugin is impossible! Check the logs in csgo_error.log!");
 }
 
 public sql_init()
@@ -673,7 +673,7 @@ public cmd_topranks(id)
 
 	playerId[0] = id;
 
-	format(queryData, charsmax(queryData), "SELECT name, elorank, rank FROM `csgo_ranks` ORDER BY elorank DESC LIMIT 15");
+	format(queryData, charsmax(queryData), "SELECT name, elorank, rank FROM `csgo_ranks` ORDER BY elorank DESC WHERE rank > 0 LIMIT 15");
 
 	SQL_ThreadQuery(sql, "show_topranks", queryData, playerId, sizeof(playerId));
 
