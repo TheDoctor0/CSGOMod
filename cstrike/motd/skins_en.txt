@@ -1,0 +1,46 @@
+﻿
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta charset="UTF-8">
+</head>
+<body style="color: #fff" bgcolor="black">
+<font size="4" color="orange"><b>After joining the server, you must log in.<br>
+To do this type <font color="#f00">/account</font>.</b></font><br>
+<br>
+After logging in, all the necessary information will appear in the upper right-hand corner.<br>
+<br>
+<b><font color ="#ff0000">For every kill and objective of the map, you will get a Euro for which you can get skins!</font></b><br>
+<br>
+You can use /menu to access all available commands.<br>
+<br>
+<font size="4" color="orange"><b>1. Set Skin (/set)</b></font><br>
+In this menu you can select your skins and put them on the chosen weapons.<br>
+<br>
+<font size="4" color="orange"><b>2. Buy Skin (/kup)</b></font><br>
+This is a shop where you can buy skins at a certain price.<br>
+<br>
+<font size="4" color="orange"><b>3. Draw Skin (/draw)</b></font><br>
+This is the place where the skins can be drawn. Remember, not every draw will give a skin.<br>
+<br>
+<font size="4" color="orange"><b>4. Skins Market (/market)</b></font><br>
+In this menu you can put your skins up for sale or buy some from other players.<br>
+<br>
+<font size="4" color="orange"><b>5. Operations (/operations)</b></font><br>
+Here you can perform various operations - missions for which you will receive additional funds.<br>
+<br>
+<font size="4" color="orange"><b>6. Clans (/clans)</b></font><br>
+Clans are your very own squads for players, which give you special bonuses.<br>
+<br>
+<font size="4" color="orange"><b>7. Transfer Money (/transfer)</b></font><br>
+The option to transfer the Euro to other players.<br>
+<br>
+<font size="4" color="orange"><b>8. Exchange Skin (/exchange)</b></font><br>
+Anybody have a skin you want? It's in this menu you can trade with him.<br>
+<br>
+<font size="4" color="orange"><b>9. Give Skin (/give)</b></font><br>
+If you've got a good heart, you can give someone the skin you don't need.<br>
+<br>
+<font size="4" color="orange"><b>10. HUD Settings (/hud)</b></font><br>
+You can change the HUD display settings here.<br>
+<br>
+</body></html>

@@ -1,0 +1,32 @@
+<html>
+<head>
+<style type="text/css">
+body {
+background-color: #161616;
+font-family:Verdana,Tahoma;
+}
+</style>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1257">
+</head>
+<font size="2" color="#008000"><b><center>What does SuperVIP give you?</center></b></font><br />
+<font size="1" color="#dadada">
+<UL>
+<LI TYPE=square>50% more of the EURO gained</LI><br>
+<LI TYPE=square>10% Greater chance of a skin draw</LI><br>
+<LI TYPE=square>Free Deagle</LI><br>
+<LI TYPE=square>From 2nd round onwards All Grenades + Vest</LI><br>
+<LI TYPE=square>Limitless backpack ammunition for weapons.</LI><br>
+<LI TYPE=square>10 HP bonus for kill</LI><br>
+<LI TYPE=square>15 HP bonus for kill with HS</LI><br>
+<LI TYPE=square>200$ bonus for kill</LI><br>
+<LI TYPE=square>350$ bonus for kills with HS</LI><br>
+<LI TYPE=square>From the 3rd round onwards a choice of three sets of weapons:</LI><br>
+<LI TYPE=square>* M4A1 + Deagle</LI><br>
+<LI TYPE=square>* AK47 + Deagle</LI><br>
+<LI TYPE=square>* AWP + Deagle</LI><br>
+<LI TYPE=square>Free Defuse Kit (as CT)</LI><br>
+<LI TYPE=square>VIP status in the scoreboard</LI><br>
+<LI TYPE=square>VIPs Chat: u* (alternative for u@)</LI><br>
+<LI TYPE=square>Presence on the list of VIPs (/vips) and SuperVIPs (/svips)</LI><br>
+</body>
+</html>
