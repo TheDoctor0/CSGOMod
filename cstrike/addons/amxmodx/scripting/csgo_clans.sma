@@ -29,12 +29,12 @@ public plugin_init()
 
 	for (new i; i < sizeof commandClan; i++) register_clcmd(commandClan[i], "show_clan_menu");
 
-	register_clcmd("PODAJ_NAZWE_KLANU", "create_clan_handle");
-	register_clcmd("PODAJ_NOWA_NAZWE_KLANU", "change_name_handle");
-	register_clcmd("PODAJ_ILOSC_WPLACANEGO_EURO", "deposit_money_handle");
-	register_clcmd("PODAJ_ILOSC_WYPLACANEGO_EURO", "withdraw_money_handle");
-	register_clcmd("PODAJ_LICZBE_FRAGOW", "set_war_frags_handle");
-	register_clcmd("PODAJ_WYSOKOSC_NAGRODY", "set_war_reward_handle");
+	register_clcmd("SELECT_CLAN_NAME", "create_clan_handle");
+	register_clcmd("SELECT_NEW_CLAN_NAME", "change_name_handle");
+	register_clcmd("ENTER_EURO_AMOUNT_TO_DEPOSIT", "deposit_money_handle");
+	register_clcmd("ENTER_EURO_AMOUNT_TO_WITHDRAW", "withdraw_money_handle");
+	register_clcmd("ENTER_KILLS_AMOUNT", "set_war_frags_handle");
+	register_clcmd("ENTER_PRIZE_EURO_AMOUNT", "set_war_reward_handle");
 
 	bind_pcvar_float(create_cvar("csgo_clans_create_fee", "250"), cvarCreateFee);
 	bind_pcvar_float(create_cvar("csgo_clans_join_fee", "50"), cvarJoinFee);
@@ -135,13 +135,13 @@ public show_clan_menu(id)
 		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MAIN_MENU_LEAVE");
 		menu_additem(menu, menuData, "2", _, callback);
 
-		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MAIN_MENU_LEAVE");
+		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MAIN_MENU_MEMBERS");
 		menu_additem(menu, menuData, "3", _, callback);
 
-		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MAIN_MENU_MEMBERS");
+		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MAIN_MENU_BANK");
 		menu_additem(menu, menuData, "4", _, callback);
 	} else {
-		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MAIN_MENU_BANK");
+		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MAIN_MENU_TITLE_NONE");
 
 		menu = menu_create(menuData, "show_clan_menu_handle");
 
@@ -197,18 +197,18 @@ public show_clan_menu_handle(id, menu, item)
 	switch (str_to_num(itemData)) {
 		case 0: {
 			if (clan[id]) {
-				client_print_color(id, id, "^x04[CS:GO]^x01 Nie mozesz utworzyc klanu, jesli w jakims jestes!");
+				client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_CREATE_ALREADY_IN_CLAN");
 
 				return PLUGIN_HANDLED;
 			}
 
 			if (csgo_get_money(id) < cvarCreateFee) {
-				client_print_color(id, id, "^x04[CS:GO]^x01 Nie masz wystarczajaco duzo Euro, aby zalozyc klan (Wymagane^x03 %i Euro^x01)!", floatround(cvarCreateFee));
+				client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_CREATE_NO_MONEY", floatround(cvarCreateFee));
 
 				return PLUGIN_HANDLED;
 			}
 
-			client_cmd(id, "messagemode PODAJ_NAZWE_KLANU");
+			client_cmd(id, "messagemode SELECT_CLAN_NAME");
 		}
 		case 1: {
 			if (get_user_status(id) > STATUS_MEMBER) {
@@ -229,10 +229,16 @@ public show_clan_menu_handle(id, menu, item)
 
 public create_clan_handle(id)
 {
-	if (!is_user_connected(id) || !csgo_check_account(id) || clan[id] || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
+
+	if (clan[id]) {
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_CREATE_ALREADY_IN_CLAN");
+
+		return PLUGIN_HANDLED;
+	}
 
 	if (csgo_get_money(id) < cvarCreateFee) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Nie masz wystarczajaco duzo Euro, aby zalozyc klan (Wymagane^x03 %i Euro^x01)!", floatround(cvarCreateFee));
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_CREATE_NO_MONEY", floatround(cvarCreateFee));
 
 		return PLUGIN_HANDLED;
 	}
@@ -244,7 +250,7 @@ public create_clan_handle(id)
 	trim(clanName);
 
 	if (equal(clanName, "")) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Nie wpisales nazwy klanu.");
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_CREATE_NO_NAME");
 
 		show_clan_menu(id);
 
@@ -252,7 +258,7 @@ public create_clan_handle(id)
 	}
 
 	if (strlen(clanName) < 3) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Nazwa klanu musi miec co najmniej 3 znaki.");
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_CREATE_NAME_TOO_SHORT");
 
 		show_clan_menu(id);
 
@@ -260,7 +266,7 @@ public create_clan_handle(id)
 	}
 
 	if (check_clan_name(clanName)) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Klan z taka nazwa juz istnieje.");
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_CREATE_NAME_EXISTS");
 
 		show_clan_menu(id);
 
@@ -271,7 +277,7 @@ public create_clan_handle(id)
 
 	create_clan(id, clanName);
 
-	client_print_color(id, id, "^x04[CS:GO]^x01 Pomyslnie zalozyles klan^x03 %s^01.", clanName);
+	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_CREATE_SUCCESS", clanName);
 
 	return PLUGIN_HANDLED;
 }
@@ -280,7 +286,11 @@ public leave_confim_menu(id)
 {
 	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
 
-	new menuData[64], menu = menu_create("\wJestes \ypewien\w, ze chcesz \ropuscic \wklan?", "leave_confim_menu_handle");
+	new menuData[64];
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_LEAVE_CONFIRMATION");
+
+	new menu = menu_create(menuData, "leave_confim_menu_handle");
 
 	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_YES");
 	menu_additem(menu, menuData);
@@ -309,7 +319,7 @@ public leave_confim_menu_handle(id, menu, item)
 	switch (item) {
 		case 0: {
 			if (get_user_status(id) == STATUS_LEADER) {
-				client_print_color(id, id, "^x04[CS:GO]^x01 Oddaj przywodctwo klanu jednemu z czlonkow zanim go opuscisz.");
+				client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_LEAVE_LEADER");
 
 				show_clan_menu(id);
 
@@ -318,7 +328,7 @@ public leave_confim_menu_handle(id, menu, item)
 
 			set_user_clan(id);
 
-			client_print_color(id, id, "^x04[CS:GO]^x01 Opusciles swoj klan.");
+			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_LEAVE_SUCCESS");
 
 			show_clan_menu(id);
 		}
@@ -334,7 +344,9 @@ public members_online_menu(id)
 
 	new menuData[64], playersAvailable = 0;
 
-	new menu = menu_create("\yCzlonkowie \rOnline:", "members_online_menu_handle");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MEMBERS_ONLINE");
+
+	new menu = menu_create(menuData, "members_online_menu_handle");
 
 	for (new player = 1; player <= MAX_PLAYERS; player++) {
 		if (!is_user_connected(player) || clan[id] != clan[player]) continue;
@@ -344,9 +356,9 @@ public members_online_menu(id)
 		get_user_name(player, menuData, charsmax(menuData));
 
 		switch (get_user_status(player)) {
-			case STATUS_MEMBER: add(menuData, charsmax(menuData), " \y[Czlonek]");
-			case STATUS_DEPUTY: add(menuData, charsmax(menuData), " \y[Zastepca]");
-			case STATUS_LEADER: add(menuData, charsmax(menuData), " \y[Przywodca]");
+			case STATUS_MEMBER: format(menuData, charsmax(menuData), "%s \y[%L]", id, "CSGO_CLANS_STATUS_MEMBER", menuData);
+			case STATUS_DEPUTY: format(menuData, charsmax(menuData), "%s \y[%L]", id, "CSGO_CLANS_STATUS_DEPUTY", menuData);
+			case STATUS_LEADER: format(menuData, charsmax(menuData), "%s \y[%L]", id, "CSGO_CLANS_STATUS_LEADER", menuData);
 		}
 
 		menu_additem(menu, menuData);
@@ -361,7 +373,7 @@ public members_online_menu(id)
 	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
 	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
-	if (!playersAvailable) client_print_color(id, id, "^x04[CS:GO]^x01 Na serwerze nie ma zadnego czlonka twojego klanu!");
+	if (!playersAvailable) client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_MEMBERS_NONE");
 	else menu_display(id, menu);
 
 	return PLUGIN_HANDLED;
@@ -383,15 +395,20 @@ public bank_menu(id)
 {
 	if (!is_user_connected(id) || !csgo_check_account(id) || !clan[id] || end) return PLUGIN_HANDLED;
 
-	new menuData[128], menu, callback = menu_makecallback("bank_menu_callback");
+	new menuData[128], callback = menu_makecallback("bank_menu_callback");
 
-	formatex(menuData, charsmax(menuData), "\wBank \rKlanu^n\wStan Konta: \y%.2f Euro\w", get_clan_info(clan[id], CLAN_MONEY));
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_BANK_MENU", get_clan_info(clan[id], CLAN_MONEY));
 
-	menu = menu_create(menuData, "bank_menu_handle");
+	new menu = menu_create(menuData, "bank_menu_handle");
 
-	menu_additem(menu, "\wLista \yWplat i Wyplat", _, _, callback);
-	menu_additem(menu, "\wWplac \yPieniadze", _, _, callback);
-	menu_additem(menu, "\wWyplac \yPieniadze", _, _, callback);
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_BANK_LIST");
+	menu_additem(menu, menuData, _, _, callback);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_BANK_DEPOSIT");
+	menu_additem(menu, menuData, _, _, callback);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_BANK_WITHDRAW");
+	menu_additem(menu, menuData, _, _, callback);
 
 	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
 	menu_setprop(menu, MPROP_EXITNAME, menuData);
@@ -421,17 +438,17 @@ public bank_menu_handle(id, menu, item)
 	switch (item) {
 		case 0: payments_list(id);
 		case 1: {
-			client_cmd(id, "messagemode PODAJ_ILOSC_WPLACANEGO_EURO");
+			client_cmd(id, "messagemode ENTER_EURO_AMOUNT_TO_DEPOSIT");
 
-			client_print(id, print_center, "Wpisz ilosc Euro, ktora chcesz wplacic");
+			client_print(id, print_center, "%L", id, "CSGO_CLANS_DEPOSIT_CENTER");
 
-			client_print_color(id, id, "^x04[CS:GO]^x01 Wpisz ilosc Euro, ktora chcesz^x03 wplacic^x01.");
+			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_DEPOSIT_CHAT");
 		} case 2: {
-			client_cmd(id, "messagemode PODAJ_ILOSC_WYPLACANEGO_EURO");
+			client_cmd(id, "messagemode ENTER_EURO_AMOUNT_TO_WITHDRAW");
 
-			client_print(id, print_center, "Wpisz ilosc Euro, ktora chcesz wyplacic");
+			client_print(id, print_center, "%L", id, "CSGO_CLANS_WITHDRAW_CENTER");
 
-			client_print_color(id, id, "^x04[CS:GO]^x01 Wpisz ilosc Euro, ktora chcesz^x03 wyplacic^x01.");
+			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_WITHDRAW_CHAT");
 		}
 	}
 
@@ -446,22 +463,35 @@ public leader_menu(id)
 
 	ArrayGetArray(csgoClans, get_clan_id(clan[id]), csgoClan);
 
-	formatex(menuData, charsmax(menuData), "\yZarzadzaj \rKlanem^n\wStan: \y%i/%i Czlonkow \w| \y%.2f Euro\w", csgoClan[CLAN_MEMBERS], csgoClan[CLAN_LEVEL] * cvarMembersPerLevel + cvarMembersStart, csgoClan[CLAN_MONEY]);
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_LEADER_MENU", csgoClan[CLAN_MEMBERS], csgoClan[CLAN_LEVEL] * cvarMembersPerLevel + cvarMembersStart, csgoClan[CLAN_MONEY]);
 
 	new menu = menu_create(menuData, "leader_menu_handle"), callback = menu_makecallback("leader_menu_callback");
 
-	if (csgoClan[CLAN_LEVEL] != cvarLevelMax) formatex(menuData, charsmax(menuData), "Rozbudowa \yKlanu \w[\rPoziom: \y%i/%i\w] [\rKoszt: \y%i Euro\w]", csgoClan[CLAN_LEVEL], cvarLevelMax, floatround(cvarLevelCost + cvarNextLevelCost * csgoClan[CLAN_LEVEL]));
-	else formatex(menuData, charsmax(menuData), "Rozbudowa \yKlanu \w[\rPoziom: \y%i/%i\w]", csgoClan[CLAN_LEVEL], cvarLevelMax);
+	if (csgoClan[CLAN_LEVEL] != cvarLevelMax) formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_LEADER_UPGRADE", csgoClan[CLAN_LEVEL], cvarLevelMax, floatround(cvarLevelCost + cvarNextLevelCost * csgoClan[CLAN_LEVEL]));
+	else formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_LEADER_UPGRADE_MAX", csgoClan[CLAN_LEVEL], cvarLevelMax);
 
 	menu_additem(menu, menuData, _, _, callback);
-	menu_additem(menu, "\wRozwiaz \yKlan", _, _, callback);
-	menu_additem(menu, "\wZapros \yGracza", _, _, callback);
-	menu_additem(menu, "\wZarzadzaj \yCzlonkami", _, _, callback);
-	menu_additem(menu, "\wRozpatrz \yPodania", _, _, callback);
-	menu_additem(menu, "\wWojny \yKlanu", _, _, callback);
-	menu_additem(menu, "\wZmien \yNazwe Klanu^n", _, _, callback);
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wroc");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_LEADER_DISBAND");
+	menu_additem(menu, menuData, _, _, callback);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_LEADER_INVITE");
+	menu_additem(menu, menuData, _, _, callback);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_LEADER_MANAGE");
+	menu_additem(menu, menuData, _, _, callback);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_LEADER_REVIEW");
+	menu_additem(menu, menuData, _, _, callback);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_LEADER_WARS");
+	menu_additem(menu, menuData, _, _, callback);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_LEADER_NAME");
+	menu_additem(menu, menuData, _, _, callback);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_BACK");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	menu_display(id, menu);
 
@@ -498,7 +528,7 @@ public leader_menu_handle(id, menu, item)
 			ArrayGetArray(csgoClans, get_clan_id(clan[id]), csgoClan);
 
 			if (csgoClan[CLAN_LEVEL] == cvarLevelMax) {
-				client_print_color(id, id, "^x04[CS:GO]^x01 Twoj klan jest juz rozbudowany na maksymalny Poziom.");
+				client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_LEADER_MAX_LEVEL");
 
 				leader_menu(id);
 
@@ -508,7 +538,7 @@ public leader_menu_handle(id, menu, item)
 			new Float:remainingEuro = csgoClan[CLAN_MONEY] - (cvarLevelCost + cvarNextLevelCost * csgoClan[CLAN_LEVEL]);
 
 			if (remainingEuro < 0.0) {
-				client_print_color(id, id, "^x04[CS:GO]^x01 Twoj klan nie ma wystarczajacej ilosci Euro w banku.");
+				client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_LEADER_NO_MONEY");
 
 				leader_menu(id);
 
@@ -525,10 +555,10 @@ public leader_menu_handle(id, menu, item)
 			for (new player = 1; player <= MAX_PLAYERS; player++) {
 				if (!is_user_connected(player) || player == id || clan[player] != clan[id]) continue;
 
-				client_print_color(player, player, "^x04[CS:GO]^x03 %s^x01 rozbudowal klan do^x03 %i Poziomu^x01!", name, csgoClan[CLAN_LEVEL]);
+				client_print_color(player, player, "^4[CS:GO]^3 %L", id, "CSGO_CLANS_LEADER_UPGRADED", name, csgoClan[CLAN_LEVEL]);
 			}
 
-			client_print_color(id, id, "^x04[CS:GO]^x01 Rozbudowales klan do^x03 %i Poziomu^x01!", csgoClan[CLAN_LEVEL]);
+			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_LEADER_UPGRADED2", csgoClan[CLAN_LEVEL]);
 
 			ArraySetArray(csgoClans, get_clan_id(clan[id]), csgoClan);
 
@@ -540,7 +570,7 @@ public leader_menu_handle(id, menu, item)
 		case 3: members_menu(id);
 		case 4: applications_menu(id);
 		case 5: wars_menu(id);
-		case 6: client_cmd(id, "messagemode PODAJ_NOWA_NAZWE_KLANU");
+		case 6: client_cmd(id, "messagemode SELECT_NEW_CLAN_NAME");
 	}
 
 	return PLUGIN_HANDLED;
@@ -550,7 +580,11 @@ public disband_menu(id)
 {
 	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
 
-	new itemData[64], menu = menu_create("\wJestes \ypewien\w, ze chcesz \rrozwiazac\w klan?", "disband_menu_handle");
+	new menuData[64];
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_DISBAND_CONFIRMATION");
+
+	new menu = menu_create(menuData, "disband_menu_handle");
 
 	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_YES");
 	menu_additem(menu, menuData);
@@ -558,8 +592,8 @@ public disband_menu(id)
 	formatex(menuData, charsmax(menuData), "%L^n", id, "CSGO_MENU_NO");
 	menu_additem(menu, menuData);
 
-	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_EXIT");
-	menu_setprop(menu, MPROP_EXITNAME, itemData);
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	menu_display(id, menu);
 
@@ -580,7 +614,7 @@ public disband_menu_handle(id, menu, item)
 
 	switch (item) {
 		case 0: {
-			client_print_color(id, id, "^x04[CS:GO]^x01 Rozwiazales swoj klan.");
+			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_DISBAND_SUCCESS");
 
 			remove_clan(id);
 
@@ -595,9 +629,11 @@ public invite_menu(id)
 {
 	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
 
-	new userName[32], userId[6], playersAvailable = 0;
+	new menuData[64], userName[32], userId[6], playersAvailable = 0;
 
-	new menu = menu_create("\yWybierz \rGracza \ydo zaproszenia:", "invite_menu_handle");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_INVITE_MENU");
+
+	new menu = menu_create(menuData, "invite_menu_handle");
 
 	for (new player = 1; player <= MAX_PLAYERS; player++) {
 		if (!is_user_connected(player) || is_user_hltv(player) || is_user_bot(player) || player == id || clan[player]) continue;
@@ -611,7 +647,7 @@ public invite_menu(id)
 		menu_additem(menu, userName, userId);
 	}
 
-	if (!playersAvailable) client_print_color(id, id, "^x04[CS:GO]^x01 Na serwerze nie ma gracza, ktorego moglbys zaprosic!");
+	if (!playersAvailable) client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_INVITE_NONE");
 	else menu_display(id, menu);
 
 	return PLUGIN_HANDLED;
@@ -636,20 +672,20 @@ public invite_menu_handle(id, menu, item)
 	new player = str_to_num(itemData);
 
 	if (!is_user_connected(player)) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Wybranego gracza nie ma juz na serwerze.");
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_INVITE_UNAVAILABLE");
 
 		return PLUGIN_HANDLED;
 	}
 
 	if (get_clan_money(clan[id]) < cvarJoinFee) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 W banku klanu nie ma wystarczajaco pieniedzy na oplate wpisowa (^x04Wymagane %i Euro^x01).", floatround(cvarJoinFee));
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_INVITE_NO_MONEY", floatround(cvarJoinFee));
 
 		return PLUGIN_HANDLED;
 	}
 
 	invite_confirm_menu(id, player);
 
-	client_print_color(id, id, "^x04[CS:GO]^x01 Zaprosiles^x03 %s^x01 do do twojego klanu.", userName);
+	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_INVITE_INVITED", userName);
 
 	show_clan_menu(id);
 
@@ -666,14 +702,17 @@ public invite_confirm_menu(id, player)
 
 	get_clan_info(clan[id], CLAN_NAME, clanName, charsmax(clanName));
 
-	formatex(menuData, charsmax(menuData), "\r%s\w zaprosil cie do klanu \y%s\w.", userName, clanName);
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_INVITE_INVITATION", userName, clanName);
 
 	new menu = menu_create(menuData, "invite_confirm_menu_handle");
 
 	num_to_str(id, userId, charsmax(userId));
 
-	menu_additem(menu, "Dolacz", userId);
-	menu_additem(menu, "Odrzuc");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_INVITE_JOIN");
+	menu_additem(menu, menuData, userId);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_INVITE_DECLINE");
+	menu_additem(menu, menuData);
 
 	menu_display(player, menu);
 
@@ -697,25 +736,25 @@ public invite_confirm_menu_handle(id, menu, item)
 	new player = str_to_num(itemData);
 
 	if (!is_user_connected(id)) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Gracza, ktory cie zaprosil nie ma juz na serwerze.");
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_INVITE_DISCONNECTED");
 
 		return PLUGIN_HANDLED;
 	}
 
 	if (clan[id]) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Nie mozesz dolaczyc do klanu, jesli nalezysz do innego.");
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_INVITE_ALREADY_IN");
 
 		return PLUGIN_HANDLED;
 	}
 
 	if (((get_clan_info(clan[player], CLAN_LEVEL) * cvarMembersPerLevel) + cvarMembersStart) <= get_clan_info(clan[player], CLAN_MEMBERS)) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Niestety, w tym klanie nie ma juz wolnego miejsca.");
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_INVITE_FULL");
 
 		return PLUGIN_HANDLED;
 	}
 
 	if (get_clan_money(clan[player]) < cvarJoinFee) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 W banku klanu nie ma wystarczajaco pieniedzy na oplate wpisowa (^x04Wymagane %i Euro^x01).", floatround(cvarJoinFee));
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_INVITE_NO_MONEY", floatround(cvarJoinFee));
 
 		return PLUGIN_HANDLED;
 	}
@@ -728,7 +767,7 @@ public invite_confirm_menu_handle(id, menu, item)
 
 	set_clan_info(clan[id], CLAN_MONEY, _, -cvarJoinFee);
 
-	client_print_color(id, id, "^x04[CS:GO]^x01 Dolaczyles do klanu^x03 %s^01.", clanName);
+	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_INVITE_SUCCESS", clanName);
 
 	return PLUGIN_HANDLED;
 }
@@ -744,7 +783,7 @@ public change_name_handle(id)
 	trim(clanName);
 
 	if (equal(clanName, "")) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Nie wpisano nowej nazwy klanu.");
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_CREATE_NO_NAME");
 
 		show_clan_menu(id);
 
@@ -752,7 +791,7 @@ public change_name_handle(id)
 	}
 
 	if (strlen(clanName) < 3) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Nazwa klanu musi miec co najmniej 3 znaki.");
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_CREATE_NAME_TOO_SHORT");
 
 		show_clan_menu(id);
 
@@ -760,7 +799,7 @@ public change_name_handle(id)
 	}
 
 	if (check_clan_name(clanName)) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Klan z taka nazwa juz istnieje.");
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_CREATE_NAME_EXISTS");
 
 		show_clan_menu(id);
 
@@ -769,7 +808,7 @@ public change_name_handle(id)
 
 	set_clan_info(clan[id], CLAN_NAME, _, _, clanName, charsmax(clanName));
 
-	client_print_color(id, id, "^x04[CS:GO]^x01 Zmieniles nazwe klanu na^x03 %s^x01.", clanName);
+	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_NAME_CHANGED", clanName);
 
 	return PLUGIN_CONTINUE;
 }
@@ -801,7 +840,11 @@ public members_menu_handle(failState, Handle:query, error[], errorNum, tempId[],
 
 	if (!is_user_connected(id)) return PLUGIN_HANDLED;
 
-	new itemData[64], userName[32], status, menu = menu_create("\yZarzadzaj \rCzlonkami:^n\wWybierz \yczlonka\w, aby pokazac mozliwe opcje.", "member_menu_handle");
+	new itemData[64], userName[64], status, menu;
+
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CLANS_MANAGE_MENU");
+
+	menu = menu_create(itemData, "member_menu_handle");
 
 	while (SQL_MoreResults(query)) {
 		SQL_ReadResult(query, SQL_FieldNameToNum(query, "name"), userName, charsmax(userName));
@@ -811,9 +854,9 @@ public members_menu_handle(failState, Handle:query, error[], errorNum, tempId[],
 		formatex(itemData, charsmax(itemData), "%s#%i", userName, status);
 
 		switch (status) {
-			case STATUS_MEMBER: add(userName, charsmax(userName), " \y[Czlonek]");
-			case STATUS_DEPUTY: add(userName, charsmax(userName), " \y[Zastepca]");
-			case STATUS_LEADER: add(userName, charsmax(userName), " \y[Przywodca]");
+			case STATUS_MEMBER: format(userName, charsmax(userName), "%s \y[%L]", id, "CSGO_CLANS_STATUS_MEMBER", userName);
+			case STATUS_DEPUTY: format(userName, charsmax(userName), "%s \y[%L]", id, "CSGO_CLANS_STATUS_DEPUTY", userName);
+			case STATUS_LEADER: format(userName, charsmax(userName), "%s \y[%L]", id, "CSGO_CLANS_STATUS_LEADER", userName);
 		}
 
 		menu_additem(menu, userName, itemData);
@@ -856,7 +899,7 @@ public member_menu_handle(id, menu, item)
 	new flag = str_to_num(tempFlag), userId = get_user_index(userName);
 
 	if (userId == id) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Nie mozesz zarzadzac soba!");
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_MANAGE_NO_YOURSELF");
 
 		members_menu(id);
 
@@ -866,7 +909,7 @@ public member_menu_handle(id, menu, item)
 	if (clan[userId]) chosenId[id] = get_user_userid(userId);
 
 	if (flag == STATUS_LEADER) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Nie mozna zarzadzac przywodca klanu!");
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_MANAGE_NO_LEADER");
 
 		members_menu(id);
 
@@ -874,17 +917,27 @@ public member_menu_handle(id, menu, item)
 	}
 
 	formatex(chosenName[id], charsmax(chosenName), userName);
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CLANS_MANAGE_SELECT");
 
-	new itemData[64], menu = menu_create("\yWybierz \rOpcje:", "member_options_menu_handle");
+	new menu = menu_create(itemData, "member_options_menu_handle");
 
 	if (get_user_status(id) == STATUS_LEADER) {
-		menu_additem(menu, "Przekaz \yPrzywodctwo", "1");
+		formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CLANS_MANAGE_TRANSFER_LEADERSHIP");
+		menu_additem(menu, itemData, "1");
 
-		if (flag == STATUS_MEMBER) menu_additem(menu, "Mianuj \yZastepce", "2");
-		if (flag == STATUS_DEPUTY) menu_additem(menu, "Degraduj \yZastepce", "3");
+		if (flag == STATUS_MEMBER) {
+			formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CLANS_MANAGE_ASSIGN_DEPUTY");
+			menu_additem(menu, itemData, "2");
+		}
+
+		if (flag == STATUS_DEPUTY) {
+			formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CLANS_MANAGE_DEGRADE_DEPUTY");
+			menu_additem(menu, itemData, "3");
+		}
 	}
 
-	menu_additem(menu, "Wyrzuc \yGracza", "4");
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CLANS_MANAGE_KICK_MEMBER");
+	menu_additem(menu, itemData, "4");
 
 	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_EXIT");
 	menu_setprop(menu, MPROP_EXITNAME, itemData);
@@ -935,22 +988,22 @@ public update_member(id, status)
 					set_user_status(id, STATUS_DEPUTY);
 					set_user_status(player, STATUS_LEADER);
 
-					client_print_color(player, id, "^x04[CS:GO]^x01 Zostales mianowany przywodca klanu!");
+					client_print_color(player, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_MANAGE_UPDATE_LEADER");
 				}
 				case STATUS_DEPUTY: {
 					set_user_status(player, STATUS_DEPUTY);
 
-					client_print_color(player, id, "^x04[CS:GO]^x01 Zostales zastepca przywodcy klanu!");
+					client_print_color(player, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_MANAGE_UPDATE_DEPUTY");
 				}
 				case STATUS_MEMBER: {
 					set_user_status(player, STATUS_MEMBER);
 
-					client_print_color(player, id, "^x04[CS:GO]^x01 Zostales zdegradowany do rangi czlonka klanu.");
+					client_print_color(player, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_MANAGE_UPDATE_MEMBER");
 				}
 				case STATUS_NONE: {
 					set_user_clan(player);
 
-					client_print_color(player, id, "^x04[CS:GO]^x01 Zostales wyrzucony z klanu.");
+					client_print_color(player, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_MANAGE_UPDATE_NONE");
 				}
 			}
 
@@ -960,10 +1013,10 @@ public update_member(id, status)
 		}
 
 		switch (status) {
-			case STATUS_LEADER: client_print_color(player, id, "^x04[CS:GO]^x03 %s^01 zostal nowym przywodca klanu.", chosenName[id]);
-			case STATUS_DEPUTY: client_print_color(player, id, "^x04[CS:GO]^x03 %s^x01 zostal zastepca przywodcy klanu.", chosenName[id]);
-			case STATUS_MEMBER: client_print_color(player, id, "^x04[CS:GO]^x03 %s^x01 zostal zdegradowany do rangi czlonka klanu.", chosenName[id]);
-			case STATUS_NONE: client_print_color(player, id, "^x04[CS:GO]^x03 %s^01 zostal wyrzucony z klanu.", chosenName[id]);
+			case STATUS_LEADER: client_print_color(player, id, "^4[CS:GO]^3 %L", id, "CSGO_CLANS_MANAGE_UPDATE_LEADER2", chosenName[id]);
+			case STATUS_DEPUTY: client_print_color(player, id, "^4[CS:GO]^3 %L", id, "CSGO_CLANS_MANAGE_UPDATE_DEPUTY2", chosenName[id]);
+			case STATUS_MEMBER: client_print_color(player, id, "^4[CS:GO]^3 %L", id, "CSGO_CLANS_MANAGE_UPDATE_MEMBER2", chosenName[id]);
+			case STATUS_NONE: client_print_color(player, id, "^4[CS:GO]^3 %L", id, "CSGO_CLANS_MANAGE_UPDATE_NONE2", chosenName[id]);
 		}
 	}
 
@@ -1006,7 +1059,11 @@ public applications_menu_handle(failState, Handle:query, error[], errorNum, temp
 
 	if (!is_user_connected(id)) return PLUGIN_HANDLED;
 
-	new itemName[128], userName[32], rankName[32], Float:money, rank, usersCount = 0, menu = menu_create("\yRozpatrywanie \rPodan:^n\wWybierz \rpodanie\w, aby je \yzatwierdzic\w lub \yodrzucic\w.", "applications_confirm_menu");
+	new itemName[128], userName[32], rankName[32], Float:money, rank, usersCount = 0;
+
+	formatex(itemName, charsmax(itemName), "%L", id, "CSGO_CLANS_APPLICATION_MENU");
+
+	new menu = menu_create(itemName, "applications_confirm_menu");
 
 	while (SQL_MoreResults(query)) {
 		SQL_ReadResult(query, SQL_FieldNameToNum(query, "name"), userName, charsmax(userName));
@@ -1016,7 +1073,7 @@ public applications_menu_handle(failState, Handle:query, error[], errorNum, temp
 
 		csgo_get_rank_name(rank, rankName, charsmax(rankName))
 
-		formatex(itemName, charsmax(itemName), "\w%s \y(Ranga: \r%s\y | Euro: \r%.2f\y)", userName, rankName, money);
+		formatex(itemName, charsmax(itemName), "%L", id, "CSGO_CLANS_APPLICATION_ITEM", userName, rankName, money);
 
 		menu_additem(menu, itemName, userName);
 
@@ -1037,7 +1094,7 @@ public applications_menu_handle(failState, Handle:query, error[], errorNum, temp
 	if (!usersCount) {
 		menu_destroy(menu);
 
-		client_print_color(id, id, "^x04[CS:GO]^x01 Nie ma zadnych niezatwierdzonych podan do klanu!");
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CLANS_APPLICATION_EMPTY");
 	} else menu_display(id, menu);
 
 	return PLUGIN_HANDLED;
@@ -1096,13 +1153,13 @@ public applications_confirm_handle(id, menu, item)
 	if (item == 2) {
 		remove_application(id, userName);
 
-		client_print_color(id, id, "^x04[CS:GO]^x01 Odrzuciles podanie gracza^x03 %s^01 o dolaczenie do klanu.", userName);
+		client_print_color(id, id, "^4[CS:GO]^1 Odrzuciles podanie gracza^3 %s^01 o dolaczenie do klanu.", userName);
 
 		return PLUGIN_HANDLED;
 	}
 
 	if (check_user_clan(userName)) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Gracz dolaczyl juz do innego klanu!");
+		client_print_color(id, id, "^4[CS:GO]^1 Gracz dolaczyl juz do innego klanu!");
 
 		show_clan_menu(id);
 
@@ -1110,14 +1167,14 @@ public applications_confirm_handle(id, menu, item)
 	}
 
 	if (((get_clan_info(clan[id], CLAN_LEVEL) * cvarMembersPerLevel) + cvarMembersStart) <= get_clan_info(clan[id], CLAN_MEMBERS)) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Klan osiagnal maksymalna na ten moment liczbe czlonkow!");
+		client_print_color(id, id, "^4[CS:GO]^1 Klan osiagnal maksymalna na ten moment liczbe czlonkow!");
 
 		return PLUGIN_HANDLED;
 	}
 
 	if (!item) {
 		if (get_clan_money(clan[id]) < cvarJoinFee) {
-			client_print_color(id, id, "^x04[CS:GO]^x01 W banku klanu nie ma wystarczajaco pieniedzy na oplate wpisowa (^x04Wymagane %i Euro^x01).", floatround(cvarJoinFee));
+			client_print_color(id, id, "^4[CS:GO]^1 W banku klanu nie ma wystarczajaco pieniedzy na oplate wpisowa (^4Wymagane %i Euro^1).", floatround(cvarJoinFee));
 
 			return PLUGIN_HANDLED;
 		}
@@ -1128,7 +1185,7 @@ public applications_confirm_handle(id, menu, item)
 
 		if (is_user_connected(userId)) {
 			if (csgo_get_money(id) < cvarJoinFee) {
-				client_print_color(id, id, "^x04[CS:GO]^x01 Gracz nie ma wystarczajaco pieniedzy na oplate wpisowa (^x04Wymagane %i Euro^x01).", floatround(cvarJoinFee));
+				client_print_color(id, id, "^4[CS:GO]^1 Gracz nie ma wystarczajaco pieniedzy na oplate wpisowa (^4Wymagane %i Euro^1).", floatround(cvarJoinFee));
 
 				return PLUGIN_HANDLED;
 			}
@@ -1154,7 +1211,7 @@ public applications_confirm_handle(id, menu, item)
 			SQL_FreeHandle(query);
 
 			if (money < cvarJoinFee) {
-				client_print_color(id, id, "^x04[CS:GO]^x01 Gracz nie ma wystarczajaco pieniedzy na oplate wpisowa (^x04Wymagane %i Euro^x01).", floatround(cvarJoinFee));
+				client_print_color(id, id, "^4[CS:GO]^1 Gracz nie ma wystarczajaco pieniedzy na oplate wpisowa (^4Wymagane %i Euro^1).", floatround(cvarJoinFee));
 
 				return PLUGIN_HANDLED;
 			}
@@ -1175,7 +1232,7 @@ public applications_confirm_handle(id, menu, item)
 
 	accept_application(id, userName);
 
-	client_print_color(id, id, "^x04[CS:GO]^x01 Zaakceptowales podanie gracza^x03 %s^01 o dolaczenie do klanu.", userName);
+	client_print_color(id, id, "^4[CS:GO]^1 Zaakceptowales podanie gracza^3 %s^01 o dolaczenie do klanu.", userName);
 
 	return PLUGIN_HANDLED;
 }
@@ -1302,7 +1359,7 @@ public show_war_list_menu(failState, Handle:query, error[], errorNum, tempId[], 
 	if (!warsCount) {
 		menu_destroy(menu);
 
-		client_print_color(id, id, "^x04[CS:GO]^x01 Twoj klan aktualnie nie prowadzi zadnych wojen!");
+		client_print_color(id, id, "^4[CS:GO]^1 Twoj klan aktualnie nie prowadzi zadnych wojen!");
 	} else menu_display(id, menu);
 
 	return PLUGIN_HANDLED;
@@ -1352,8 +1409,8 @@ public declare_war_menu_handle(id, menu, item)
 	if (item == MENU_EXIT) return PLUGIN_HANDLED;
 
 	switch(item) {
-		case 0: client_cmd(id, "messagemode PODAJ_LICZBE_FRAGOW");
-		case 1: client_cmd(id, "messagemode PODAJ_WYSOKOSC_NAGRODY");
+		case 0: client_cmd(id, "messagemode ENTER_KILLS_AMOUNT");
+		case 1: client_cmd(id, "messagemode ENTER_PRIZE_EURO_AMOUNT");
 		case 2: {
 			new queryData[256], tempId[1];
 
@@ -1413,7 +1470,7 @@ public declare_war_select(failState, Handle:query, error[], errorNum, tempId[], 
 	if (!clansCount) {
 		menu_destroy(menu);
 
-		client_print_color(id, id, "^x04[CS:GO]^x01 Nie ma klanu, ktoremu mozna by wypowiedziec wojne!");
+		client_print_color(id, id, "^4[CS:GO]^1 Nie ma klanu, ktoremu mozna by wypowiedziec wojne!");
 	} else menu_display(id, menu);
 
 	return PLUGIN_HANDLED;
@@ -1429,7 +1486,7 @@ public declare_war_confirm(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	new tempData[192], itemData[64], clanName[32], tempClanId[6], itemAccess, menuCallback;
+	new tempData[192], menuData[64], itemData[64], clanName[32], tempClanId[6], itemAccess, menuCallback;
 
 	menu_item_getinfo(menu, item, itemAccess, itemData, charsmax(itemData), _, _, menuCallback);
 
@@ -1445,8 +1502,8 @@ public declare_war_confirm(id, menu, item)
 	formatex(menuData, charsmax(menuData), "%L^n", id, "CSGO_MENU_NO");
 	menu_additem(menu, menuData);
 
-	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_EXIT");
-	menu_setprop(menu, MPROP_EXITNAME, itemData);
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	menu_display(id, menu);
 
@@ -1481,7 +1538,7 @@ public declare_war_confirm_handle(id, menu, item)
 
 	declare_war(id, str_to_num(tempClanId));
 
-	client_print_color(id, id, "^x04[CS:GO]^x01 Twoj klan wypowiedzial wojne klanowi^x03 %s^x01.", clanName);
+	client_print_color(id, id, "^4[CS:GO]^1 Twoj klan wypowiedzial wojne klanowi^3 %s^1.", clanName);
 
 	return PLUGIN_HANDLED;
 }
@@ -1549,7 +1606,7 @@ public accept_war_menu_handle(failState, Handle:query, error[], errorNum, tempId
 	if (!warsCount) {
 		menu_destroy(menu);
 
-		client_print_color(id, id, "^x04[CS:GO]^x01 Nie ma zadnych deklaracji wojen do zaakceptowania!");
+		client_print_color(id, id, "^4[CS:GO]^1 Nie ma zadnych deklaracji wojen do zaakceptowania!");
 	} else menu_display(id, menu);
 
 	return PLUGIN_HANDLED;
@@ -1617,7 +1674,7 @@ public accept_war_confirm_handle(id, menu, item)
 	new clanId = str_to_num(dataParts[1]), Float:halfReward = str_to_float(dataParts[4]) / 2.0;
 
 	if (get_clan_money(clan[id]) < halfReward) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 W banku klanu nie ma wystarczajaco^x03 Euro^x01, aby pokryc polowe^x04 nagrody^x01!");
+		client_print_color(id, id, "^4[CS:GO]^1 W banku klanu nie ma wystarczajaco^3 Euro^1, aby pokryc polowe^4 nagrody^1!");
 
 		wars_menu(id);
 
@@ -1625,7 +1682,7 @@ public accept_war_confirm_handle(id, menu, item)
 	}
 
 	if (get_clan_money(clanId) < halfReward) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 W banku klanu^x03 %s^x01 nie ma wystarczajaco^x03 Euro^x01, aby pokryc polowe^x04 nagrody^x01!", dataParts[0]);
+		client_print_color(id, id, "^4[CS:GO]^1 W banku klanu^3 %s^1 nie ma wystarczajaco^3 Euro^1, aby pokryc polowe^4 nagrody^1!", dataParts[0]);
 
 		wars_menu(id);
 
@@ -1699,7 +1756,7 @@ public remove_war_menu_handle(failState, Handle:query, error[], errorNum, tempId
 	if (!warsCount) {
 		menu_destroy(menu);
 
-		client_print_color(id, id, "^x04[CS:GO]^x01 Nie ma zadnych deklaracji wojen do anulowania!");
+		client_print_color(id, id, "^4[CS:GO]^1 Nie ma zadnych deklaracji wojen do anulowania!");
 	} else menu_display(id, menu);
 
 	return PLUGIN_HANDLED;
@@ -1715,7 +1772,7 @@ public remove_war_confirm(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	new dataParts[4][32], tempData[192], itemData[64], itemAccess, menuCallback;
+	new dataParts[4][32], tempData[192], itemData[64], menuData[64], itemAccess, menuCallback;
 
 	menu_item_getinfo(menu, item, itemAccess, itemData, charsmax(itemData), _, _, menuCallback);
 
@@ -1731,8 +1788,8 @@ public remove_war_confirm(id, menu, item)
 	formatex(menuData, charsmax(menuData), "%L^n", id, "CSGO_MENU_NO");
 	menu_additem(menu, menuData);
 
-	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_EXIT");
-	menu_setprop(menu, MPROP_EXITNAME, itemData);
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	menu_display(id, menu);
 
@@ -1765,8 +1822,8 @@ public remove_war_confirm_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	if (remove_war(warId)) client_print_color(id, id, "^x04[CS:GO]^x01 Anulowales deklaracje wojny z klanem^x03 %s^x01.", dataParts[0]);
-	else client_print_color(id, id, "^x04[CS:GO]^x01 Wojna z klanem^x03 %s^x01 juz sie rozpoczela!", dataParts[0]);
+	if (remove_war(warId)) client_print_color(id, id, "^4[CS:GO]^1 Anulowales deklaracje wojny z klanem^3 %s^1.", dataParts[0]);
+	else client_print_color(id, id, "^4[CS:GO]^1 Wojna z klanem^3 %s^1 juz sie rozpoczela!", dataParts[0]);
 
 	return PLUGIN_HANDLED;
 }
@@ -1783,13 +1840,13 @@ public deposit_money_handle(id)
 	moneyAmount = str_to_float(moneyData);
 
 	if (moneyAmount < 0.1) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Nie mozesz wplacic mniej niz^x03 0.1 Euro^x01!");
+		client_print_color(id, id, "^4[CS:GO]^1 Nie mozesz wplacic mniej niz^3 0.1 Euro^1!");
 
 		return PLUGIN_HANDLED;
 	}
 
 	if (csgo_get_money(id) - moneyAmount < 0.0) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Nie masz tyle^x03 Euro^x01!");
+		client_print_color(id, id, "^4[CS:GO]^1 Nie masz tyle^3 Euro^1!");
 
 		return PLUGIN_HANDLED;
 	}
@@ -1800,8 +1857,8 @@ public deposit_money_handle(id)
 
 	add_payment(id, moneyAmount);
 
-	client_print_color(id, id, "^x04[CS:GO]^x01 Wplaciles^x03 %.2f^x01 Euro na rzecz klanu.", moneyAmount);
-	client_print_color(id, id, "^x04[CS:GO]^x01 Aktualnie twoj klan ma w banku^x03 %.2f^x01 Euro.", get_clan_info(clan[id], CLAN_MONEY));
+	client_print_color(id, id, "^4[CS:GO]^1 Wplaciles^3 %.2f^1 Euro na rzecz klanu.", moneyAmount);
+	client_print_color(id, id, "^4[CS:GO]^1 Aktualnie twoj klan ma w banku^3 %.2f^1 Euro.", get_clan_info(clan[id], CLAN_MONEY));
 
 	return PLUGIN_HANDLED;
 }
@@ -1818,13 +1875,13 @@ public withdraw_money_handle(id)
 	moneyAmount = str_to_float(moneyData);
 
 	if (moneyAmount < 0.1) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Nie mozesz wyplacic mniej niz^x03 0.1 Euro^x01!");
+		client_print_color(id, id, "^4[CS:GO]^1 Nie mozesz wyplacic mniej niz^3 0.1 Euro^1!");
 
 		return PLUGIN_HANDLED;
 	}
 
 	if (moneyAmount > get_clan_money(clan[id])) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 W banku klanu nie ma tyle^x03 Euro^x01!");
+		client_print_color(id, id, "^4[CS:GO]^1 W banku klanu nie ma tyle^3 Euro^1!");
 
 		return PLUGIN_HANDLED;
 	}
@@ -1835,8 +1892,8 @@ public withdraw_money_handle(id)
 
 	add_payment(id, moneyAmount, true);
 
-	client_print_color(id, id, "^x04[CS:GO]^x01 Wyplaciles^x03 %.2f^x01 Euro z banku klanu.", moneyAmount);
-	client_print_color(id, id, "^x04[CS:GO]^x01 Aktualnie twoj klan ma w banku^x03 %.2f^x01 Euro.", get_clan_info(clan[id], CLAN_MONEY));
+	client_print_color(id, id, "^4[CS:GO]^1 Wyplaciles^3 %.2f^1 Euro z banku klanu.", moneyAmount);
+	client_print_color(id, id, "^4[CS:GO]^1 Aktualnie twoj klan ma w banku^3 %.2f^1 Euro.", get_clan_info(clan[id], CLAN_MONEY));
 
 	return PLUGIN_HANDLED;
 }
@@ -1853,7 +1910,7 @@ public set_war_frags_handle(id)
 	frags = str_to_num(fragsData);
 
 	if (frags <= 0) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Liczba fragow w wojnie nie moze byc mniejsza od^x03 jednego^x01!");
+		client_print_color(id, id, "^4[CS:GO]^1 Liczba fragow w wojnie nie moze byc mniejsza od^3 jednego^1!");
 
 		return PLUGIN_HANDLED;
 	}
@@ -1877,7 +1934,7 @@ public set_war_reward_handle(id)
 	reward = str_to_num(rewardData);
 
 	if (reward <= 0) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Nagroda za wygrana nie moze byc mniejsza od^x03 1 Euro^x01!");
+		client_print_color(id, id, "^4[CS:GO]^1 Nagroda za wygrana nie moze byc mniejsza od^3 1 Euro^1!");
 
 		return PLUGIN_HANDLED;
 	}
@@ -2017,7 +2074,7 @@ public say_text(msgId, msgDest, msgEnt)
 
 		get_clan_info(clan[id], CLAN_NAME, chatPrefix, charsmax(chatPrefix));
 
-		format(chatPrefix, charsmax(chatPrefix), "^x04[%s]", chatPrefix);
+		format(chatPrefix, charsmax(chatPrefix), "^4[%s]", chatPrefix);
 
 		if (!equal(tempMessage, "#Cstrike_Chat_All")) {
 			add(message, charsmax(message), chatPrefix);
@@ -2030,9 +2087,9 @@ public say_text(msgId, msgDest, msgEnt)
 	        set_msg_arg_string(4, "");
 
 	        add(message, charsmax(message), chatPrefix);
-	        add(message, charsmax(message), "^x03 ");
+	        add(message, charsmax(message), "^3 ");
 	        add(message, charsmax(message), playerName);
-	        add(message, charsmax(message), "^x01 :  ");
+	        add(message, charsmax(message), "^1 :  ");
 	        add(message, charsmax(message), tempMessage);
 		}
 
@@ -2115,7 +2172,7 @@ public application_menu_handle(failState, Handle:query, error[], errorNum, tempI
 	if (!clansCount) {
 		menu_destroy(menu);
 
-		client_print_color(id, id, "^x04[CS:GO]^x01 Nie ma klanu, do ktorego moglbys zlozyc podanie!");
+		client_print_color(id, id, "^4[CS:GO]^1 Nie ma klanu, do ktorego moglbys zlozyc podanie!");
 	} else menu_display(id, menu);
 
 	return PLUGIN_HANDLED;
@@ -2132,7 +2189,7 @@ public application_handle(id, menu, item)
 	}
 
 	if (clan[id]) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Nie mozesz zlozyc podania, jesli jestes juz w klanie!");
+		client_print_color(id, id, "^4[CS:GO]^1 Nie mozesz zlozyc podania, jesli jestes juz w klanie!");
 
 		show_clan_menu(id);
 
@@ -2148,7 +2205,7 @@ public application_handle(id, menu, item)
 	strtok(itemData, clanName, charsmax(clanName), tempClanId, charsmax(tempClanId), '#');
 
 	if (check_applications(id, str_to_num(tempClanId))) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Juz zlozyles podanie do tego klanu, poczekaj na jego rozpatrzenie!");
+		client_print_color(id, id, "^4[CS:GO]^1 Juz zlozyles podanie do tego klanu, poczekaj na jego rozpatrzenie!");
 
 		show_clan_menu(id);
 
@@ -2196,7 +2253,7 @@ public application_confirm_handle(id, menu, item)
 	new clanId = str_to_num(tempClanId);
 
 	if (clan[id]) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Nie mozesz zlozyc podania, jesli jestes juz w klanie!");
+		client_print_color(id, id, "^4[CS:GO]^1 Nie mozesz zlozyc podania, jesli jestes juz w klanie!");
 
 		show_clan_menu(id);
 
@@ -2205,7 +2262,7 @@ public application_confirm_handle(id, menu, item)
 
 	add_application(id, clanId);
 
-	client_print_color(id, id, "^x04[CS:GO]^x01 Zlozyles podanie do klanu^x03 %s^01.", clanName);
+	client_print_color(id, id, "^4[CS:GO]^1 Zlozyles podanie do klanu^3 %s^01.", clanName);
 
 	return PLUGIN_HANDLED;
 }
@@ -2417,9 +2474,9 @@ public show_clan_info(id)
 	if (get_user_status(id) > STATUS_MEMBER) {
 		new applications = get_applications_count(clan[id]), wars = get_wars_count(clan[id], 0);
 
-		if (applications > 0 && wars > 0) client_print_color(id, id, "^x04[CS:GO]^x01 Masz do rozpatrzenia^x03 %i podania o dolaczenie^x01 i^x03 %i deklaracje wojny^x01 w^x04 klanie^x01.", applications, wars);
-		else if(applications > 0) client_print_color(id, id, "^x04[CS:GO]^x01 Masz do rozpatrzenia^x03 %i podania o dolaczenie^x01 w^x04 klanie^x01.", applications);
-		else if(wars > 0) client_print_color(id, id, "^x04[CS:GO]^x01 Masz do rozpatrzenia^x03 %i deklaracje wojny^x01 w^x04 klanie^x01.", wars);
+		if (applications > 0 && wars > 0) client_print_color(id, id, "^4[CS:GO]^1 Masz do rozpatrzenia^3 %i podania o dolaczenie^1 i^3 %i deklaracje wojny^1 w^4 klanie^1.", applications, wars);
+		else if(applications > 0) client_print_color(id, id, "^4[CS:GO]^1 Masz do rozpatrzenia^3 %i podania o dolaczenie^1 w^4 klanie^1.", applications);
+		else if(wars > 0) client_print_color(id, id, "^4[CS:GO]^1 Masz do rozpatrzenia^3 %i deklaracje wojny^1 w^4 klanie^1.", wars);
 	}
 }
 
@@ -2512,7 +2569,7 @@ stock declare_war(id, clanId)
 	for (new i = 1; i <= MAX_PLAYERS; i++) {
 		if (!is_user_connected(i) || is_user_bot(i) || is_user_hltv(i) || clan[i] != clanId || get_user_status(i) <= STATUS_MEMBER) continue;
 
-		client_print_color(i, i, "^x04[CS:GO]^x01 Klan^x03 %s^x01 wypowiedzial^x04 wojne^x01 twojemu klanowi! Zaakceptuj lub odrzuc wojne.", clanName);
+		client_print_color(i, i, "^4[CS:GO]^1 Klan^3 %s^1 wypowiedzial^4 wojne^1 twojemu klanowi! Zaakceptuj lub odrzuc wojne.", clanName);
 	}
 }
 
@@ -2544,7 +2601,7 @@ stock accept_war(id, warId, clanId, duration, Float:money, const enemyClanName[]
 	for (new i = 1; i <= MAX_PLAYERS; i++) {
 		if (!is_user_connected(i) || is_user_bot(i) || is_user_hltv(i) || !clan[i] || (clan[i] != clan[id] && clan[i] != clanId)) continue;
 
-		client_print_color(i, i, "^x04[CS:GO]^x01 Twoj klan rozpoczal wojne z klanem^x03 %s^x01 (Fragi:^x04 %i^x01 | Nagroda:^x04 %i Euro^x01).", clan[i] == clan[id] ? clanName : enemyClanName, csgoWar[WAR_DURATION], csgoWar[WAR_REWARD]);
+		client_print_color(i, i, "^4[CS:GO]^1 Twoj klan rozpoczal wojne z klanem^3 %s^1 (Fragi:^4 %i^1 | Nagroda:^4 %i Euro^1).", clan[i] == clan[id] ? clanName : enemyClanName, csgoWar[WAR_DURATION], csgoWar[WAR_REWARD]);
 	}
 }
 
@@ -2595,7 +2652,7 @@ public remove_clan_wars(failState, Handle:query, error[], errorNum, tempId[], da
 			for (new i = 1; i <= MAX_PLAYERS; i++) {
 				if (!is_user_connected(i) || is_user_bot(i) || is_user_hltv(i) || clan[i] != enemyClan) continue;
 
-				client_print_color(i, i, "^x04[CS:GO]^x01 Klan^x03 %s^x01 zostal rozwiazany, a to konczy z nim wojne. Zwyciestwo!", clanName);
+				client_print_color(i, i, "^4[CS:GO]^1 Klan^3 %s^1 zostal rozwiazany, a to konczy z nim wojne. Zwyciestwo!", clanName);
 			}
 		} else {
 			formatex(queryData, charsmax(queryData), "UPDATE `csgo_clans` SET money = money + %.2f WHERE id = '%i'", reward, enemyClan);
@@ -2641,14 +2698,14 @@ stock check_war(killer, victim)
 				get_clan_info(clan[killer], CLAN_NAME, killerClan, charsmax(killerClan));
 				get_user_name(killer, killerName, charsmax(killerName));
 
-				client_print_color(killer, killer, "^x04[CS:GO]^x01 Zabijajac^x03 %s^x01 zakonczyles wojne z klanem^x03 %s^x01. Zwyciestwo!", victimName, victimClan);
-				client_print_color(victim, victim, "^x04[CS:GO]^x01 Ginac z rak^x03 %s^x01 zakonczyles wojne z klanem^x03 %s^x01. Porazka...", killerName, killerClan);
+				client_print_color(killer, killer, "^4[CS:GO]^1 Zabijajac^3 %s^1 zakonczyles wojne z klanem^3 %s^1. Zwyciestwo!", victimName, victimClan);
+				client_print_color(victim, victim, "^4[CS:GO]^1 Ginac z rak^3 %s^1 zakonczyles wojne z klanem^3 %s^1. Porazka...", killerName, killerClan);
 
 				for (new i = 1; i <= MAX_PLAYERS; i++) {
 					if (!is_user_connected(i) || is_user_bot(i) || is_user_hltv(i) || !clan[i] || i == killer || i == victim) continue;
 
-					if (clan[i] == clan[killer]) client_print_color(i, killer, "^x04[CS:GO]^x03 %s^x01 zabijajac^x03 %s^x01 zakonczyl wojne z klanem^x03 %s^x01. Zwyciestwo!", killerName, victimName, victimClan);
-					if (clan[i] == clan[victim]) client_print_color(i, victim, "^x04[CS:GO]^x03 %s^x01 ginac z rak^x03 %s^x01 zakonczyl wojne z klanem^x03 %s^x01. Porazka...", victimName, killerName, killerClan);
+					if (clan[i] == clan[killer]) client_print_color(i, killer, "^4[CS:GO]^3 %s^1 zabijajac^3 %s^1 zakonczyl wojne z klanem^3 %s^1. Zwyciestwo!", killerName, victimName, victimClan);
+					if (clan[i] == clan[victim]) client_print_color(i, victim, "^4[CS:GO]^3 %s^1 ginac z rak^3 %s^1 zakonczyl wojne z klanem^3 %s^1. Porazka...", victimName, killerName, killerClan);
 				}
 
 				set_clan_info(clan[killer], CLAN_MONEY, _, float(csgoWar[WAR_REWARD]));
@@ -2659,7 +2716,7 @@ stock check_war(killer, victim)
 				ArrayDeleteItem(csgoWars, i);
 
 			} else {
-				client_print_color(killer, killer, "^x04[CS:GO]^x01 Zabijajac^x03 %s^x01 zdobyles fraga w wojnie z klanem^x03 %s^x01. Wynik:^x04 %i - %i / %i^x01.", victimName, victimClan, csgoWar[progress], csgoWar[progress == WAR_PROGRESS ? WAR_PROGRESS2 : WAR_PROGRESS], csgoWar[WAR_DURATION]);
+				client_print_color(killer, killer, "^4[CS:GO]^1 Zabijajac^3 %s^1 zdobyles fraga w wojnie z klanem^3 %s^1. Wynik:^4 %i - %i / %i^1.", victimName, victimClan, csgoWar[progress], csgoWar[progress == WAR_PROGRESS ? WAR_PROGRESS2 : WAR_PROGRESS], csgoWar[WAR_DURATION]);
 
 				ArraySetArray(csgoWars, i, csgoWar);
 
@@ -2707,7 +2764,7 @@ stock add_application(id, clanId)
 	for (new i = 1; i <= MAX_PLAYERS; i++) {
 		if (!is_user_connected(i) || is_user_bot(i) || is_user_hltv(i) || clan[i] != clanId || get_user_status(i) <= STATUS_MEMBER) continue;
 
-		client_print_color(i, i, "^x04[CS:GO]^x03 %s^x01 zlozyl podanie do klanu!", userName);
+		client_print_color(i, i, "^4[CS:GO]^3 %s^1 zlozyl podanie do klanu!", userName);
 	}
 }
 
@@ -2743,7 +2800,7 @@ stock accept_application(id, const userName[])
 
 		set_user_clan(player, clan[id]);
 
-		client_print_color(player, player, "^x04[CS:GO]^x01 Zostales przyjety do klanu^x03 %s^x01!", clanName);
+		client_print_color(player, player, "^4[CS:GO]^1 Zostales przyjety do klanu^3 %s^1!", clanName);
 	} else {
 		set_clan_info(clan[id], CLAN_MEMBERS, 1);
 
@@ -2761,7 +2818,7 @@ stock remove_application(id, const name[] = "")
 		get_clan_info(clan[id], CLAN_NAME, clanName, charsmax(clanName));
 		get_user_name(id, userName, charsmax(userName));
 
-		client_print_color(player, player, "^x04[CS:GO]^x03 %s^x01 odrzucil twoje podanie do klanu^x03 %s^x01!", userName, clanName);
+		client_print_color(player, player, "^4[CS:GO]^3 %s^1 odrzucil twoje podanie do klanu^3 %s^1!", userName, clanName);
 	}
 
 	new queryData[192], safeName[64];
@@ -2870,7 +2927,7 @@ stock remove_clan(id)
 		if (clan[player] == clan[id]) {
 			clan[player] = 0;
 
-			client_print_color(player, player, "^x04[CS:GO]^x01 Twoj klan zostal rozwiazany.");
+			client_print_color(player, player, "^4[CS:GO]^1 Twoj klan zostal rozwiazany.");
 		}
 	}
 
