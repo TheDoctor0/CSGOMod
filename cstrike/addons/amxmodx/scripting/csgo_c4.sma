@@ -53,7 +53,7 @@ public weapon_deploy(ent)
 
 public set_model(ent, model[])
 {
-	if (equali(model,"models/w_c4.mdl")) {
+	if (equali(model, "models/w_c4.mdl")) {
 		engfunc(EngFunc_SetModel, ent, modelsC4[2]);
 
 		return FMRES_SUPERCEDE;

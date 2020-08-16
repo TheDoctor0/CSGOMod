@@ -443,7 +443,7 @@ public display_hud(id)
 		hours++;
 	}
 
-	csgo_get_clan_name(csgo_get_user_clan(target), clan, charsmax(clan));
+	csgo_get_user_clan_name(target, clan, charsmax(clan));
 	csgo_get_user_operation_text(target, operation, charsmax(operation));
 	csgo_get_current_skin_name(target, skin, charsmax(skin));
 

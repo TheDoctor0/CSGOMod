@@ -56,6 +56,7 @@ public plugin_init()
 public plugin_natives()
 {
 	register_native("csgo_get_user_clan", "_csgo_get_user_clan", 1);
+	register_native("csgo_get_user_clan_name", "_csgo_get_user_clan_name", 1);
 	register_native("csgo_get_clan_name", "_csgo_get_clan_name", 1);
 	register_native("csgo_get_clan_members", "_csgo_get_clan_members", 1);
 }
@@ -2376,6 +2377,23 @@ public _csgo_get_clan_name(clanId, dataReturn[], dataLength)
 	get_clan_info(clanId, CLAN_NAME, dataReturn, dataLength);
 }
 
+public _csgo_get_user_clan_name(id, dataReturn[], dataLength)
+{
+	param_convert(2);
+
+	if (!clan[id]) {
+		static clanName[16];
+
+		formatex(clanName, charsmax(clanName), "%L", id, "CSGO_CLANS_NONE");
+
+		copy(dataReturn, dataLength, clanName);
+
+		return;
+	}
+
+	get_clan_info(clan[id], CLAN_NAME, dataReturn, dataLength);
+}
+
 public _csgo_get_clan_members(clanId)
 	return get_clan_info(clanId, CLAN_MEMBERS);
 
@@ -2906,7 +2924,7 @@ stock get_clan_info(clanId, info, dataReturn[] = "", dataLength = 0)
 {
 	static csgoClan[clanInfo];
 
-	for (new i = 0; i < ArraySize(csgoClans); i++) {
+	for (new i = 1; i < ArraySize(csgoClans); i++) {
 		ArrayGetArray(csgoClans, i, csgoClan);
 
 		if (csgoClan[CLAN_ID] != clanId) continue;

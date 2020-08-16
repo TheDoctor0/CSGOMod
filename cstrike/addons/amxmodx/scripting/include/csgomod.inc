@@ -180,9 +180,18 @@ native csgo_get_current_skin_name(id, data[], length);
 native csgo_get_user_clan(id);
 
 /**
- * Retrieves clan name for given clan id.
+ * Retrieves clan name for given player.
  *
- * @note "Brak" if there is no clan.
+ * @param clan      Player index
+ * @param data      Buffer to copy name to
+ * @param lenth     Maximum buffer size
+ *
+ * @noreturn
+ */
+native csgo_get_user_clan_name(id, data[], length);
+
+/**
+ * Retrieves clan name for given clan id.
  *
  * @param clan      Clan index
  * @param data      Buffer to copy name to
