@@ -16,8 +16,6 @@ enum _:playerInfo { STATUS, FAILS, PASSWORD[32], TEMP_PASSWORD[32], NAME[32], SA
 enum _:status { NOT_REGISTERED, NOT_LOGGED, LOGGED, GUEST };
 enum _:queries { UPDATE, INSERT, DELETE };
 
-new const accountStatus[status][] = { "Niezarejestrowany", "Niezalogowany", "Zalogowany", "Gosc" };
-
 new const commandAccount[][] = { "say /haslo", "say_team /haslo", "say /password", "say_team /password",
 	"say /konto", "say_team /konto", "say /account", "say_team /account", "konto" };
 
@@ -36,13 +34,13 @@ public plugin_init()
 	bind_pcvar_num(create_cvar("csgo_accounts_block_movement", "1"), blockMovement);
 	bind_pcvar_string(create_cvar("csgo_accounts_setinfo", "csgopass"), setinfo, charsmax(setinfo));
 
-	register_clcmd("WPROWADZ_SWOJE_HASLO", "login_account");
-	register_clcmd("WPROWADZ_WYBRANE_HASLO", "register_step_one");
-	register_clcmd("POWTORZ_WYBRANE_HASLO", "register_step_two");
-	register_clcmd("WPROWADZ_AKTUALNE_HASLO", "change_step_one");
-	register_clcmd("WPROWADZ_NOWE_HASLO", "change_step_two");
-	register_clcmd("POWTORZ_NOWE_HASLO", "change_step_three");
-	register_clcmd("WPROWADZ_SWOJE_AKTUALNE_HASLO", "delete_account");
+	register_clcmd("ENTER_YOUR_PASSWORD", "login_account");
+	register_clcmd("ENTER_SELECTED_PASSWORD", "register_step_one");
+	register_clcmd("REPEAT_SELECTED_PASSWORD", "register_step_two");
+	register_clcmd("ENTER_CURRENT_PASSWORD", "change_step_one");
+	register_clcmd("ENTER_NEW_PASSWORD", "change_step_two");
+	register_clcmd("REPEAT_NEW_PASSWORD", "change_step_three");
+	register_clcmd("ENTER_YOUR_CURRENT_PASSWORD", "delete_account");
 
 	RegisterHam(Ham_Spawn, "player", "player_spawn", 1);
 	RegisterHam(Ham_CS_Player_ResetMaxSpeed, "player", "block_movement", 1);
@@ -97,7 +95,11 @@ public kick_player(id)
 
 	if (!is_user_connected(id)) return;
 
-	server_cmd("kick #%d ^"Nie zalogowales sie w ciagu %is!^"", get_user_userid(id), loginMaxTime);
+	new info[64];
+
+	formatex(info, charsmax(info), "%L", id, "CSGO_ACCOUNTS_TIMEOUT", loginMaxTime);
+
+	server_cmd("kick #%d ^"%s^"", get_user_userid(id), info);
 }
 
 public block_movement(id)
@@ -125,23 +127,44 @@ public account_menu(id)
 		set_task(float(loginMaxTime), "kick_player", id + TASK_PASSWORD);
 	}
 
-	new menuData[256];
+	new menuData[256], title[128];
 
-	formatex(menuData, charsmax(menuData), "\rSYSTEM REJESTRACJI^n^n\rNick: \w[\y%s\w]^n\rStatus: \w[\y%s\w]", playerData[id][NAME], accountStatus[playerData[id][STATUS]]);
+	switch (playerData[id][STATUS]) {
+		case NOT_REGISTERED: formatex(title, charsmax(title), "%L", id, "CSGO_ACCOUNTS_STATUS_NOT_REGISTERED");
+		case NOT_LOGGED: formatex(title, charsmax(title), "%L", id, "CSGO_ACCOUNTS_STATUS_NOT_LOGGED_IN");
+		case LOGGED: formatex(title, charsmax(title), "%L", id, "CSGO_ACCOUNTS_STATUS_LOGGED_IN");
+		case GUEST: formatex(title, charsmax(title), "%L", id, "CSGO_ACCOUNTS_STATUS_GUEST");
+	}
 
-	if ((playerData[id][STATUS] == NOT_LOGGED || playerData[id][STATUS] == LOGGED) && !get_bit(id, autoLogin)) format(menuData, charsmax(menuData),"%s^n\wWpisz w konsoli \ysetinfo ^"_%s^" ^"twojehaslo^"^n\wSprawi to, ze twoje haslo bedzie ladowane \rautomatycznie\w.", menuData, setinfo);
+	formatex(menuData, charsmax(menuData), "CSGO_ACCOUNTS_MENU_TITLE", id, playerData[id][NAME], id, title);
+
+	if ((playerData[id][STATUS] == NOT_LOGGED || playerData[id][STATUS] == LOGGED) && !get_bit(id, autoLogin)) {
+		format(menuData, charsmax(menuData), "%L", id, "CSGO_ACCOUNTS_MENU_INFO", menuData, setinfo);
+	}
 
 	new menu = menu_create(menuData, "account_menu_handle"), callback = menu_makecallback("account_menu_callback");
 
-	menu_additem(menu, "\yLogowanie", _, _, callback);
-	menu_additem(menu, "\yRejestracja^n", _, _, callback);
-	menu_additem(menu, "\yZmien \wHaslo", _, _, callback);
-	menu_additem(menu, "\ySkasuj \wKonto^n", _, _, callback);
-	menu_additem(menu, "\yZaloguj jako \wGosc \r(NIEZALECANE)^n", _, _, callback);
+	formatex(title, charsmax(title), "%L", id, "CSGO_ACCOUNTS_LOGIN");
+	menu_additem(menu, title, _, _, callback);
 
-	if (playerData[id][STATUS] >= LOGGED) menu_additem(menu, "\wWyjdz", _, _, callback);
+	formatex(title, charsmax(title), "%L", id, "CSGO_ACCOUNTS_REGISTRATION");
+	menu_additem(menu, title, _, _, callback);
 
-	menu_setprop(menu, MPROP_EXIT, MEXIT_NEVER);
+	formatex(title, charsmax(title), "%L", id, "CSGO_ACCOUNTS_PASSWORD_CHANGE");
+	menu_additem(menu, title, _, _, callback);
+
+	formatex(title, charsmax(title), "%L", id, "CSGO_ACCOUNTS_DELETE");
+	menu_additem(menu, title, _, _, callback);
+
+	formatex(title, charsmax(title), "%L", id, "CSGO_ACCOUNTS_LOGIN_GUEST");
+	menu_additem(menu, title, _, _, callback);
+
+	if (playerData[id][STATUS] >= LOGGED) {
+		formatex(title, charsmax(title), "%L", id, "CSGO_MENU_EXIT");
+		menu_additem(menu, title, _, _, callback);
+	} else {
+		menu_setprop(menu, MPROP_EXIT, MEXIT_NEVER);
+	}
 
 	menu_display(id, menu);
 
@@ -172,40 +195,40 @@ public account_menu_handle(id, menu, item)
 
 	switch (item) {
 		case 0: {
-			client_print_color(id, id, "^x04[CS:GO]^x01 Wprowadz swoje^x04 haslo^x01, aby sie^x04 zalogowac.");
+			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_LOGIN_PASSWORD");
 
 			set_hudmessage(255, 128, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
-			show_hudmessage(id, "Wprowadz swoje haslo.");
+			show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_LOGIN_PASSWORD");
 
-			client_cmd(id, "messagemode WPROWADZ_SWOJE_HASLO");
+			client_cmd(id, "messagemode ENTER_YOUR_PASSWORD");
 		} case 1: {
-			client_print_color(id, id, "^x04[CS:GO]^x01 Rozpoczales proces^x04 rejestracji^x01. Wprowadz wybrane^x04 haslo^x01.");
+			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_SELECT_PASSWORD");
 
 			set_hudmessage(255, 128, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
-			show_hudmessage(id, "Wprowadz swoje haslo.");
+			show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_LOGIN_PASSWORD");
 
-			client_cmd(id, "messagemode WPROWADZ_WYBRANE_HASLO");
+			client_cmd(id, "messagemode ENTER_SELECTED_PASSWORD");
 
 			remove_task(id + TASK_PASSWORD);
 		} case 2: {
-			client_print_color(id, id, "^x04[CS:GO]^x01 Wprowadz swoje^x04 aktualne haslo^x01 w celu potwierdzenia tozsamosci.");
+			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_ENTER_CURRENT_PASSWORD");
 
 			set_hudmessage(255, 128, 0, 0.22, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
-			show_hudmessage(id, "Wprowadz swoje aktualne haslo.");
+			show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_ENTER_CURRENT_PASSWORD");
 
-			client_cmd(id, "messagemode WPROWADZ_AKTUALNE_HASLO");
+			client_cmd(id, "messagemode ENTER_CURRENT_PASSWORD");
 		} case 3: {
-			client_print_color(id, id, "^x04[CS:GO]^x01 Wprowadz swoje^x04 aktualne haslo^x01 w celu potwierdzenia tozsamosci.");
+			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_ENTER_CURRENT_PASSWORD");
 
 			set_hudmessage(255, 128, 0, 0.22, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
-			show_hudmessage(id, "Wprowadz swoje aktualne haslo.");
+			show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_ENTER_CURRENT_PASSWORD");
 
-			client_cmd(id, "messagemode WPROWADZ_SWOJE_AKTUALNE_HASLO");
+			client_cmd(id, "messagemode ENTER_YOUR_CURRENT_PASSWORD");
 		} case 4: {
-			client_print_color(id, id, "^x04[CS:GO]^x01 Zalogowales sie jako^x04 Gosc^x01. By zabezpieczyc swoj nick^x04 zarejestruj sie^x01.");
+			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_REGISTER_TO");
 
 			set_hudmessage(0, 255, 0, -1.0, 0.9, 0, 0.0, 3.5, 0.0, 0.0);
-			show_hudmessage(id, "Zostales pomyslnie zalogowany jako Gosc.");
+			show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_REGISTER_TO");
 
 			remove_task(id + TASK_PASSWORD);
 
@@ -238,16 +261,20 @@ public login_account(id)
 
 	if (!equal(playerData[id][PASSWORD], password)) {
 		if (++playerData[id][FAILS] >= passwordMaxFails) {
-			server_cmd("kick #%d ^"Nieprawidlowe haslo!^"", get_user_userid(id));
+			new info[64];
+
+			formatex(info, charsmax(info), "%L", id, "CSGO_ACCOUNTS_INVALID_PASSWORD");
+
+			server_cmd("kick #%d ^"%s^"", info);
 
 			return PLUGIN_HANDLED;
 		}
 
-		client_print_color(id, id, "^x04[CS:GO]^x01 Podane haslo jest^x04 nieprawidlowe^x01. (Bledne haslo^x04 %i/%i^x01)", playerData[id][FAILS], passwordMaxFails);
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_WRONG_PASSWORD", playerData[id][FAILS], passwordMaxFails);
 
 		set_hudmessage(255, 0, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
 
-		show_hudmessage(id, "Podane haslo jest nieprawidlowe.");
+		show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_WRONG_PASSWORD");
 
 		account_menu(id);
 
@@ -267,10 +294,10 @@ public login_account(id)
 
 	ExecuteForward(loginForward, ret, id);
 
-	client_print_color(id, id, "^x04[CS:GO]^x01 Zostales pomyslnie^x04 zalogowany^x01. Zyczymy milej gry.");
+	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_LOGIN_SUCCESS");
 
 	set_hudmessage(0, 255, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
-	show_hudmessage(id, "Zostales pomyslnie zalogowany.");
+	show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_LOGIN_SUCCESS");
 
 	return PLUGIN_HANDLED;
 }
@@ -285,10 +312,10 @@ public register_step_one(id)
 	remove_quotes(password);
 
 	if (strlen(password) < passwordMinLength) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Haslo musi miec co najmniej^x04 %i znakow^x01.", passwordMinLength);
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_MIN_LENGTH", passwordMinLength);
 
 		set_hudmessage(255, 0, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
-		show_hudmessage(id, "Haslo musi miec co najmniej %i znakow.", passwordMinLength);
+		show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_MIN_LENGTH", passwordMinLength);
 
 		account_menu(id);
 
@@ -297,12 +324,12 @@ public register_step_one(id)
 
 	copy(playerData[id][TEMP_PASSWORD], charsmax(playerData[][TEMP_PASSWORD]), password);
 
-	client_print_color(id, id, "^x04[CS:GO]^x01 Teraz powtorz wybrane^x04 haslo^x01.");
+	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_REPEAT_PASSWORD");
 
 	set_hudmessage(255, 128, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
-	show_hudmessage(id, "Powtorz wybrane haslo.");
+	show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_REPEAT_PASSWORD");
 
-	client_cmd(id, "messagemode POWTORZ_WYBRANE_HASLO");
+	client_cmd(id, "messagemode REPEAT_SELECTED_PASSWORD");
 
 	return PLUGIN_HANDLED;
 }
@@ -317,25 +344,30 @@ public register_step_two(id)
 	remove_quotes(password);
 
 	if (!equal(password, playerData[id][TEMP_PASSWORD])) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Podane hasla^x04 roznia sie^x01 od siebie.");
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_PASSWORD_DIFFER");
 
 		set_hudmessage(255, 0, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
-		show_hudmessage(id, "Podane hasla roznia sie od siebie.");
+		show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_PASSWORD_DIFFER");
 
 		account_menu(id);
 
 		return PLUGIN_HANDLED;
 	}
 
-	new menuData[192];
+	new menuData[192], title[64];
 
-	formatex(menuData, charsmax(menuData), "\rPOTWIERDZENIE REJESTRACJI^n^n\wTwoj Nick: \y[\r%s\y]^n\wTwoje Haslo: \y[\r%s\y]", playerData[id][NAME], playerData[id][TEMP_PASSWORD]);
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_ACCOUNTS_REGISTER_CONFIRM_TITLE", playerData[id][NAME], playerData[id][TEMP_PASSWORD]);
 
 	new menu = menu_create(menuData, "register_confirmation_handle");
 
-	menu_additem(menu, "\rPotwierdz \wRejestracje");
-	menu_additem(menu, "\yZmien \wHaslo^n");
-	menu_additem(menu, "\wAnuluj \wRejestracje");
+	formatex(title, charsmax(title), "%L", id, "CSGO_ACCOUNTS_REGISTER_CONFIRM");
+	menu_additem(menu, title);
+
+	formatex(title, charsmax(title), "%L", id, "CSGO_ACCOUNTS_REGISTER_CHANGE_PASSWORD");
+	menu_additem(menu, title);
+
+	formatex(title, charsmax(title), "%L", id, "CSGO_ACCOUNTS_REGISTER_CANCEL");
+	menu_additem(menu, title);
 
 	menu_setprop(menu, MPROP_EXIT, MEXIT_NEVER);
 
@@ -373,20 +405,20 @@ public register_confirmation_handle(id, menu, item)
 			ExecuteForward(loginForward, ret, id);
 
 			set_hudmessage(0, 255, 0, -1.0, 0.9, 0, 0.0, 3.5, 0.0, 0.0);
-			show_hudmessage(id, "Zostales pomyslnie zarejestrowany i zalogowany.");
+			show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_REGISTER_SUCCESS");
 
-			client_print_color(id, id, "^x04[CS:GO]^x01 Twoj nick zostal pomyslnie^x04 zarejestrowany^x01.");
-			client_print_color(id, id, "^x04[CS:GO]^x01 Wpisz w konsoli komende^x04 setinfo ^"_%s^" ^"%s^"^x01, aby twoje haslo bylo ladowane automatycznie.", setinfo, playerData[id][PASSWORD]);
+			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_REGISTER_SUCCESS");
+			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_SETINFO_HELP", setinfo, playerData[id][PASSWORD]);
 
 			cmd_execute(id, "setinfo _%s %s", setinfo, playerData[id][PASSWORD]);
 			cmd_execute(id, "writecfg %s", setinfo);
 		} case 1: {
-			client_print_color(id, id, "^x04[CS:GO]^x01 Rozpoczales proces^x04 rejestracji^x01. Wprowadz wybrane^x04 haslo^x01.");
+			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_REGISTER_STARTED");
 
 			set_hudmessage(255, 128, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
-			show_hudmessage(id, "Wprowadz wybrane haslo.");
+			show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_REGISTER_STARTED");
 
-			client_cmd(id, "messagemode WPROWADZ_WYBRANE_HASLO");
+			client_cmd(id, "messagemode ENTER_SELECTED_PASSWORD");
 		} case 2: {
 			account_menu(id);
 		}
@@ -406,27 +438,31 @@ public change_step_one(id)
 
 	if (!equal(playerData[id][PASSWORD], password)) {
 		if (++playerData[id][FAILS] >= passwordMaxFails) {
-			server_cmd("kick #%d ^"Nieprawidlowe haslo!^"", get_user_userid(id));
+			new info[64];
+
+			formatex(info, charsmax(info), "%L", id, "CSGO_ACCOUNTS_INVALID_PASSWORD");
+
+			server_cmd("kick #%d ^"%s^"", info);
 
 			return PLUGIN_HANDLED;
 		}
 
-		client_print_color(id, id, "^x04[CS:GO]^x01 Podane haslo jest^x04 nieprawidlowe^x01. (Bledne haslo^x04 %i/%i^x01)", playerData[id][FAILS], passwordMaxFails);
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_WRONG_PASSWORD", playerData[id][FAILS], passwordMaxFails);
 
 		set_hudmessage(255, 0, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
-		show_hudmessage(id, "Podane haslo jest nieprawidlowe.");
+		show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_WRONG_PASSWORD");
 
 		account_menu(id);
 
 		return PLUGIN_HANDLED;
 	}
 
-	client_print_color(id, id, "^x04[CS:GO]^x01 Wprowadz swoje^x04 nowe haslo^x01.");
+	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_ENTER_NEW_PASSWORD");
 
 	set_hudmessage(255, 128, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
-	show_hudmessage(id, "Wprowadz swoje nowe haslo.");
+	show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_ENTER_NEW_PASSWORD");
 
-	client_cmd(id, "messagemode WPROWADZ_NOWE_HASLO");
+	client_cmd(id, "messagemode ENTER_NEW_PASSWORD");
 
 	return PLUGIN_HANDLED;
 }
@@ -441,10 +477,10 @@ public change_step_two(id)
 	remove_quotes(password);
 
 	if (equal(playerData[id][PASSWORD], password)) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Nowe haslo jest^x04 takie samo^x01 jak aktualne.");
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_NEW_MATCHES_OLD");
 
 		set_hudmessage(255, 0, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
-		show_hudmessage(id, "Nowe haslo jest takie samo jak aktualne.");
+		show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_NEW_MATCHES_OLD");
 
 		account_menu(id);
 
@@ -452,10 +488,10 @@ public change_step_two(id)
 	}
 
 	if (strlen(password) < passwordMinLength) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Nowe haslo musi miec co najmniej^x04 %i znakow^x01.", passwordMinLength);
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_NEW_MIN_LENGTH", passwordMinLength);
 
 		set_hudmessage(255, 0, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
-		show_hudmessage(id, "Nowe haslo musi miec co najmniej %i znakow.", passwordMinLength);
+		show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_NEW_MIN_LENGTH", passwordMinLength);
 
 		account_menu(id);
 
@@ -464,12 +500,12 @@ public change_step_two(id)
 
 	copy(playerData[id][TEMP_PASSWORD], charsmax(playerData[][TEMP_PASSWORD]), password);
 
-	client_print_color(id, id, "^x04[CS:GO]^x01 Powtorz swoje nowe^x04 haslo^x01.");
+	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_REPEAT_NEW_PASSWORD");
 
 	set_hudmessage(255, 128, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
-	show_hudmessage(id, "Powtorz swoje nowe haslo.");
+	show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_REPEAT_NEW_PASSWORD");
 
-	client_cmd(id, "messagemode POWTORZ_NOWE_HASLO");
+	client_cmd(id, "messagemode REPEAT_NEW_PASSWORD");
 
 	return PLUGIN_HANDLED;
 }
@@ -484,10 +520,10 @@ public change_step_three(id)
 	remove_quotes(password);
 
 	if (!equal(password, playerData[id][TEMP_PASSWORD])) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Podane hasla^x04 roznia sie^x01 od siebie.");
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_PASSWORD_DIFFER");
 
 		set_hudmessage(255, 0, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
-		show_hudmessage(id, "Podane hasla roznia sie od siebie.");
+		show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_PASSWORD_DIFFER");
 
 		account_menu(id);
 
@@ -499,10 +535,10 @@ public change_step_three(id)
 	account_query(id, UPDATE);
 
 	set_hudmessage(0, 255, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
-	show_hudmessage(id, "Twoje haslo zostalo pomyslnie zmienione.");
+	show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_PASSWORD_CHANGE_SUCCESS");
 
-	client_print_color(id, id, "^x04[CS:GO]^x01 Twoje haslo zostalo pomyslnie^x04 zmienione^x01.");
-	client_print_color(id, id, "^x04[CS:GO]^x01 Wpisz w konsoli komende^x04 setinfo ^"_%s^" ^"%s^"^x01, aby twoje haslo bylo ladowane automatycznie.", setinfo, playerData[id][PASSWORD]);
+	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_PASSWORD_CHANGE_SUCCESS");
+	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_SETINFO_HELP", setinfo, playerData[id][PASSWORD]);
 
 	cmd_execute(id, "setinfo _%s %s", setinfo, playerData[id][PASSWORD]);
 	cmd_execute(id, "writecfg %s", setinfo);
@@ -521,30 +557,39 @@ public delete_account(id)
 
 	if (!equal(playerData[id][PASSWORD], password)) {
 		if (++playerData[id][FAILS] >= passwordMaxFails) {
-			server_cmd("kick #%d ^"Nieprawidlowe haslo!^"", get_user_userid(id));
+			new info[64];
+
+			formatex(info, charsmax(info), "%L", id, "CSGO_ACCOUNTS_INVALID_PASSWORD");
+
+			server_cmd("kick #%d ^"%s^"", info);
 
 			return PLUGIN_HANDLED;
 		}
 
-		client_print_color(id, id, "^x04[CS:GO]^x01 Podane haslo jest^x04 nieprawidlowe^x01. (Bledne haslo^x04 %i/%i^x01)", playerData[id][FAILS], passwordMaxFails);
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_WRONG_PASSWORD", playerData[id][FAILS], passwordMaxFails);
 
 		set_hudmessage(255, 0, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
-		show_hudmessage(id, "Podane haslo jest nieprawidlowe.");
+		show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_WRONG_PASSWORD");
 
 		account_menu(id);
 
 		return PLUGIN_HANDLED;
 	}
 
-	new menuData[128];
+	new menuData[128], title[32];
 
-	formatex(menuData, charsmax(menuData), "\wCzy na pewno chcesz \rusunac \wswoje konto?");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_ACCOUNTS_DELETE");
 
 	new menu = menu_create(menuData, "delete_account_handle");
 
-	menu_additem(menu, "\rTak");
-	menu_additem(menu, "\wNie^n");
-	menu_additem(menu, "\wWyjdz");
+	formatex(title, charsmax(title), "\r%L", id, "CSGO_MENU_YES");
+	menu_additem(menu, title);
+
+	formatex(title, charsmax(title), "\w%L", id, "CSGO_MENU_NO");
+	menu_additem(menu, title);
+
+	formatex(title, charsmax(title), "\w%L", id, "CSGO_MENU_EXIT");
+	menu_additem(menu, title);
 
 	menu_setprop(menu, MPROP_EXIT, MEXIT_NEVER);
 
@@ -558,12 +603,16 @@ public delete_account_handle(id, menu, item)
 	if (item == 0) {
 		account_query(id, DELETE);
 
+		new info[128];
+
 		console_print(id, "==================================");
-		console_print(id, "==========SYSTEM REJESTRACJI==========");
-		console_print(id, "              Skasowales konto o nicku: %s", playerData[id][NAME]);
+		console_print(id, "==========%L==========", id, "CSGO_ACCOUNTS_CONSOLE_TITLE");
+		console_print(id, "              %L", id, "CSGO_ACCOUNTS_CONSOLE_INFO", playerData[id][NAME]);
 		console_print(id, "==================================");
 
-		server_cmd("kick #%d ^"Konto zostalo usuniete!^"", get_user_userid(id));
+		formatex(info, charsmax(info), "%L", id, "CSGO_ACCOUNTS_DELETED");
+
+		server_cmd("kick #%d ^"%s^"", get_user_userid(id), info);
 	}
 
 	menu_destroy(menu);
@@ -692,11 +741,11 @@ public ignore_handle(failState, Handle:query, error[], errorNum, data[], dataSiz
 public _csgo_check_account(id)
 {
 	if (sql == Empty_Handle) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Wystapil^x03 blad^x01 podczas tworzenia polaczenia z baza danych!");
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_DATABASE_ERROR");
 
 		return false;
 	} else if (playerData[id][STATUS] < LOGGED) {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Musisz sie^x03 zalogowac^x01, aby miec dostep do glownych funkcji!");
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_LOGIN_FIRST");
 
 		account_menu(id);
 
