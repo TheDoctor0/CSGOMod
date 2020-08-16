@@ -6,8 +6,7 @@
 
 new Array:titles, Array:commands;
 
-new const menuCommands[][] = { "say /menu", "say_team /menu", "menu", "say /komendy", "say_team /komendy",
-	"say /pomoc", "say_team /pomoc", "say /commands", "say_team /commands", "say /help", "say_team /help" };
+new const menuCommands[][] = { "say /menu", "say_team /menu", "menu", "say /komendy", "say_team /komendy", "say /commands", "say_team /commands" };
 
 public plugin_init()
 {
@@ -39,7 +38,7 @@ public plugin_cfg()
 	while (!feof(file)) {
 		fgets(file, content, charsmax(content)); trim(content);
 
-		if(content[0] == ';' || content[0] == '^0') continue;
+		if (content[0] == ';' || content[0] == '^0') continue;
 
 		parse(content, title, charsmax(title), command, charsmax(command));
 
@@ -65,6 +64,10 @@ public CSGO_SERVER_MENU(id)
 
 	for (new i; i < ArraySize(titles); i++) {
 		ArrayGetString(titles, i, title, charsmax(title));
+
+		if (containi(title, "CSGO_") != -1) {
+			format(title, charsmax(title), "%L", id, title);
+		}
 
 		menu_additem(menu, title);
 	}

@@ -7,6 +7,15 @@ CSGO_MENU_YES=Yes
 CSGO_MENU_NO=No
 
 CSGO_SERVER_MENU=\yServer \rMenu\w:
+CSGO_SERVER_MENU_SKINS=\wSkins \rMenu \y(/skins)
+CSGO_SERVER_MENU_OPERATIONS=\wOperations \rMenu \y(/operations)
+CSGO_SERVER_MENU_CLANS=\wClans \rMenu \y(/clans)
+CSGO_SERVER_MENU_MOLOTOV=\wBuy \rMolotov \y(/molotov)
+CSGO_SERVER_MENU_ZEUS=\wBuy \rZeus \y(/zeus)
+CSGO_SERVER_MENU_HUD=\wConfigure \rHUD \y(/hud)
+CSGO_SERVER_MENU_VIP=\wInformation about \rVIP \y(/vip)
+CSGO_SERVER_MENU_SVIP=\wInformation about \rSVIP \y(/svip)
+CSGO_SERVER_MENU_HELP=\wMod \rDescription \y(/help)
 
 CSGO_VIP_VIP_MOTD_TITLE=Information about VIP
 CSGO_VIP_SVIP_MOTD_TITLE=Information about SVIP
@@ -76,7 +85,7 @@ CSGO_REVENGE_CHAT=You took revenge on the^3 %s^1. You get the kill!
 
 CSGO_ACCOUNTS_TIMEOUT=You have not logged in within %is!
 CSGO_ACCOUNTS_INVALID_PASSWORD=Invalid password!
-CSGO_ACCOUNTS_MENU_TITLE=\rREGISTRATION SYSTEM^n^n\rNick: \w[\y%s\w]^n\rStatus: \w[\y%L\w]
+CSGO_ACCOUNTS_MENU_TITLE=\rREGISTRATION SYSTEM^n^n\rNick: \w[\y%s\w]^n\rStatus: \w[\y%s\w]
 CSGO_ACCOUNTS_MENU_INFO=%s^n\wType in console \ysetinfo ^"_%s^" ^"your password^"^n\wThis will enable \rautomatic\w login.
 CSGO_ACCOUNTS_LOGIN=\yLogin
 CSGO_ACCOUNTS_REGISTRATION=\yRegistration^n
@@ -191,6 +200,8 @@ CSGO_RANKS_HUD_SETTINGS_X=\wLocation \yX Axis: \r%i%%
 CSGO_RANKS_HUD_SETTINGS_Y=\wLocation \yY Axis: \r%i%%^n
 CSGO_RANKS_HUD_SETTINGS_DEFAULT=\yDefault \rSettings
 
+CSGO_CLANS_NONE=None
+
 [pl]
 CSGO_MENU_EXIT=Wyjscie
 CSGO_MENU_PREVIOUS=Poprzednie
@@ -200,6 +211,15 @@ CSGO_MENU_YES=Tak
 CSGO_MENU_NO=Nie
 
 CSGO_SERVER_MENU=\yMenu \rSerwera\w:
+CSGO_SERVER_MENU_SKINS=\wMenu \rSkinow \y(/skiny)
+CSGO_SERVER_MENU_OPERATIONS=\wMenu \rOperacji \y(/operacje)
+CSGO_SERVER_MENU_CLANS=\wMenu \rKlanow \y(/klan)
+CSGO_SERVER_MENU_MOLOTOV=\wKup \rMolotova \y(/molotov)
+CSGO_SERVER_MENU_ZEUS=\wKup \rZeusa \y(/zeus)
+CSGO_SERVER_MENU_HUD=\wSkonfiguruj \rHUD \y(/hud)
+CSGO_SERVER_MENU_VIP=\wInformacje o \rVIPie \y(/vip)
+CSGO_SERVER_MENU_SVIP=\wInformacje o \rSVIPie \y(/svip)
+CSGO_SERVER_MENU_HELP=\wOpis \rModa \y(/pomoc)
 
 CSGO_VIP_SVIP_MOTD_TITLE=Informacje o SVIPie
 CSGO_VIP_VIP_MOTD_TITLE=Informacje o VIPie
@@ -269,7 +289,7 @@ CSGO_REVENGE_CHAT=Zemsciles sie na^3 %s^1. Dostajesz fraga!
 
 CSGO_ACCOUNTS_TIMEOUT=Nie zalogowales sie w ciagu %is!
 CSGO_ACCOUNTS_INVALID_PASSWORD=Nieprawidlowe haslo!
-CSGO_ACCOUNTS_MENU_TITLE=\rSYSTEM REJESTRACJI^n^n\rNick: \w[\y%s\w]^n\rStatus: \w[\y%L\w]
+CSGO_ACCOUNTS_MENU_TITLE=\rSYSTEM REJESTRACJI^n^n\rNick: \w[\y%s\w]^n\rStatus: \w[\y%s\w]
 CSGO_ACCOUNTS_MENU_INFO=%s^n\wWpisz w konsoli \ysetinfo ^"_%s^" ^"twoje hasloo^"^n\wWlaczy to \rautomatyczne\w logowanie.
 CSGO_ACCOUNTS_LOGIN=\yLogowanie
 CSGO_ACCOUNTS_REGISTRATION=\yRejestracja
@@ -380,3 +400,5 @@ CSGO_RANKS_HUD_SETTINGS_BLUE=\wKolor \yNiebieski: \r%i
 CSGO_RANKS_HUD_SETTINGS_X=\wPolozenie \yOs X: \r%i%%
 CSGO_RANKS_HUD_SETTINGS_Y=\wPolozenie \yOs Y: \r%i%%^n
 CSGO_RANKS_HUD_SETTINGS_DEFAULT=\yDomyslne \rUstawienia
+
+CSGO_CLANS_NONE=Brak
