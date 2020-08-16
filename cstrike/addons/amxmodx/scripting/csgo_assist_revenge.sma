@@ -95,7 +95,7 @@ public player_die()
 
 			get_user_name(victim, victimName, charsmax(victimName));
 
-			client_print_color(killer, victim, "%L", killer, "OPERATIONS_PROGRESS", victimName);
+			client_print_color(killer, victim, "^4[CS:GO]^1 %L", killer, "OPERATIONS_PROGRESS", victimName);
 
 			csgo_add_money(killer, revengeReward);
 			csgo_add_kill(killer);
@@ -137,7 +137,7 @@ public player_die()
 			set_hudmessage(255, 155, 0, 0.6, 0.2, 0, 0.0, 1.0, 0.3, 1.0, -1);
 			show_hudmessage(0, "%L", assistant, "ASSIST_INFO_HUD", assistantName, killerName, victimName);
 
-			client_print_color(assistant, victim, "%L", assistant, "ASSIST_INFO_CHAT", killerName, victimName);
+			client_print_color(assistant, victim, "^4[CS:GO]^1 %L", assistant, "ASSIST_INFO_CHAT", killerName, victimName);
 
 			csgo_add_money(assistant, assistReward);
 			csgo_add_kill(assistant);

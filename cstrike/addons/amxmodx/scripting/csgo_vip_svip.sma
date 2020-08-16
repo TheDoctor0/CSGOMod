@@ -390,7 +390,11 @@ public close_vip_menu(id)
 	if (used[id] || !is_user_alive(id)) return PLUGIN_CONTINUE;
 
 	if (!check_weapons(id)) {
-		client_print_color(id, id, "%L", id, get_bit(id, SVIP) ? "VIP_SVIP_RANDOM_WEAPONS_SVIP" : "VIP_SVIP_RANDOM_WEAPONS_VIP");
+		if (get_bit(id, SVIP)) {
+			client_print_color(id, id, "^4[SVIP]^1 %L", id, "VIP_SVIP_RANDOM_WEAPONS_SVIP");
+		} else {
+			client_print_color(id, id, "^4[VIP]^1 %L", id, "VIP_SVIP_RANDOM_WEAPONS_VIP");
+		}
 
 		new random = random_num(0, get_bit(id, SVIP) ? 2 : 1);
 
@@ -527,7 +531,11 @@ public close_vip_menu_pistol(id)
 	if (used[id] || !is_user_alive(id)) return PLUGIN_CONTINUE;
 
 	if (!check_weapons(id)) {
-		client_print_color(id, id, "%L", id, get_bit(id, SVIP) ? "VIP_SVIP_RANDOM_PISTOL_SVIP" : "VIP_SVIP_RANDOM_PISTOL_VIP");
+		if (get_bit(id, SVIP)) {
+			client_print_color(id, id, "^4[SVIP]^1 %L", id, "VIP_SVIP_RANDOM_PISTOL_SVIP");
+		} else {
+			client_print_color(id, id, "^4[VIP]^1 %L", id, "VIP_SVIP_RANDOM_PISTOL_VIP");
+		}
 
 		new random = random_num(0, 2);
 
