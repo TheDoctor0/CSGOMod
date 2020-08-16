@@ -186,7 +186,7 @@ public plugin_precache()
 	get_localinfo("amxx_configsdir", file, charsmax(file));
 	format(file, charsmax(file), "%s/csgo_skins.ini", file);
 
-	if (!file_exists(file)) set_fail_state("[CS:GO] Brak pliku csgo_skins.ini!");
+	if (!file_exists(file)) set_fail_state("[CS:GO] No skins configuration file csgo_skins.ini!");
 
 	new skin[skinsInfo], lineData[256], tempValue[5][64], bool:error, count = 0, fileOpen = fopen(file, "r"), Array:files = ArrayCreate(64, 64), filePath[64];
 
@@ -215,7 +215,7 @@ public plugin_precache()
 			skin[SKIN_CHANCE] = (str_to_num(tempValue[4]) > 1 ? str_to_num(tempValue[4]) : 1);
 
 			if (!file_exists(skin[SKIN_MODEL])) {
-				log_to_file("csgo-error.log", "[CS:GO] Plik %s zawierajacy skin nie istnieje!", skin[SKIN_MODEL], skin[SKIN_NAME]);
+				log_to_file("csgo-error.log", "[CS:GO] The file %s containing the skin %s does not exist!", skin[SKIN_MODEL], skin[SKIN_NAME]);
 
 				error = true;
 			} else {
@@ -240,9 +240,9 @@ public plugin_precache()
 
 	fclose(fileOpen);
 
-	if (error) set_fail_state("[CS:GO] Nie zaladowano wszystkich skinow. Sprawdz logi bledow!");
+	if (error) set_fail_state("[CS:GO] Not all the skins were loaded. Check the error logs!");
 
-	if (!ArraySize(skins)) set_fail_state("[CS:GO] Nie zaladowano zadnego skina. Sprawdz plik konfiguracyjny csgo_skins.ini!");
+	if (!ArraySize(skins)) set_fail_state("[CS:GO] No skin has been loaded. Check the configuration file csgo_skins.ini!");
 
 	for (new i = 1; i <= MAX_PLAYERS; i++) playerSkins[i] = ArrayCreate(playerSkinsInfo);
 
@@ -250,13 +250,13 @@ public plugin_precache()
 		if (!defaultSkins[i][0]) continue;
 
 		if (!file_exists(defaultSkins[i])) {
-			log_to_file("csgo-error.log", "[CS:GO] Plik %s nie istnieje!", defaultSkins[i]);
+			log_to_file("csgo-error.log", "[CS:GO] The skins file %s does not exists!", defaultSkins[i]);
 
 			error = true;
 		}
 	}
 
-	if (error) set_fail_state("[CS:GO] Nie zaladowano wszystkich standardowych skinow. Sprawdz logi bledow!");
+	if (error) set_fail_state("[CS:GO] Not all standard skins were loaded. Check the error logs!");
 
 	log_amx("CS:GO Mod by O'Zone (v%s).", VERSION);
 	log_amx("Loaded %i skins from %i files.", count, ArraySize(files));
@@ -271,7 +271,7 @@ public load_skins_details()
 	get_localinfo("amxx_configsdir", file, charsmax(file));
 	format(file, charsmax(file), "%s/csgo_skins.ini", file);
 
-	if (!file_exists(file)) set_fail_state("[CS:GO] Brak pliku csgo_skins.ini!");
+	if (!file_exists(file)) set_fail_state("[CS:GO] No skins configuration file csgo_skins.ini!");
 
 	new skin[skinsInfo], lineData[256], tempValue[4][64], tempPrice[16], fileOpen = fopen(file, "r");
 
