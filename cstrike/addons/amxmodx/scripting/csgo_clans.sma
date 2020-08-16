@@ -65,8 +65,6 @@ public plugin_cfg()
 {
 	new csgoClan[clanInfo];
 
-	csgoClan[CLAN_NAME] = "Brak";
-
 	ArrayPushArray(csgoClans, csgoClan);
 
 	sql_init();
@@ -127,27 +125,38 @@ public show_clan_menu(id)
 	if (clan[id]) {
 		ArrayGetArray(csgoClans, get_clan_id(clan[id]), csgoClan);
 
-		formatex(menuData, charsmax(menuData), "\yMenu \rKlanu^n\wAktualny Klan:\y %s^n\wStan: \y%i/%i Czlonkow \w| \y%.2f Euro\w", csgoClan[CLAN_NAME], csgoClan[CLAN_MEMBERS], csgoClan[CLAN_LEVEL] * cvarMembersPerLevel + cvarMembersStart, csgoClan[CLAN_MONEY]);
+		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MAIN_MENU_TITLE", csgoClan[CLAN_NAME], csgoClan[CLAN_MEMBERS], csgoClan[CLAN_LEVEL] * cvarMembersPerLevel + cvarMembersStart, csgoClan[CLAN_MONEY]);
 
 		menu = menu_create(menuData, "show_clan_menu_handle");
 
-		menu_additem(menu, "\wZarzadzaj \yKlanem", "1", _, callback);
-		menu_additem(menu, "\wOpusc \yKlan", "2", _, callback);
-		menu_additem(menu, "\wCzlonkowie \yOnline", "3", _, callback);
-		menu_additem(menu, "\wBank \yKlanu", "4", _, callback);
+		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MAIN_MENU_MANAGE");
+		menu_additem(menu, menuData, "1", _, callback);
+
+		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MAIN_MENU_LEAVE");
+		menu_additem(menu, menuData, "2", _, callback);
+
+		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MAIN_MENU_LEAVE");
+		menu_additem(menu, menuData, "3", _, callback);
+
+		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MAIN_MENU_MEMBERS");
+		menu_additem(menu, menuData, "4", _, callback);
 	} else {
-		menu = menu_create("\yMenu \rKlanu^n\wAktualny Klan:\y Brak", "show_clan_menu_handle");
+		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MAIN_MENU_BANK");
 
-		formatex(menuData, charsmax(menuData), "\wZaloz \yKlan \r(Wymagane %i Euro)", floatround(cvarCreateFee));
+		menu = menu_create(menuData, "show_clan_menu_handle");
 
+		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MAIN_MENU_CREATE", floatround(cvarCreateFee));
 		menu_additem(menu, menuData, "0", _, callback);
 
-		menu_additem(menu, "\wZloz \yPodanie", "6", _, callback);
+		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MAIN_MENU_REQUEST");
+		menu_additem(menu, menuData, "6", _, callback);
 	}
 
-	menu_additem(menu, "\wTop15 \yKlanow", "5", _, callback);
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MAIN_MENU_TOP15");
+	menu_additem(menu, menuData, "5", _, callback);
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	menu_display(id, menu);
 
@@ -271,12 +280,16 @@ public leave_confim_menu(id)
 {
 	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
 
-	new menu = menu_create("\wJestes \ypewien\w, ze chcesz \ropuscic \wklan?", "leave_confim_menu_handle");
+	new menuData[64], menu = menu_create("\wJestes \ypewien\w, ze chcesz \ropuscic \wklan?", "leave_confim_menu_handle");
 
-	menu_additem(menu, "Tak");
-	menu_additem(menu, "Nie^n");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_YES");
+	menu_additem(menu, menuData);
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	formatex(menuData, charsmax(menuData), "%L^n", id, "CSGO_MENU_NO");
+	menu_additem(menu, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	menu_display(id, menu);
 
@@ -319,7 +332,7 @@ public members_online_menu(id)
 {
 	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
 
-	new clanName[32], playersAvailable = 0;
+	new menuData[64], playersAvailable = 0;
 
 	new menu = menu_create("\yCzlonkowie \rOnline:", "members_online_menu_handle");
 
@@ -328,20 +341,25 @@ public members_online_menu(id)
 
 		playersAvailable++;
 
-		get_user_name(player, clanName, charsmax(clanName));
+		get_user_name(player, menuData, charsmax(menuData));
 
 		switch (get_user_status(player)) {
-			case STATUS_MEMBER: add(clanName, charsmax(clanName), " \y[Czlonek]");
-			case STATUS_DEPUTY: add(clanName, charsmax(clanName), " \y[Zastepca]");
-			case STATUS_LEADER: add(clanName, charsmax(clanName), " \y[Przywodca]");
+			case STATUS_MEMBER: add(menuData, charsmax(menuData), " \y[Czlonek]");
+			case STATUS_DEPUTY: add(menuData, charsmax(menuData), " \y[Zastepca]");
+			case STATUS_LEADER: add(menuData, charsmax(menuData), " \y[Przywodca]");
 		}
 
-		menu_additem(menu, clanName);
+		menu_additem(menu, menuData);
 	}
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
-	menu_setprop(menu, MPROP_BACKNAME, "Poprzednie");
-	menu_setprop(menu, MPROP_NEXTNAME, "Nastepne");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_PREVIOUS");
+	menu_setprop(menu, MPROP_BACKNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_NEXT");
+	menu_setprop(menu, MPROP_NEXTNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	if (!playersAvailable) client_print_color(id, id, "^x04[CS:GO]^x01 Na serwerze nie ma zadnego czlonka twojego klanu!");
 	else menu_display(id, menu);
@@ -375,7 +393,8 @@ public bank_menu(id)
 	menu_additem(menu, "\wWplac \yPieniadze", _, _, callback);
 	menu_additem(menu, "\wWyplac \yPieniadze", _, _, callback);
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	menu_display(id, menu);
 
@@ -531,12 +550,16 @@ public disband_menu(id)
 {
 	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
 
-	new menu = menu_create("\wJestes \ypewien\w, ze chcesz \rrozwiazac\w klan?", "disband_menu_handle");
+	new itemData[64], menu = menu_create("\wJestes \ypewien\w, ze chcesz \rrozwiazac\w klan?", "disband_menu_handle");
 
-	menu_additem(menu, "Tak", "0");
-	menu_additem(menu, "Nie^n", "1");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_YES");
+	menu_additem(menu, menuData);
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	formatex(menuData, charsmax(menuData), "%L^n", id, "CSGO_MENU_NO");
+	menu_additem(menu, menuData);
+
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, itemData);
 
 	menu_display(id, menu);
 
@@ -562,8 +585,7 @@ public disband_menu_handle(id, menu, item)
 			remove_clan(id);
 
 			show_clan_menu(id);
-		}
-		case 1: show_clan_menu(id);
+		} case 1: show_clan_menu(id);
 	}
 
 	return PLUGIN_HANDLED;
@@ -799,9 +821,14 @@ public members_menu_handle(failState, Handle:query, error[], errorNum, tempId[],
 		SQL_NextRow(query);
 	}
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
-	menu_setprop(menu, MPROP_BACKNAME, "Poprzednie");
-	menu_setprop(menu, MPROP_NEXTNAME, "Nastepne");
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_PREVIOUS");
+	menu_setprop(menu, MPROP_BACKNAME, itemData);
+
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_NEXT");
+	menu_setprop(menu, MPROP_NEXTNAME, itemData);
+
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, itemData);
 
 	menu_display(id, menu);
 
@@ -848,7 +875,7 @@ public member_menu_handle(id, menu, item)
 
 	formatex(chosenName[id], charsmax(chosenName), userName);
 
-	new menu = menu_create("\yWybierz \rOpcje:", "member_options_menu_handle");
+	new itemData[64], menu = menu_create("\yWybierz \rOpcje:", "member_options_menu_handle");
 
 	if (get_user_status(id) == STATUS_LEADER) {
 		menu_additem(menu, "Przekaz \yPrzywodctwo", "1");
@@ -859,7 +886,8 @@ public member_menu_handle(id, menu, item)
 
 	menu_additem(menu, "Wyrzuc \yGracza", "4");
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, itemData);
 
 	menu_display(id, menu);
 
@@ -997,9 +1025,14 @@ public applications_menu_handle(failState, Handle:query, error[], errorNum, temp
 		usersCount++;
 	}
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
-	menu_setprop(menu, MPROP_BACKNAME, "Poprzednie");
-	menu_setprop(menu, MPROP_NEXTNAME, "Nastepne");
+	formatex(itemName, charsmax(itemName), "%L", id, "CSGO_MENU_PREVIOUS");
+	menu_setprop(menu, MPROP_BACKNAME, itemName);
+
+	formatex(itemName, charsmax(itemName), "%L", id, "CSGO_MENU_NEXT");
+	menu_setprop(menu, MPROP_NEXTNAME, itemName);
+
+	formatex(itemName, charsmax(itemName), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, itemName);
 
 	if (!usersCount) {
 		menu_destroy(menu);
@@ -1036,7 +1069,8 @@ public applications_confirm_menu(id, menu, item)
 	menu_additem(menu, "Przymij - \yWpisowe z konta gracza", userName);
 	menu_additem(menu, "Odrzuc", userName);
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	menu_display(id, menu);
 
@@ -1150,14 +1184,15 @@ public wars_menu(id)
 {
 	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
-	new menu = menu_create("\yWojny \rKlanow\w", "wars_menu_handle"), callback = menu_makecallback("wars_menu_callback");
+	new menuData[64], menu = menu_create("\yWojny \rKlanow\w", "wars_menu_handle"), callback = menu_makecallback("wars_menu_callback");
 
 	menu_additem(menu, "Lista \yWojen", _, _, callback);
 	menu_additem(menu, "Wypowiedz \yWojne", _, _, callback);
 	menu_additem(menu, "Zaakceptuj \yWojne", _, _, callback);
 	menu_additem(menu, "Anuluj \yWojne", _, _, callback);
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	menu_display(id, menu);
 
@@ -1254,9 +1289,15 @@ public show_war_list_menu(failState, Handle:query, error[], errorNum, tempId[], 
 	}
 
 	menu_setprop(menu, MPROP_PERPAGE, 6);
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
-	menu_setprop(menu, MPROP_BACKNAME, "Poprzednie");
-	menu_setprop(menu, MPROP_NEXTNAME, "Nastepne");
+
+	formatex(itemName, charsmax(itemName), "%L", id, "CSGO_MENU_PREVIOUS");
+	menu_setprop(menu, MPROP_BACKNAME, itemName);
+
+	formatex(itemName, charsmax(itemName), "%L", id, "CSGO_MENU_NEXT");
+	menu_setprop(menu, MPROP_NEXTNAME, itemName);
+
+	formatex(itemName, charsmax(itemName), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, itemName);
 
 	if (!warsCount) {
 		menu_destroy(menu);
@@ -1294,7 +1335,8 @@ public declare_war_menu(id)
 
 	menu_additem(menu, "Wypowiedz \rWojne");
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, itemData);
 
 	menu_display(id, menu);
 
@@ -1358,9 +1400,15 @@ public declare_war_select(failState, Handle:query, error[], errorNum, tempId[], 
 	}
 
 	menu_setprop(menu, MPROP_PERPAGE, 6);
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
-	menu_setprop(menu, MPROP_BACKNAME, "Poprzednie");
-	menu_setprop(menu, MPROP_NEXTNAME, "Nastepne");
+
+	formatex(itemName, charsmax(itemName), "%L", id, "CSGO_MENU_PREVIOUS");
+	menu_setprop(menu, MPROP_BACKNAME, itemName);
+
+	formatex(itemName, charsmax(itemName), "%L", id, "CSGO_MENU_NEXT");
+	menu_setprop(menu, MPROP_NEXTNAME, itemName);
+
+	formatex(itemName, charsmax(itemName), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, itemName);
 
 	if (!clansCount) {
 		menu_destroy(menu);
@@ -1391,10 +1439,14 @@ public declare_war_confirm(id, menu, item)
 
 	new menu = menu_create(tempData, "declare_war_confirm_handle");
 
-	menu_additem(menu, "\yTak", itemData);
-	menu_additem(menu, "Nie");
+	formatex(menuData, charsmax(menuData), "\y%L", id, "CSGO_MENU_YES");
+	menu_additem(menu, menuData, itemData);
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	formatex(menuData, charsmax(menuData), "%L^n", id, "CSGO_MENU_NO");
+	menu_additem(menu, menuData);
+
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, itemData);
 
 	menu_display(id, menu);
 
@@ -1484,9 +1536,15 @@ public accept_war_menu_handle(failState, Handle:query, error[], errorNum, tempId
 	}
 
 	menu_setprop(menu, MPROP_PERPAGE, 6);
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
-	menu_setprop(menu, MPROP_BACKNAME, "Poprzednie");
-	menu_setprop(menu, MPROP_NEXTNAME, "Nastepne");
+
+	formatex(itemName, charsmax(itemName), "%L", id, "CSGO_MENU_PREVIOUS");
+	menu_setprop(menu, MPROP_BACKNAME, itemName);
+
+	formatex(itemName, charsmax(itemName), "%L", id, "CSGO_MENU_NEXT");
+	menu_setprop(menu, MPROP_NEXTNAME, itemName);
+
+	formatex(itemName, charsmax(itemName), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, itemName);
 
 	if (!warsCount) {
 		menu_destroy(menu);
@@ -1520,7 +1578,8 @@ public accept_war_confirm(id, menu, item)
 	menu_additem(menu, "\yAkceptuj", itemData);
 	menu_additem(menu, "Odrzuc");
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, itemData);
 
 	menu_display(id, menu);
 
@@ -1627,9 +1686,15 @@ public remove_war_menu_handle(failState, Handle:query, error[], errorNum, tempId
 	}
 
 	menu_setprop(menu, MPROP_PERPAGE, 6);
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
-	menu_setprop(menu, MPROP_BACKNAME, "Poprzednie");
-	menu_setprop(menu, MPROP_NEXTNAME, "Nastepne");
+
+	formatex(itemName, charsmax(itemName), "%L", id, "CSGO_MENU_PREVIOUS");
+	menu_setprop(menu, MPROP_BACKNAME, itemName);
+
+	formatex(itemName, charsmax(itemName), "%L", id, "CSGO_MENU_NEXT");
+	menu_setprop(menu, MPROP_NEXTNAME, itemName);
+
+	formatex(itemName, charsmax(itemName), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, itemName);
 
 	if (!warsCount) {
 		menu_destroy(menu);
@@ -1660,10 +1725,14 @@ public remove_war_confirm(id, menu, item)
 
 	new menu = menu_create(tempData, "remove_war_confirm_handle");
 
-	menu_additem(menu, "\yTak", itemData);
-	menu_additem(menu, "Nie");
+	formatex(menuData, charsmax(menuData), "\y%L", id, "CSGO_MENU_YES");
+	menu_additem(menu, menuData, itemData);
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	formatex(menuData, charsmax(menuData), "%L^n", id, "CSGO_MENU_NO");
+	menu_additem(menu, menuData);
+
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, itemData);
 
 	menu_display(id, menu);
 
@@ -2033,9 +2102,15 @@ public application_menu_handle(failState, Handle:query, error[], errorNum, tempI
 	}
 
 	menu_setprop(menu, MPROP_PERPAGE, 6);
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
-	menu_setprop(menu, MPROP_BACKNAME, "Poprzednie");
-	menu_setprop(menu, MPROP_NEXTNAME, "Nastepne");
+
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_PREVIOUS");
+	menu_setprop(menu, MPROP_BACKNAME, itemData);
+
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_NEXT");
+	menu_setprop(menu, MPROP_NEXTNAME, itemData);
+
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, itemData);
 
 	if (!clansCount) {
 		menu_destroy(menu);
@@ -2086,8 +2161,14 @@ public application_handle(id, menu, item)
 
 	new menu = menu_create(menuData, "application_confirm_handle");
 
-	menu_additem(menu, "Tak", itemData);
-	menu_additem(menu, "Nie");
+	formatex(menuData, charsmax(menuData), "\y%L", id, "CSGO_MENU_YES");
+	menu_additem(menu, menuData, itemData);
+
+	formatex(menuData, charsmax(menuData), "%L^n", id, "CSGO_MENU_NO");
+	menu_additem(menu, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	menu_display(id, menu);
 

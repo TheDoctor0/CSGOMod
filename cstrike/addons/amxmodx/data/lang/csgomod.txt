@@ -201,6 +201,15 @@ CSGO_RANKS_HUD_SETTINGS_Y=\wLocation \yY Axis: \r%i%%^n
 CSGO_RANKS_HUD_SETTINGS_DEFAULT=\yDefault \rSettings
 
 CSGO_CLANS_NONE=None
+CSGO_CLANS_MAIN_MENU_TITLE=\yClan \rMenu^n\wCurrent Clan:\y %s^n\wStatus: \y%i/%i Members \w| \y%.2f Euro\w
+CSGO_CLANS_MAIN_MENU_TITLE_NONE=\yClan \rMenu^n\wCurrent Clan:\y None
+CSGO_CLANS_MAIN_MENU_CREATE=\wCreate \yClan \r(Requirement: %i Euro)
+CSGO_CLANS_MAIN_MENU_REQUEST=\wApply to \yClan
+CSGO_CLANS_MAIN_MENU_TOP15=\wClans \yTOP15
+CSGO_CLANS_MAIN_MENU_MANAGE=\wManage \yClan
+CSGO_CLANS_MAIN_MENU_LEAVE=\wLeave \yClan
+CSGO_CLANS_MAIN_MENU_MEMBERS=\wMembers \yOnline
+CSGO_CLANS_MAIN_MENU_BANK=\wClan \yBank
 
 [pl]
 CSGO_MENU_EXIT=Wyjscie
@@ -402,3 +411,12 @@ CSGO_RANKS_HUD_SETTINGS_Y=\wPolozenie \yOs Y: \r%i%%^n
 CSGO_RANKS_HUD_SETTINGS_DEFAULT=\yDomyslne \rUstawienia
 
 CSGO_CLANS_NONE=Brak
+CSGO_CLANS_MAIN_MENU_TITLE=\yMenu \rKlanu^n\wAktualny Klan:\y %s^n\wStan: \y%i/%i Czlonkow \w| \y%.2f Euro\w
+CSGO_CLANS_MAIN_MENU_TITLE_NONE=\yMenu \rKlanu^n\wAktualny Klan:\y Brak
+CSGO_CLANS_MAIN_MENU_CREATE=\wZaloz \yKlan \r(Wymagane %i Euro)
+CSGO_CLANS_MAIN_MENU_REQUEST=\wZloz \yPodanie
+CSGO_CLANS_MAIN_MENU_TOP15=\wTop15 \yKlanow
+CSGO_CLANS_MAIN_MENU_MANAGE=\wZarzadzaj \yKlanem
+CSGO_CLANS_MAIN_MENU_LEAVE=\wOpusc \yKlan
+CSGO_CLANS_MAIN_MENU_MEMBERS=\wCzlonkowie \yOnline
+CSGO_CLANS_MAIN_MENU_BANK=\wBank \yKlanu
