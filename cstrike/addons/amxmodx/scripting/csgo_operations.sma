@@ -110,25 +110,25 @@ public operation_menu(id)
 
 	new title[64], menu, callback = menu_makecallback("operation_menu_callback");
 
-	formatex(title, charsmax(title), "%L", id, "OPERATIONS_TITLE_MENU");
+	formatex(title, charsmax(title), "%L", id, "CSGO_OPERATIONS_TITLE_MENU");
 	menu = menu_create(title, "operation_menu_handle");
 
-	formatex(title, charsmax(title), "%L", id, "OPERATIONS_ITEM_SELECT");
+	formatex(title, charsmax(title), "%L", id, "CSGO_OPERATIONS_ITEM_SELECT");
 	menu_additem(menu, title, _, _, callback);
 
-	formatex(title, charsmax(title), "%L", id, "OPERATIONS_ITEM_CANCEL");
+	formatex(title, charsmax(title), "%L", id, "CSGO_OPERATIONS_ITEM_CANCEL");
 	menu_additem(menu, title, _, _, callback);
 
-	formatex(title, charsmax(title), "%L", id, "OPERATIONS_ITEM_PROGRESS");
+	formatex(title, charsmax(title), "%L", id, "CSGO_OPERATIONS_ITEM_PROGRESS");
 	menu_additem(menu, title, _, _, callback);
 
-	formatex(title, charsmax(title), "%L", id, "OPERATIONS_PRICE_INFO_FIRST");
+	formatex(title, charsmax(title), "%L", id, "CSGO_OPERATIONS_PRICE_INFO_FIRST");
 	menu_addtext(menu, title, 0);
 
-	formatex(title, charsmax(title), "%L", id, "OPERATIONS_PRICE_INFO_SECOND");
+	formatex(title, charsmax(title), "%L", id, "CSGO_OPERATIONS_PRICE_INFO_SECOND");
 	menu_addtext(menu, title, 0);
 
-	formatex(title, charsmax(title), "%L", id, "MENU_TITLE_EXIT");
+	formatex(title, charsmax(title), "%L", id, "CSGO_MENU_EXIT");
 	menu_setprop(menu, MPROP_EXITNAME, title);
 
 	menu_display(id, menu);
@@ -170,24 +170,24 @@ public select_operation(id)
 	if (!is_user_connected(id)) return PLUGIN_HANDLED;
 
 	if (playerData[id][PLAYER_TYPE]) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "OPERATIONS_ALREADY_IN_PROGRESS");
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_OPERATIONS_ALREADY_IN_PROGRESS");
 
 		return PLUGIN_HANDLED;
 	}
 
 	new menuData[128], operationId[3], operationInfo[operationsInfo], menu;
 
-	formatex(menuData, charsmax(menuData), "%L", id, "OPERATIONS_TITLE_SELECT");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_OPERATIONS_TITLE_SELECT");
 	menu = menu_create(menuData, "select_operation_handle");
 
 	for (new i = 0; i < ArraySize(operationList); i++) {
 		ArrayGetArray(operationList, i, operationInfo);
 
 		switch (operationInfo[OPERATION_TYPE]) {
-			case TYPE_KILL: formatex(menuData, charsmax(menuData), "%L", id, "OPERATIONS_TYPE_KILL", operationInfo[OPERATION_AMOUNT], operationInfo[OPERATION_REWARD]);
-			case TYPE_HEADSHOT: formatex(menuData, charsmax(menuData), "%L", id, "OPERATIONS_TYPE_HEADSHOT",  operationInfo[OPERATION_AMOUNT], operationInfo[OPERATION_REWARD]);
-			case TYPE_BOMB: formatex(menuData, charsmax(menuData), "%L", id, "OPERATIONS_TYPE_BOMB",  operationInfo[OPERATION_AMOUNT], operationInfo[OPERATION_REWARD]);
-			case TYPE_DAMAGE: formatex(menuData, charsmax(menuData), "%L", id, "OPERATIONS_TYPE_DAMAGE",  operationInfo[OPERATION_AMOUNT], operationInfo[OPERATION_REWARD]);
+			case TYPE_KILL: formatex(menuData, charsmax(menuData), "%L", id, "CSGO_OPERATIONS_TYPE_KILL", operationInfo[OPERATION_AMOUNT], operationInfo[OPERATION_REWARD]);
+			case TYPE_HEADSHOT: formatex(menuData, charsmax(menuData), "%L", id, "CSGO_OPERATIONS_TYPE_HEADSHOT",  operationInfo[OPERATION_AMOUNT], operationInfo[OPERATION_REWARD]);
+			case TYPE_BOMB: formatex(menuData, charsmax(menuData), "%L", id, "CSGO_OPERATIONS_TYPE_BOMB",  operationInfo[OPERATION_AMOUNT], operationInfo[OPERATION_REWARD]);
+			case TYPE_DAMAGE: formatex(menuData, charsmax(menuData), "%L", id, "CSGO_OPERATIONS_TYPE_DAMAGE",  operationInfo[OPERATION_AMOUNT], operationInfo[OPERATION_REWARD]);
 			case TYPE_NONE: continue;
 		}
 
@@ -196,7 +196,7 @@ public select_operation(id)
 		menu_additem(menu, menuData, operationId);
 	}
 
-	formatex(menuData, charsmax(menuData), "%L", id, "MENU_TITLE_EXIT");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
 	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	menu_display(id, menu);
@@ -225,7 +225,7 @@ public select_operation_handle(id, menu, item)
 
 	save_operation(id);
 
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "OPERATIONS_STARTED");
+	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_OPERATIONS_STARTED");
 
 	menu_destroy(menu);
 
@@ -280,26 +280,26 @@ public give_reward(id)
 
 	reset_operation(id, 0, 1);
 
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "OPERATIONS_COMPLETED", reward);
+	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_OPERATIONS_COMPLETED", reward);
 
 	return PLUGIN_HANDLED;
 }
 
 public check_operation(id)
 {
-	if (!playerData[id][PLAYER_TYPE]) client_print_color(id, id, "^4[CS:GO]^1 %L", id, "OPERATIONS_NONE");
+	if (!playerData[id][PLAYER_TYPE]) client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_OPERATIONS_NONE");
 	else {
 		new message[128];
 
 		switch (playerData[id][PLAYER_TYPE]) {
-			case TYPE_KILL: formatex(message, charsmax(message), "%L", id, "OPERATIONS_TYPE_KILL_INFO", (get_progress_need(id) - get_progress(id)));
-			case TYPE_HEADSHOT: formatex(message, charsmax(message), "%L", id, "OPERATIONS_TYPE_HEADSHOT_INFO",  (get_progress_need(id) - get_progress(id)));
-			case TYPE_BOMB: formatex(message, charsmax(message), "%L", id, "OPERATIONS_TYPE_BOMB_INFO",  (get_progress_need(id) - get_progress(id)));
-			case TYPE_DAMAGE: formatex(message, charsmax(message), "%L", id, "OPERATIONS_TYPE_DAMAGE_INFO", (get_progress_need(id) - get_progress(id)));
-			case TYPE_NONE: formatex(message, charsmax(message), "%L", id, "OPERATIONS_TYPE_NONE_INFO");
+			case TYPE_KILL: formatex(message, charsmax(message), "%L", id, "CSGO_OPERATIONS_TYPE_KILL_INFO", (get_progress_need(id) - get_progress(id)));
+			case TYPE_HEADSHOT: formatex(message, charsmax(message), "%L", id, "CSGO_OPERATIONS_TYPE_HEADSHOT_INFO",  (get_progress_need(id) - get_progress(id)));
+			case TYPE_BOMB: formatex(message, charsmax(message), "%L", id, "CSGO_OPERATIONS_TYPE_BOMB_INFO",  (get_progress_need(id) - get_progress(id)));
+			case TYPE_DAMAGE: formatex(message, charsmax(message), "%L", id, "CSGO_OPERATIONS_TYPE_DAMAGE_INFO", (get_progress_need(id) - get_progress(id)));
+			case TYPE_NONE: formatex(message, charsmax(message), "%L", id, "CSGO_OPERATIONS_TYPE_NONE_INFO");
 		}
 
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "OPERATIONS_PROGRESS", message);
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_OPERATIONS_PROGRESS", message);
 	}
 
 	return PLUGIN_HANDLED;
@@ -351,7 +351,7 @@ public reset_operation(id, data, silent)
 
 	if (!data) save_operation(id);
 
-	if (!silent) client_print_color(id, id, "^4[CS:GO]^1 %L", id, "OPERATIONS_CANCELLED");
+	if (!silent) client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_OPERATIONS_CANCELLED");
 
 	return PLUGIN_HANDLED;
 }
@@ -390,8 +390,8 @@ public _csgo_get_user_operation_text(id, dataReturn[], dataLength)
 {
 	param_convert(2);
 
-	if (playerData[id][PLAYER_ID] > -1) formatex(dataReturn, dataLength, "%L", id, "OPERATIONS_TEXT_PROGRESS", get_progress(id), get_progress_need(id), float(get_progress(id)) / float(get_progress_need(id)) * 100.0, "%");
-	else formatex(dataReturn, dataLength, "%L", id, "OPERATIONS_TEXT_COMMAND");
+	if (playerData[id][PLAYER_ID] > -1) formatex(dataReturn, dataLength, "%L", id, "CSGO_OPERATIONS_TEXT_PROGRESS", get_progress(id), get_progress_need(id), float(get_progress(id)) / float(get_progress_need(id)) * 100.0, "%");
+	else formatex(dataReturn, dataLength, "%L", id, "CSGO_OPERATIONS_TEXT_COMMAND");
 }
 
 public _csgo_get_user_operation_progress(id)

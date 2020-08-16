@@ -14,7 +14,7 @@ public plugin_init()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR);
 
-	for (new i; i < sizeof menuCommands; i++) register_clcmd(menuCommands[i], "server_menu");
+	for (new i; i < sizeof menuCommands; i++) register_clcmd(menuCommands[i], "CSGO_SERVER_MENU");
 }
 
 public plugin_cfg()
@@ -57,12 +57,12 @@ public client_putinserver(id)
 	cmd_execute(id, "bind v menu");
 }
 
-public server_menu(id)
+public CSGO_SERVER_MENU(id)
 {
 	new title[64], menu;
 
-	formatex(title, charsmax(title), "%L", id, "SERVER_MENU");
-	menu = menu_create(title, "server_menu_handler");
+	formatex(title, charsmax(title), "%L", id, "CSGO_SERVER_MENU");
+	menu = menu_create(title, "CSGO_SERVER_MENU_handler");
 
 	for (new i; i < ArraySize(titles); i++) {
 		ArrayGetString(titles, i, title, charsmax(title));
@@ -70,13 +70,13 @@ public server_menu(id)
 		menu_additem(menu, title);
 	}
 
-	formatex(title, charsmax(title), "%L", id, "MENU_TITLE_PREVIOUS");
+	formatex(title, charsmax(title), "%L", id, "CSGO_MENU_PREVIOUS");
 	menu_setprop(menu, MPROP_BACKNAME, title);
 
-	formatex(title, charsmax(title), "%L", id, "MENU_TITLE_NEXT");
+	formatex(title, charsmax(title), "%L", id, "CSGO_MENU_NEXT");
 	menu_setprop(menu, MPROP_NEXTNAME, title);
 
-	formatex(title, charsmax(title), "%L", id, "MENU_TITLE_EXIT");
+	formatex(title, charsmax(title), "%L", id, "CSGO_MENU_EXIT");
 	menu_setprop(menu, MPROP_EXITNAME, title);
 
 	menu_display(id, menu, 0);
@@ -84,7 +84,7 @@ public server_menu(id)
 	return PLUGIN_HANDLED;
 }
 
-public server_menu_handler(id, menu, item)
+public CSGO_SERVER_MENU_handler(id, menu, item)
 {
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);

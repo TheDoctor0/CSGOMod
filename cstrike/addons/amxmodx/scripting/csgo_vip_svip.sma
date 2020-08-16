@@ -226,7 +226,7 @@ public show_vipmotd(id)
 {
 	new motdTitle[32];
 
-	formatex(motdTitle, charsmax(motdTitle), "%L", id, "VIP_SVIP_VIP_MOTD");
+	formatex(motdTitle, charsmax(motdTitle), "%L", id, "CSGO_VIP_VIP_MOTD");
 
 	show_motd(id, "vip.txt", motdTitle);
 }
@@ -235,7 +235,7 @@ public show_svipmotd(id)
 {
 	new motdTitle[32];
 
-	formatex(motdTitle, charsmax(motdTitle), "%L", id, "VIP_SVIP_SVIP_MOTD");
+	formatex(motdTitle, charsmax(motdTitle), "%L", id, "CSGO_VIP_SVIP_MOTD");
 
 	show_motd(id, "svip.txt", motdTitle);
 }
@@ -298,21 +298,21 @@ public vip_menu(id)
 
 	new menu, title[64];
 
-	formatex(title, charsmax(title), "%L", id, get_bit(id, SVIP) ? "VIP_SVIP_MENU_WEAPONS_SVIP" : "VIP_SVIP_MENU_WEAPONS_VIP");
+	formatex(title, charsmax(title), "%L", id, get_bit(id, SVIP) ? "CSGO_VIP_MENU_WEAPONS_SVIP" : "CSGO_VIP_MENU_WEAPONS_VIP");
 	menu = menu_create(title, "vip_menu_handle");
 
-	formatex(title, charsmax(title), "%L", id, "VIP_SVIP_MENU_M4A1");
+	formatex(title, charsmax(title), "%L", id, "CSGO_VIP_MENU_M4A1");
 	menu_additem(menu, title);
 
-	formatex(title, charsmax(title), "%L", id, "VIP_SVIP_MENU_AK47");
+	formatex(title, charsmax(title), "%L", id, "CSGO_VIP_MENU_AK47");
 	menu_additem(menu, title);
 
 	if (get_bit(id, SVIP)) {
-		formatex(title, charsmax(title), "%L", id, "VIP_SVIP_MENU_AWP");
+		formatex(title, charsmax(title), "%L", id, "CSGO_VIP_MENU_AWP");
 		menu_additem(menu, title);
 	}
 
-	formatex(title, charsmax(title), "%L", id, "MENU_TITLE_EXIT");
+	formatex(title, charsmax(title), "%L", id, "CSGO_MENU_EXIT");
 	menu_setprop(menu, MPROP_EXITNAME, title);
 
 	menu_display(id, menu);
@@ -346,7 +346,7 @@ public vip_menu_handle(id, menu, item)
 
 			cs_set_user_bpammo(id, CSW_M4A1, 90);
 
-			client_print(id, print_center, "%L", id, "VIP_SVIP_M4A1");
+			client_print(id, print_center, "%L", id, "CSGO_VIP_M4A1");
 		} case 1: {
 			StripWeapons(id, Secondary);
 
@@ -362,7 +362,7 @@ public vip_menu_handle(id, menu, item)
 
 			cs_set_user_bpammo(id, CSW_AK47, 90);
 
-			client_print(id, print_center, "%L", id, "VIP_SVIP_AK47");
+			client_print(id, print_center, "%L", id, "CSGO_VIP_AK47");
 		} case 2: {
 			give_item(id, "weapon_deagle");
 			give_item(id, "ammo_50ae");
@@ -376,7 +376,7 @@ public vip_menu_handle(id, menu, item)
 
 			cs_set_user_bpammo(id, CSW_AWP, 30);
 
-			client_print(id, print_center, "%L", id, "VIP_SVIP_AWP");
+			client_print(id, print_center, "%L", id, "CSGO_VIP_AWP");
 		}
 	}
 
@@ -391,9 +391,9 @@ public close_vip_menu(id)
 
 	if (!check_weapons(id)) {
 		if (get_bit(id, SVIP)) {
-			client_print_color(id, id, "^4[SVIP]^1 %L", id, "VIP_SVIP_RANDOM_WEAPONS_SVIP");
+			client_print_color(id, id, "^4[SVIP]^1 %L", id, "CSGO_VIP_RANDOM_WEAPONS_SVIP");
 		} else {
-			client_print_color(id, id, "^4[VIP]^1 %L", id, "VIP_SVIP_RANDOM_WEAPONS_VIP");
+			client_print_color(id, id, "^4[VIP]^1 %L", id, "CSGO_VIP_RANDOM_WEAPONS_VIP");
 		}
 
 		new random = random_num(0, get_bit(id, SVIP) ? 2 : 1);
@@ -414,7 +414,7 @@ public close_vip_menu(id)
 
 				cs_set_user_bpammo(id, CSW_M4A1, 90);
 
-				client_print(id, print_center, "%L", id, "VIP_SVIP_M4A1");
+				client_print(id, print_center, "%L", id, "CSGO_VIP_M4A1");
 			} case 1: {
 				StripWeapons(id, Secondary);
 
@@ -430,7 +430,7 @@ public close_vip_menu(id)
 
 				cs_set_user_bpammo(id, CSW_AK47, 90);
 
-				client_print(id, print_center, "%L", id, "VIP_SVIP_AK47");
+				client_print(id, print_center, "%L", id, "CSGO_VIP_AK47");
 			} case 2: {
 				give_item(id, "weapon_deagle");
 				give_item(id, "ammo_50ae");
@@ -444,7 +444,7 @@ public close_vip_menu(id)
 
 				cs_set_user_bpammo(id, CSW_AWP, 30);
 
-				client_print(id, print_center, "%L", id, "VIP_SVIP_AWP");
+				client_print(id, print_center, "%L", id, "CSGO_VIP_AWP");
 			}
 		}
 	}
@@ -460,19 +460,19 @@ public vip_menu_pistol(id)
 
 	new menu, title[64];
 
-	formatex(title, charsmax(title), "%L", id, get_bit(id, SVIP) ? "VIP_SVIP_MENU_PISTOL_SVIP" : "VIP_SVIP_MENU_PISTOL_VIP");
+	formatex(title, charsmax(title), "%L", id, get_bit(id, SVIP) ? "CSGO_VIP_MENU_PISTOL_SVIP" : "CSGO_VIP_MENU_PISTOL_VIP");
 	menu = menu_create(title, "vip_menu_pistol_handle");
 
-	formatex(title, charsmax(title), "%L", id, "VIP_SVIP_MENU_DEAGLE");
+	formatex(title, charsmax(title), "%L", id, "CSGO_VIP_MENU_DEAGLE");
 	menu_additem(menu, title);
 
-	formatex(title, charsmax(title), "%L", id, "VIP_SVIP_MENU_USP");
+	formatex(title, charsmax(title), "%L", id, "CSGO_VIP_MENU_USP");
 	menu_additem(menu, title);
 
-	formatex(title, charsmax(title), "%L", id, "VIP_SVIP_MENU_GLOCK");
+	formatex(title, charsmax(title), "%L", id, "CSGO_VIP_MENU_GLOCK");
 	menu_additem(menu, title);
 
-	formatex(title, charsmax(title), "%L", id, "MENU_TITLE_EXIT");
+	formatex(title, charsmax(title), "%L", id, "CSGO_MENU_EXIT");
 	menu_setprop(menu, MPROP_EXITNAME, title);
 
 	menu_display(id, menu);
@@ -499,7 +499,7 @@ public vip_menu_pistol_handle(id, menu, item)
 
 			cs_set_user_bpammo(id, CSW_DEAGLE, 35);
 
-			client_print(id, print_center, "%L", id, "VIP_SVIP_DEAGLE");
+			client_print(id, print_center, "%L", id, "CSGO_VIP_DEAGLE");
 		} case 1: {
 			StripWeapons(id, Secondary);
 
@@ -508,7 +508,7 @@ public vip_menu_pistol_handle(id, menu, item)
 
 			cs_set_user_bpammo(id, CSW_USP, 100);
 
-			client_print(id, print_center, "%L", id, "VIP_SVIP_USP");
+			client_print(id, print_center, "%L", id, "CSGO_VIP_USP");
 		} case 2: {
 			StripWeapons(id, Secondary);
 
@@ -517,7 +517,7 @@ public vip_menu_pistol_handle(id, menu, item)
 
 			cs_set_user_bpammo(id, CSW_GLOCK18, 120);
 
-			client_print(id, print_center, "%L", id, "VIP_SVIP_GLOCK");
+			client_print(id, print_center, "%L", id, "CSGO_VIP_GLOCK");
 		}
 	}
 
@@ -532,9 +532,9 @@ public close_vip_menu_pistol(id)
 
 	if (!check_weapons(id)) {
 		if (get_bit(id, SVIP)) {
-			client_print_color(id, id, "^4[SVIP]^1 %L", id, "VIP_SVIP_RANDOM_PISTOL_SVIP");
+			client_print_color(id, id, "^4[SVIP]^1 %L", id, "CSGO_VIP_RANDOM_PISTOL_SVIP");
 		} else {
-			client_print_color(id, id, "^4[VIP]^1 %L", id, "VIP_SVIP_RANDOM_PISTOL_VIP");
+			client_print_color(id, id, "^4[VIP]^1 %L", id, "CSGO_VIP_RANDOM_PISTOL_VIP");
 		}
 
 		new random = random_num(0, 2);
@@ -548,7 +548,7 @@ public close_vip_menu_pistol(id)
 
 				cs_set_user_bpammo(id, CSW_DEAGLE, 35);
 
-				client_print(id, print_center, "%L", id, "VIP_SVIP_DEAGLE");
+				client_print(id, print_center, "%L", id, "CSGO_VIP_DEAGLE");
 			} case 1: {
 				StripWeapons(id, Secondary);
 
@@ -557,7 +557,7 @@ public close_vip_menu_pistol(id)
 
 				cs_set_user_bpammo(id, CSW_USP, 100);
 
-				client_print(id, print_center, "%L", id, "VIP_SVIP_USP");
+				client_print(id, print_center, "%L", id, "CSGO_VIP_USP");
 			} case 2: {
 				StripWeapons(id, Secondary);
 
@@ -566,7 +566,7 @@ public close_vip_menu_pistol(id)
 
 				cs_set_user_bpammo(id, CSW_GLOCK18, 120);
 
-				client_print(id, print_center, "%L", id, "VIP_SVIP_GLOCK");
+				client_print(id, print_center, "%L", id, "CSGO_VIP_GLOCK");
 			}
 		}
 	}
@@ -581,14 +581,14 @@ public player_death()
 	if (get_bit(killer, VIP) && is_user_alive(killer) && get_user_team(killer) != get_user_team(victim) && !disabled) {
 		if (headShot) {
 			set_dhudmessage(38, 218, 116, 0.50, 0.35, 0, 0.0, 1.0, 0.0, 0.0);
-			show_dhudmessage(killer, "%L", killer, "VIP_SVIP_KILL_HS");
+			show_dhudmessage(killer, "%L", killer, "CSGO_VIP_KILL_HS");
 
 			set_user_health(killer, get_user_health(killer) > 100 ? get_user_health(killer) + 15 : min(get_user_health(killer) + 15, 100));
 
 			cs_set_user_money(killer, cs_get_user_money(killer) + 350);
 		} else  {
 			set_dhudmessage(255, 212, 0, 0.50, 0.31, 0, 0.0, 1.0, 0.0, 0.0);
-			show_dhudmessage(killer, "%L", killer, "VIP_SVIP_KILL");
+			show_dhudmessage(killer, "%L", killer, "CSGO_VIP_KILL");
 
 			set_user_health(killer, get_user_health(killer) > 100 ? get_user_health(killer) + 10 : min(get_user_health(killer) + 10, 100));
 

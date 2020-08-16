@@ -13,26 +13,26 @@ public plugin_init()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR);
 
-	for (new i; i < sizeof commandTransfer; i++) register_clcmd(commandTransfer[i], "transfer_menu");
+	for (new i; i < sizeof commandTransfer; i++) register_clcmd(commandTransfer[i], "CSGO_TRANSFER");
 
 	register_clcmd("EURO_AMOUNT", "transfer_handle");
 }
 
-public transfer_menu(id)
+public CSGO_TRANSFER(id)
 {
 	if (!csgo_check_account(id)) return PLUGIN_HANDLED;
 
 	new menuData[256], title[64], playerName[32], playerId[3], players, menu;
 
-	formatex(title, charsmax(title), "%L", id, "TRANSFER_MENU_TITLE");
-	menu = menu_create(title, "transfer_menu_handle");
+	formatex(title, charsmax(title), "%L", id, "CSGO_TRANSFER_TITLE");
+	menu = menu_create(title, "CSGO_TRANSFER_handle");
 
 	for (new player = 1; player <= MAX_PLAYERS; player++) {
 		if (!is_user_connected(player) || is_user_hltv(player) || is_user_bot(player) || player == id) continue;
 
 		get_user_name(player, playerName, charsmax(playerName));
 
-		formatex(menuData, charsmax(menuData), "%L", id, "TRANSFER_MENU_ITEM", playerName, csgo_get_money(player));
+		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_TRANSFER_ITEM", playerName, csgo_get_money(player));
 
 		num_to_str(player, playerId, charsmax(playerId));
 
@@ -41,19 +41,19 @@ public transfer_menu(id)
 		players++;
 	}
 
-	formatex(title, charsmax(title), "%L", id, "MENU_TITLE_PREVIOUS");
+	formatex(title, charsmax(title), "%L", id, "CSGO_MENU_PREVIOUS");
 	menu_setprop(menu, MPROP_BACKNAME, title);
 
-	formatex(title, charsmax(title), "%L", id, "MENU_TITLE_NEXT");
+	formatex(title, charsmax(title), "%L", id, "CSGO_MENU_NEXT");
 	menu_setprop(menu, MPROP_NEXTNAME, title);
 
-	formatex(title, charsmax(title), "%L", id, "MENU_TITLE_EXIT");
+	formatex(title, charsmax(title), "%L", id, "CSGO_MENU_EXIT");
 	menu_setprop(menu, MPROP_EXITNAME, title);
 
 	if (!players) {
 		menu_destroy(menu);
 
-		client_print_color(id, id, "%L", id, "^4[CS:GO]^1 TRANSFER_MENU_NONE");
+		client_print_color(id, id, "%L", id, "^4[CS:GO]^1 CSGO_TRANSFER_NONE");
 	} else {
 		menu_display(id, menu);
 	}
@@ -61,7 +61,7 @@ public transfer_menu(id)
 	return PLUGIN_HANDLED;
 }
 
-public transfer_menu_handle(id, menu, item)
+public CSGO_TRANSFER_handle(id, menu, item)
 {
 	if (!is_user_connected(id)) return PLUGIN_HANDLED;
 
@@ -80,7 +80,7 @@ public transfer_menu_handle(id, menu, item)
 	menu_destroy(menu);
 
 	if (!is_user_connected(player)) {
-		client_print_color(id, id,  "^4[CS:GO]^1 %L", id, "TRANSFER_MENU_NO_PLAYER");
+		client_print_color(id, id,  "^4[CS:GO]^1 %L", id, "CSGO_TRANSFER_NO_PLAYER");
 
 		return PLUGIN_HANDLED;
 	}
@@ -89,8 +89,8 @@ public transfer_menu_handle(id, menu, item)
 
 	client_cmd(id, "messagemode EURO_AMOUNT");
 
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "TRANSFER_MENU_INFO_CHAT");
-	client_print(id, print_center, "%L", id, "TRANSFER_MENU_INFO_CENTER");
+	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_TRANSFER_INFO_CHAT");
+	client_print(id, print_center, "%L", id, "CSGO_TRANSFER_INFO_CENTER");
 
 	return PLUGIN_HANDLED;
 }
@@ -100,7 +100,7 @@ public transfer_handle(id)
 	if (!is_user_connected(id) || !csgo_check_account(id)) return PLUGIN_HANDLED;
 
 	if (!is_user_connected(transferPlayer[id])) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "TRANSFER_MENU_NO_PLAYER");
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_TRANSFER_NO_PLAYER");
 
 		return PLUGIN_HANDLED;
 	}
@@ -113,13 +113,13 @@ public transfer_handle(id)
 	cashAmount = str_to_float(cashData);
 
 	if (cashAmount < 0.1) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "TRANSFER_MENU_TOO_LOW");
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_TRANSFER_TOO_LOW");
 
 		return PLUGIN_HANDLED;
 	}
 
 	if (csgo_get_money(id) - cashAmount < 0.0) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "TRANSFER_MENU_NO_MONEY");
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_TRANSFER_NO_MONEY");
 
 		return PLUGIN_HANDLED;
 	}
@@ -132,7 +132,7 @@ public transfer_handle(id)
 	csgo_add_money(transferPlayer[id], cashAmount);
 	csgo_add_money(id, -cashAmount);
 
-	client_print_color(0, id, "^4[CS:GO]^3 %L", id, "TRANSFER_MENU_COMPLETED", playerName, cashAmount, playerIdName);
+	client_print_color(0, id, "^4[CS:GO]^3 %L", id, "CSGO_TRANSFER_COMPLETED", playerName, cashAmount, playerIdName);
 	log_to_file("csgo-transfer.log", "Player %s transfered %.2f Euro to the %s account.", playerName, cashAmount, playerIdName);
 
 	return PLUGIN_HANDLED;
