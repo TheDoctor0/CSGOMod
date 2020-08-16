@@ -4,9 +4,8 @@
 #include <engine>
 #include <csgomod>
 
-#define PLUGIN  "CS:GO C4"
-#define VERSION "2.0"
-#define AUTHOR  "O'Zone"
+#define PLUGIN	"CS:GO C4"
+#define AUTHOR	"O'Zone"
 
 new const modelsC4[][] = { "models/csgo_ozone/c4/p_c4.mdl", "models/csgo_ozone/c4/v_c4.mdl", "models/csgo_ozone/c4/w_c4.mdl" };
 

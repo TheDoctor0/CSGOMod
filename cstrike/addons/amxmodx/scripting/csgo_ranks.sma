@@ -7,9 +7,8 @@
 #include <nvault>
 #include <csgomod>
 
-#define PLUGIN "CS:GO Rank System"
-#define VERSION "2.0"
-#define AUTHOR "O'Zone"
+#define PLUGIN	"CS:GO Rank System"
+#define AUTHOR	"O'Zone"
 
 #define get_elo(%1,%2) (1.0 / (1.0 + floatpower(10.0, ((%1 - %2) / 400.0))))
 #define set_elo(%1,%2,%3) (%1 + 30.0 * (%2 - %3))

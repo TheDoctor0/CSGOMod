@@ -7,9 +7,8 @@
 #include <csx>
 #include <csgomod>
 
-#define PLUGIN "CS:GO Molotov"
-#define AUTHOR "DynamicBits & O'Zone"
-#define VERSION "2.0"
+#define PLUGIN	"CS:GO Molotov"
+#define AUTHOR	"DynamicBits & O'Zone"
 
 #define TASK_RESET		1000
 #define TASK_OFFSET		10

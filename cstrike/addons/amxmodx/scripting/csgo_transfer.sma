@@ -1,9 +1,8 @@
 #include <amxmodx>
 #include <csgomod>
 
-#define PLUGIN "CS:GO Transfer"
-#define VERSION "2.0"
-#define AUTHOR "O'Zone"
+#define PLUGIN	"CS:GO Transfer"
+#define AUTHOR	"O'Zone"
 
 new const commandTransfer[][] = { "say /transferuj", "say_team /transferuj", "say /transfer", "say_team /transfer", "transfer" };
 

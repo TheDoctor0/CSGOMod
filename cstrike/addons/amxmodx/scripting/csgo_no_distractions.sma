@@ -5,7 +5,6 @@
 #include <csgomod>
 
 #define PLUGIN	"CS:GO No Distractions"
-#define VERSION	"2.0"
 #define AUTHOR	"O'Zone"
 
 #define Menu_BuyItem 10

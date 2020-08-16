@@ -6,9 +6,8 @@
 #include <stripweapons>
 #include <csgomod>
 
-#define PLUGIN "CS:GO VIP & SVIP"
-#define VERSION "2.0"
-#define AUTHOR "O'Zone"
+#define PLUGIN	"CS:GO VIP and SVIP"
+#define AUTHOR	"O'Zone"
 
 #define ADMIN_FLAG_X (1<<23)
 

@@ -4,9 +4,8 @@
 #include <nvault>
 #include <csgomod>
 
-#define PLUGIN "CS:GO Operations"
-#define VERSION "2.0"
-#define AUTHOR "O'Zone"
+#define PLUGIN	"CS:GO Operations"
+#define AUTHOR	"O'Zone"
 
 enum _:operationType { TYPE_NONE, TYPE_KILL, TYPE_HEADSHOT, TYPE_BOMB, TYPE_DAMAGE };
 enum _:playerInfo { PLAYER_ID, PLAYER_TYPE, PLAYER_ADDITIONAL, PLAYER_PROGRESS, PLAYER_NAME[32] };

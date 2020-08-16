@@ -6,9 +6,8 @@
 #include <cstrike>
 #include <csgomod>
 
-#define PLUGIN "CS:GO Zeus"
-#define AUTHOR "wopox1337 & O'Zone"
-#define VERSION "2.0"
+#define PLUGIN  "CS:GO Zeus"
+#define AUTHOR  "wopox1337 & O'Zone"
 
 #define ZEUS_DISTANCE 230
 

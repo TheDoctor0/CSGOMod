@@ -34,6 +34,8 @@
 #define weapon_entity(%0) (get_pdata_int(%0, OFFSET_ID, OFFSET_ITEM_LINUX))
 #define is_user_valid(%1) (1 <= %1 <= MAX_PLAYERS)
 
+#define VERSION	"2.0.0"
+
 /**
  * Checks if player is logged in his account.
  *

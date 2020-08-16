@@ -5,9 +5,8 @@
 #include <fun>
 #include <csgomod>
 
-#define PLUGIN "CS:GO Accounts"
-#define VERSION "2.0"
-#define AUTHOR "O'Zone"
+#define PLUGIN	"CS:GO Accounts"
+#define AUTHOR	"O'Zone"
 
 #define TASK_PASSWORD   1945
 #define TASK_LOAD       2491

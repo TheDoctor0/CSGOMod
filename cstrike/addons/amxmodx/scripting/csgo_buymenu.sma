@@ -3,9 +3,8 @@
 #include <fakemeta>
 #include <csgomod>
 
-#define PLUGIN "CS:GO Buy Menu"
-#define VERSION "2.0"
-#define AUTHOR "O'Zone"
+#define PLUGIN	"CS:GO Buy Menu"
+#define AUTHOR	"O'Zone"
 
 #define CSW_NIGHTVISION 0
 #define CSW_DEFUSEKIT 2

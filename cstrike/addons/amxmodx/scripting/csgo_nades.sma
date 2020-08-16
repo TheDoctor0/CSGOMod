@@ -5,9 +5,8 @@
 #include <xs>
 #include <csgomod>
 
-#define PLUGIN "CS:GO Nades"
-#define VERSION "2.0"
-#define AUTHOR "O'Zone"
+#define PLUGIN	"CS:GO Nades"
+#define AUTHOR	"O'Zone"
 
 new const grenadeNames[][] = { "weapon_flashbang", "weapon_hegrenade", "weapon_smokegrenade" };
 

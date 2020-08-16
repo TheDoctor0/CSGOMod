@@ -1,9 +1,9 @@
 #include <amxmodx>
 #include <fakemeta>
 #include <hamsandwich>
+#include <csgomod>
 
 #define PLUGIN	"CS:GO Smoke"
-#define VERSION	"2.0"
 #define AUTHOR	"Numb & O'Zone"
 
 #define SMOKE_MAX_RADIUS		144.0

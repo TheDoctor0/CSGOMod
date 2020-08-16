@@ -4,9 +4,8 @@
 #include <sqlx>
 #include <csgomod>
 
-#define PLUGIN "CS:GO Clans"
-#define VERSION "2.0"
-#define AUTHOR "O'Zone"
+#define PLUGIN	"CS:GO Clans"
+#define AUTHOR	"O'Zone"
 
 #define TASK_INFO 9843
 

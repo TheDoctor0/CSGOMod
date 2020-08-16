@@ -9,9 +9,8 @@
 #include <xs>
 #include <csgomod>
 
-#define PLUGIN "CS:GO Mod"
-#define VERSION "2.0"
-#define AUTHOR "O'Zone"
+#define PLUGIN	"CS:GO Mod"
+#define AUTHOR	"O'Zone"
 
 #pragma dynamic 65536
 #pragma semicolon 1

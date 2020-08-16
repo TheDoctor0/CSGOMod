@@ -4,9 +4,8 @@
 #include <fakemeta>
 #include <csgomod>
 
-#define PLUGIN "CS:GO Run Boost"
-#define VERSION "2.0"
-#define AUTHOR "O'Zone"
+#define PLUGIN	"CS:GO Run Boost"
+#define AUTHOR	"O'Zone"
 
 new runBoost;
 

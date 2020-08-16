@@ -3,9 +3,8 @@
 #include <sqlx>
 #include <csx>
 
-#define PLUGIN "CS:GO StatTrak"
-#define VERSION "2.0"
-#define AUTHOR "O'Zone"
+#define PLUGIN	"CS:GO StatTrak"
+#define AUTHOR	"O'Zone"
 
 #define CSW_SHIELD	2
 #define TASK_LOAD	9321

@@ -5,9 +5,8 @@
 #include <hamsandwich>
 #include <csgomod>
 
-#define PLUGIN  "CS:GO Inspect"
-#define VERSION "2.0"
-#define AUTHOR  "O'Zone"
+#define PLUGIN	"CS:GO Inspect"
+#define AUTHOR	"O'Zone"
 
 new const weaponsWithoutInspect = (1<<CSW_C4) | (1<<CSW_HEGRENADE) | (1<<CSW_FLASHBANG) | (1<<CSW_SMOKEGRENADE);
 

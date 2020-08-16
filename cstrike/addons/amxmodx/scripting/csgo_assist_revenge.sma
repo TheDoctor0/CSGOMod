@@ -5,9 +5,8 @@
 #include <fun>
 #include <csgomod>
 
-#define PLUGIN		"CS:GO Assist and Revenge"
-#define VERSION		"2.0"
-#define AUTHOR		"O'Zone"
+#define PLUGIN	"CS:GO Assist and Revenge"
+#define AUTHOR	"O'Zone"
 
 native csgo_add_kill(id);
 
