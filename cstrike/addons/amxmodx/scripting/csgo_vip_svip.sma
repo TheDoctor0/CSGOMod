@@ -224,20 +224,22 @@ public client_infochanged(id)
 
 public show_vipmotd(id)
 {
-	new motdTitle[32];
+	new motdTitle[32], motdFile[32];
 
-	formatex(motdTitle, charsmax(motdTitle), "%L", id, "CSGO_VIP_VIP_MOTD");
+	formatex(motdTitle, charsmax(motdTitle), "%L", id, "CSGO_VIP_VIP_MOTD_TITLE");
+	formatex(motdFile, charsmax(motdFile), "%L", id, "CSGO_VIP_VIP_MOTD_FILE");
 
-	show_motd(id, "vip.txt", motdTitle);
+	show_motd(id, motdFile, motdTitle);
 }
 
 public show_svipmotd(id)
 {
-	new motdTitle[32];
+	new motdTitle[32], motdFile[32];
 
-	formatex(motdTitle, charsmax(motdTitle), "%L", id, "CSGO_VIP_SVIP_MOTD");
+	formatex(motdTitle, charsmax(motdTitle), "%L", id, "CSGO_VIP_SVIP_MOTD_TITLE");
+	formatex(motdFile, charsmax(motdFile), "%L", id, "CSGO_VIP_SVIP_MOTD_FILE");
 
-	show_motd(id, "svip.txt", motdTitle);
+	show_motd(id, motdFile, motdTitle);
 }
 
 public new_round()

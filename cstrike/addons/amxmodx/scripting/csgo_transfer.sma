@@ -132,7 +132,12 @@ public transfer_handle(id)
 	csgo_add_money(transferPlayer[id], cashAmount);
 	csgo_add_money(id, -cashAmount);
 
-	client_print_color(0, id, "^4[CS:GO]^3 %L", id, "CSGO_TRANSFER_COMPLETED", playerName, cashAmount, playerIdName);
+	for (new i = 1; i <= MAX_PLAYERS; i++) {
+		if (!is_user_connected(i) || is_user_hltv(i) || is_user_bot(i)) continue;
+
+		client_print_color(i, id, "^4[CS:GO]^3 %L", i, "CSGO_TRANSFER_COMPLETED", playerName, cashAmount, playerIdName);
+	}
+
 	log_to_file("csgo-transfer.log", "Player %s transfered %.2f Euro to the %s account.", playerName, cashAmount, playerIdName);
 
 	return PLUGIN_HANDLED;

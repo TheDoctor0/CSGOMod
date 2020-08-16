@@ -489,7 +489,7 @@ public skins_menu_handle(id, menu, item)
 
 public skins_help(id)
 {
-	show_motd(id, "skiny.txt", "CS:GO Mod - Pomoc");
+	show_motd(id, "motd/skins_pl.txt", "CS:GO Mod - Pomoc");
 
 	skins_menu(id);
 

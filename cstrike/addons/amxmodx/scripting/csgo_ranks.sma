@@ -184,7 +184,7 @@ public sql_init()
 		return;
 	}
 
-	new queryData[512];
+	new queryData[1024];
 
 	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_ranks` (`name` varchar(32) NOT NULL, `kills` int(10) NOT NULL DEFAULT 0, `rank` int(10) NOT NULL DEFAULT 0, `time` int(10) NOT NULL DEFAULT 0, ");
 	add(queryData, charsmax(queryData), "`firstvisit` int(10) NOT NULL DEFAULT 0, `lastvisit` int(10) NOT NULL DEFAULT 0, `gold` int(10) NOT NULL DEFAULT 0, `silver` int(10) NOT NULL DEFAULT 0, `bronze` int(10) NOT NULL DEFAULT 0, `medals` int(10) NOT NULL DEFAULT 0, ");
@@ -414,7 +414,7 @@ public display_hud(id)
 
 	if (is_user_bot(id) || !is_user_connected(id) || !get_bit(id, hudLoaded)) return PLUGIN_CONTINUE;
 
-	static address[64], clan[64], operation[64], skin[64], statTrak[64], weaponStatTrak, target;
+	static address[64], clan[64], operation[64], skin[64], statTrak[64], account[16], weaponStatTrak, target;
 
 	target = id;
 
@@ -448,12 +448,12 @@ public display_hud(id)
 	csgo_get_user_operation_text(target, operation, charsmax(operation));
 	csgo_get_current_skin_name(target, skin, charsmax(skin));
 
-	format(skin, charsmax(skin), "^n[Skin : %s]", skin);
-	format(operation, charsmax(operation), "^n[Operacja : %s]", operation);
-	format(clan, charsmax(clan), "^n[Klan : %s]", clan);
+	format(skin, charsmax(skin), "%L", id, "CSGO_RANKS_HUD_SKIN", skin);
+	format(operation, charsmax(operation), "%L", id, "CSGO_RANKS_HUD_OPERATION", operation);
+	format(clan, charsmax(clan), "%L", id, "CSGO_RANKS_HUD_CLAN", clan);
 
 	if (strlen(site)) {
-		formatex(address, charsmax(address), "[Forum : %s]^n", site);
+		formatex(address, charsmax(address), "%L", id, "CSGO_RANKS_HUD_SITE", site);
 	} else {
 		address = "";
 	}
@@ -461,17 +461,26 @@ public display_hud(id)
 	weaponStatTrak = csgo_get_weapon_stattrak(target, get_user_weapon(target));
 
 	if (weaponStatTrak > -1) {
-		format(statTrak, charsmax(statTrak), "^n[StatTrak : %i]", weaponStatTrak);
+		format(statTrak, charsmax(statTrak), "%L", id, "CSGO_RANKS_HUD_STATTRAK", weaponStatTrak);
 	} else {
 		statTrak = "";
 	}
 
-	if (!playerData[target][RANK]) ShowSyncHudMsg(id, hud, "%s[Konto : %s]%s^n[Ranga : %s (%i / %i)]%s%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]",
-		site, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), clan, rankName[playerData[target][RANK]], playerData[target][KILLS], unrankedKills, skin, statTrak, csgo_get_money(target), operation, hours, minutes, seconds);
-	else if (playerData[target][RANK] < MAX_RANKS) ShowSyncHudMsg(id, hud, "%s[Konto : %s]%s^n[Ranga : %s]^n[Punkty Elo : %.2f / %d]%s%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]",
-		site, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), clan, rankName[playerData[target][RANK]], playerData[target][ELO_RANK], rankElo[playerData[target][RANK] + 1], skin, statTrak, csgo_get_money(target), operation, hours, minutes, seconds);
-	else ShowSyncHudMsg(id, hud, "%s[Konto : %s]%s^n[Ranga : %s]^n[Punkty Elo : %.2f]%s%s^n[Stan Konta : %.2f Euro]%s^n[Czas Gry : %i h %i min %i s]",
-		site, (csgo_get_user_svip(target) ? "SuperVIP" : csgo_get_user_vip(target) ? "VIP" : "Zwykle"), clan, rankName[playerData[target][RANK]], playerData[target][ELO_RANK], skin, statTrak, csgo_get_money(target), operation, hours, minutes, seconds);
+	if (csgo_get_user_svip(target)) {
+		formatex(account, charsmax(account), "%L", id, "CSGO_RANKS_HUD_SUPERVIP");
+	} else if (csgo_get_user_vip(target)) {
+		formatex(account, charsmax(account), "%L", id, "CSGO_RANKS_HUD_VIP");
+	} else {
+		formatex(account, charsmax(account), "%L", id, "CSGO_RANKS_HUD_DEFAULT");
+	}
+
+	if (!playerData[target][RANK]) {
+		ShowSyncHudMsg(id, hud, "%L", id, "CSGO_RANKS_HUD_NO_RANK", site, account, clan, rankName[playerData[target][RANK]], playerData[target][KILLS], unrankedKills, skin, statTrak, csgo_get_money(target), operation, hours, minutes, seconds);
+	} else if (playerData[target][RANK] < MAX_RANKS) {
+		ShowSyncHudMsg(id, hud, "%L", id, "CSGO_RANKS_HUD_RANK", site, account, clan, rankName[playerData[target][RANK]], playerData[target][ELO_RANK], rankElo[playerData[target][RANK] + 1], skin, statTrak, csgo_get_money(target), operation, hours, minutes, seconds);
+	} else {
+		ShowSyncHudMsg(id, hud, "%L", id, "CSGO_RANKS_HUD_MAX_RANK", site, account, clan, rankName[playerData[target][RANK]], playerData[target][ELO_RANK], skin, statTrak, csgo_get_money(target), operation, hours, minutes, seconds);
+	}
 
 	return PLUGIN_CONTINUE;
 }
@@ -525,7 +534,11 @@ public new_round()
 
 		get_user_name(bestId, bestName, charsmax(bestName));
 
-		client_print_color(0, bestId, "** ^x03 %s^x01 prowadzi w grze z^x04 %i^x01 fragami i^x04 %i^x01 zgonami. **", bestName, bestFrags, bestDeaths);
+		for (new i = 1; i <= MAX_PLAYERS; i++) {
+			if (!is_user_connected(i) || is_user_hltv(i) || is_user_bot(i)) continue;
+
+			client_print_color(i, bestId, "%L", i, "CSGO_RANKS_CURRENT_LEADER", bestName, bestFrags, bestDeaths);
+		}
 	}
 }
 
@@ -546,7 +559,7 @@ public client_death(killer, victim, weapon, hitPlace, TK)
 	check_rank(killer);
 	check_rank(victim);
 
-	client_print_color(victim, killer, "** Zostales zabity przez^x03 %s^x01, ktoremu zostalo^x04 %i^x01 HP. **", playerData[killer][PLAYER_NAME], get_user_health(killer));
+	client_print_color(victim, killer, "%L", victim, "CSGO_RANKS_KILLED", playerData[killer][PLAYER_NAME], get_user_health(killer));
 
 	if (block) return;
 
@@ -572,18 +585,26 @@ public client_death(killer, victim, weapon, hitPlace, TK)
 		get_user_name(lastT, nameT, charsmax(nameT));
 		get_user_name(lastCT, nameCT, charsmax(nameCT));
 
-		set_dhudmessage(255, 128, 0, -1.0, 0.30, 0, 5.0, 5.0, 0.5, 0.15);
-		show_dhudmessage(0, "%s vs. %s", nameT, nameCT);
-	}
+		for (new i = 1; i <= MAX_PLAYERS; i++) {
+			if (!is_user_connected(i) || is_user_hltv(i) || is_user_bot(i)) continue;
 
-	if (tCount == 1 && ctCount > 1) {
-		set_dhudmessage(255, 128, 0, -1.0, 0.30, 0, 5.0, 5.0, 0.5, 0.15);
-		show_dhudmessage(0, "%i vs %i", tCount, ctCount);
-	}
+			set_dhudmessage(255, 128, 0, -1.0, 0.30, 0, 5.0, 5.0, 0.5, 0.15);
+			show_dhudmessage(i, "%L", i, "CSGO_RANKS_VS_NAMES", nameT, nameCT);
+		}
+	} else if (tCount == 1 && ctCount > 1) {
+		for (new i = 1; i <= MAX_PLAYERS; i++) {
+			if (!is_user_connected(i) || is_user_hltv(i) || is_user_bot(i)) continue;
 
-	if (tCount > 1 && ctCount == 1) {
-		set_dhudmessage(255, 128, 0, -1.0, 0.30, 0, 5.0, 5.0, 0.5, 0.15);
-		show_dhudmessage(0, "%i vs %i", ctCount, tCount);
+			set_dhudmessage(255, 128, 0, -1.0, 0.30, 0, 5.0, 5.0, 0.5, 0.15);
+			show_dhudmessage(i, "%L", i, "CSGO_RANKS_VS_NUMBERS", tCount, ctCount);
+		}
+	} else if (tCount > 1 && ctCount == 1) {
+		for (new i = 1; i <= MAX_PLAYERS; i++) {
+			if (!is_user_connected(i) || is_user_hltv(i) || is_user_bot(i)) continue;
+
+			set_dhudmessage(255, 128, 0, -1.0, 0.30, 0, 5.0, 5.0, 0.5, 0.15);
+			show_dhudmessage(i, "%L", i, "CSGO_RANKS_VS_NUMBERS", ctCount, tCount);
+		}
 	}
 }
 
@@ -637,31 +658,36 @@ public check_time(id)
 
 	UnixToTime(time, visitYear, visitMonth, visitDay, visitHour, visitMinutes, visitSeconds, UT_TIMEZONE_SERVER);
 
-	client_print_color(id, id, "^x04[CS:GO]^x01 Aktualnie jest godzina^x03 %02d:%02d:%02d (data: %02d.%02d.%02d)^x01.", visitHour, visitMinutes, visitSeconds, visitDay, visitMonth, visitYear);
+	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_VISIT_HOUR", visitHour, visitMinutes, visitSeconds, visitDay, visitMonth, visitYear);
 
-	if (playerData[id][FIRST_VISIT] == playerData[id][LAST_VISIT]) client_print_color(id, id, "^x04[CS:GO]^x01 To twoja^x03 pierwsza wizyta^x01 na serwerze. Zyczymy milej gry!" );
+	if (playerData[id][FIRST_VISIT] == playerData[id][LAST_VISIT]) client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_VISIT_FIRST");
 	else {
 		UnixToTime(playerData[id][LAST_VISIT], Year, Month, Day, visitHour, visitMinutes, visitSeconds, UT_TIMEZONE_SERVER);
 
-		if (visitYear == Year && visitMonth == Month && visitDay == Day) client_print_color(id, id, "^x04[CS:GO]^x01 Twoja ostatnia wizyta miala miejsce^x03 dzisiaj^x01 o^x03 %02d:%02d:%02d^x01. Zyczymy milej gry!", visitHour, visitMinutes, visitSeconds);
-		else if (visitYear == Year && visitMonth == Month && (visitDay - 1) == Day) client_print_color(id, id, "^x04[CS:GO]^x01 Twoja ostatnia wizyta miala miejsce^x03 wczoraj^x01 o^x03 %02d:%02d:%02d^x01. Zyczymy milej gry!", visitHour, visitMinutes, visitSeconds);
-		else client_print_color(id, id, "^x04[CS:GO]^x01 Twoja ostatnia wizyta:^x03 %02d:%02d:%02d (data: %02d.%02d.%02d)^x01. Zyczymy milej gry!", visitHour, visitMinutes, visitSeconds, Day, Month, Year);
+		if (visitYear == Year && visitMonth == Month && visitDay == Day) client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_VISIT_TODAY", visitHour, visitMinutes, visitSeconds);
+		else if (visitYear == Year && visitMonth == Month && (visitDay - 1) == Day) client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_VISIT_YESTERDAY", visitHour, visitMinutes, visitSeconds);
+		else client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_VISIT_BEFORE", visitHour, visitMinutes, visitSeconds, Day, Month, Year);
 	}
 }
 
 public cmd_ranks(id)
 {
-	show_motd(id, "ranks.txt", "Lista Dostepnych Rang");
+	new motdTitle[32], motdFile[32];
+
+	formatex(motdTitle, charsmax(motdTitle), "%L", id, "CSGO_RANKS_MOTD_TITLE");
+	formatex(motdFile, charsmax(motdFile), "%L", id, "CSGO_RANKS_MOTD_FILE");
+
+	show_motd(id, motdFile, motdTitle);
 
 	return PLUGIN_HANDLED;
 }
 
 public cmd_rank(id)
 {
-	if (playerData[id][RANK] == MAX_RANKS) client_print_color(id, id, "^x04[CS:GO]^x01 Twoja aktualna ranga to:^x03 %s^x01.", rankName[playerData[id][RANK]]);
-	else {
-		client_print_color(id, id, "^x04[CS:GO]^x01 Twoja aktualna ranga to:^x03 %s^x01. ", rankName[playerData[id][RANK]]);
-		client_print_color(id, id, "^x04[CS:GO]^x01 Do kolejnej rangi (^x03%s^x01) potrzebujesz^x03 %.2f^x01 punktow Elo.", rankName[playerData[id][RANK] + 1], rankElo[playerData[id][RANK] + 1] - playerData[id][ELO_RANK]);
+	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_CURRENT_RANK", rankName[playerData[id][RANK]]);
+
+	if (playerData[id][RANK] < MAX_RANKS) {
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_CURRENT_RANK", rankName[playerData[id][RANK] + 1], rankElo[playerData[id][RANK] + 1] - playerData[id][ELO_RANK]);
 	}
 
 	return PLUGIN_HANDLED;
@@ -688,14 +714,18 @@ public show_topranks(failState, Handle:query, error[], errorNum, playerId[], dat
 		return PLUGIN_HANDLED;
 	}
 
-	static topData[2048], name[32], Float:elo, rank, topLength, place;
+	static topData[2048], name[32], nick[16], ranks[16], points[16], Float:elo, rank, topLength, place;
 
 	topLength = 0, place = 0;
 
 	new id = playerId[0];
 
+	formatex(nick, charsmax(nick), "%L", id, "CSGO_RANKS_TOP_NICK");
+	formatex(ranks, charsmax(ranks), "%L", id, "CSGO_RANKS_TOP_RANK");
+	formatex(points, charsmax(points), "%L", id, "CSGO_RANKS_TOP_ELO");
+
 	topLength = format(topData, charsmax(topData), "<body bgcolor=#000000><font color=#FFB000><pre>");
-	topLength += format(topData[topLength], charsmax(topData) - topLength, "%1s %-22.22s %13s %4s^n", "#", "Nick", "Ranga", "Elo");
+	topLength += format(topData[topLength], charsmax(topData) - topLength, "%1s %-22.22s %13s %4s^n", "#", nick, ranks, points);
 
 	while (SQL_MoreResults(query)) {
 		place++;
@@ -715,7 +745,9 @@ public show_topranks(failState, Handle:query, error[], errorNum, playerId[], dat
 		SQL_NextRow(query);
 	}
 
-	show_motd(id, topData, "Top15 Rang");
+	formatex(name, charsmax(name), "%L", id, "CSGO_RANKS_TOP15_RANKS");
+
+	show_motd(id, topData, name);
 
 	return PLUGIN_HANDLED;
 }
@@ -755,8 +787,8 @@ public show_time(failState, Handle:query, error[], errorNum, playerId[], dataSiz
 		hours++;
 	}
 
-	client_print_color(id, id, "^x04[CS:GO]^x01 Spedziles na serwerze lacznie^x03 %i h %i min %i s^x01.", hours, minutes, seconds);
-	client_print_color(id, id, "^x04[CS:GO]^x01 Zajmujesz^x03 %i/%i^x01 miejsce w rankingu czasu gry.", rank, players);
+	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_TIME_INFO", hours, minutes, seconds);
+	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_TIME_TOP", rank, players);
 
 	return PLUGIN_HANDLED;
 }
@@ -780,14 +812,17 @@ public show_toptime(failState, Handle:query, error[], errorNum, playerId[], data
 		return PLUGIN_HANDLED;
 	}
 
-	static topData[2048], name[32], topLength, place, seconds, minutes, hours;
+	static topData[2048], name[32], nick[16], time[16], topLength, place, seconds, minutes, hours;
 
 	topLength = 0, place = 0;
 
 	new id = playerId[0];
 
+	formatex(nick, charsmax(nick), "%L", id, "CSGO_RANKS_TOP_NICK");
+	formatex(time, charsmax(time), "%L", id, "CSGO_RANKS_TOP_TIME");
+
 	topLength = format(topData, charsmax(topData), "<body bgcolor=#000000><font color=#FFB000><pre>");
-	topLength += format(topData[topLength], charsmax(topData) - topLength, "%1s %-22.22s %9s^n", "#", "Nick", "Czas Gry");
+	topLength += format(topData[topLength], charsmax(topData) - topLength, "%1s %-22.22s %9s^n", "#", nick, time);
 
 	while (SQL_MoreResults(query)) {
 		place++;
@@ -817,7 +852,9 @@ public show_toptime(failState, Handle:query, error[], errorNum, playerId[], data
 		SQL_NextRow(query);
 	}
 
-	show_motd(id, topData, "Top15 Czasu Gry");
+	formatex(name, charsmax(name), "%L", id, "CSGO_RANKS_TOP15_TIME");
+
+	show_motd(id, topData, name);
 
 	return PLUGIN_HANDLED;
 }
@@ -845,8 +882,8 @@ public show_medals(failState, Handle:query, error[], errorNum, playerId[], dataS
 
 	new id = playerId[0], rank = SQL_ReadResult(query, 0) + 1, players = SQL_ReadResult(query, 1);
 
-	client_print_color(id, id, "^x04[CS:GO]^x01 Twoje medale:^x03 %i Zlote^x01,^x03 %i Srebre^x01,^x03 %i Brazowe^x01.", playerData[id][GOLD], playerData[id][SILVER], playerData[id][BRONZE]);
-	client_print_color(id, id, "^x04[CS:GO]^x01 Zajmujesz^x03 %i/%i^x01 miejsce w rankingu medalowym.", rank, players);
+	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_MEDALS_INFO", playerData[id][GOLD], playerData[id][SILVER], playerData[id][BRONZE]);
+	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_MEDALS_INFO", rank, players);
 
 	return PLUGIN_HANDLED;
 }
@@ -872,14 +909,20 @@ public show_topmedals(failState, Handle:query, error[], errorNum, playerId[], da
 		return PLUGIN_HANDLED;
 	}
 
-	static topData[2048], name[32], topLength, place, gold, silver, bronze, medals;
+	static topData[2048], name[32], nick[16], sum[16], goldTitle[16], silverTitle[16], bronzeTitle[16], topLength, place, gold, silver, bronze, medals;
 
 	topLength = 0, place = 0;
 
 	new id = playerId[0];
 
+	formatex(nick, charsmax(nick), "%L", id, "CSGO_RANKS_TOP_NICK");
+	formatex(sum, charsmax(sum), "%L", id, "CSGO_RANKS_TOP_SUM");
+	formatex(goldTitle, charsmax(goldTitle), "%L", id, "CSGO_RANKS_TOP_GOLD");
+	formatex(silverTitle, charsmax(silverTitle), "%L", id, "CSGO_RANKS_TOP_SILVER");
+	formatex(bronzeTitle, charsmax(bronzeTitle), "%L", id, "CSGO_RANKS_TOP_BRONZE");
+
 	topLength = format(topData, charsmax(topData), "<body bgcolor=#000000><font color=#FFB000><pre>");
-	topLength += format(topData[topLength], charsmax(topData) - topLength, "%1s %-22.22s %6s %8s %8s %5s^n", "#", "Nick", "Zlote", "Srebrne", "Brazowe", "Suma");
+	topLength += format(topData[topLength], charsmax(topData) - topLength, "%1s %-22.22s %6s %8s %8s %5s^n", "#", nick, goldTitle, silverTitle, bronzeTitle, sum);
 
 	while (SQL_MoreResults(query)) {
 		place++;
@@ -900,7 +943,9 @@ public show_topmedals(failState, Handle:query, error[], errorNum, playerId[], da
 		SQL_NextRow(query);
 	}
 
-	show_motd(id, topData, "Top15 Medali");
+	formatex(name, charsmax(name), "%L", id, "CSGO_RANKS_TOP15_MEDALS");
+
+	show_motd(id, topData, name);
 
 	return PLUGIN_HANDLED;
 }
@@ -931,10 +976,10 @@ public show_stats(failState, Handle:query, error[], errorNum, playerId[], dataSi
 
 	new id = playerId[0], rank = SQL_ReadResult(query, 0) + 1, players = SQL_ReadResult(query, 1);
 
-	if (playerData[id][CURRENT_STATS] > playerData[id][BEST_STATS]) client_print_color(id, id, "^x04[CS:GO]^x01 Twoje najlepsze staty to^x03 %i^x01 zabic (w tym^x03 %i^x01 z HS) i^x03 %i^x01 zgonow^x01.", playerData[id][CURRENT_KILLS], playerData[id][CURRENT_HS], playerData[id][CURRENT_DEATHS]);
-	else client_print_color(id, id, "^x04[CS:GO]^x01 Twoje najlepsze staty to^x03 %i^x01 zabic (w tym^x03 %i^x01 z HS) i^x03 %i^x01 zgonow^x01.", playerData[id][BEST_KILLS], playerData[id][BEST_HS], playerData[id][BEST_DEATHS]);
+	if (playerData[id][CURRENT_STATS] > playerData[id][BEST_STATS]) client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_STATS_INFO", playerData[id][CURRENT_KILLS], playerData[id][CURRENT_HS], playerData[id][CURRENT_DEATHS]);
+	else client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_STATS_INFO", playerData[id][BEST_KILLS], playerData[id][BEST_HS], playerData[id][BEST_DEATHS]);
 
-	client_print_color(id, id, "^x04[CS:GO]^x01 Zajmujesz^x03 %i/%i^x01 miejsce w rankingu najlepszych statystyk.", rank, players);
+	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_STATS_TOP", rank, players);
 
 	return PLUGIN_HANDLED;
 }
@@ -960,14 +1005,18 @@ public show_topstats(failState, Handle:query, error[], errorNum, playerId[], dat
 		return PLUGIN_HANDLED;
 	}
 
-	static topData[2048], name[32], topLength, place, kills, headShots, deaths;
+	static topData[2048], name[32], nick[16], killsTitle[16], deathsTitle[16], topLength, place, kills, headShots, deaths;
 
 	topLength = 0, place = 0;
 
 	new id = playerId[0];
 
+	formatex(nick, charsmax(nick), "%L", id, "CSGO_RANKS_TOP_NICK");
+	formatex(killsTitle, charsmax(killsTitle), "%L", id, "CSGO_RANKS_TOP_KILLS");
+	formatex(deathsTitle, charsmax(deathsTitle), "%L", id, "CSGO_RANKS_TOP_DEATHS");
+
 	topLength = format(topData, charsmax(topData), "<body bgcolor=#000000><font color=#FFB000><pre>");
-	topLength += format(topData[topLength], charsmax(topData) - topLength, "%1s %-22.22s %19s %4s^n", "#", "Nick", "Zabojstwa", "Zgony");
+	topLength += format(topData[topLength], charsmax(topData) - topLength, "%1s %-22.22s %19s %4s^n", "#", nick, killsTitle, deathsTitle);
 
 	while (SQL_MoreResults(query))
 	{
@@ -988,7 +1037,9 @@ public show_topstats(failState, Handle:query, error[], errorNum, playerId[], dat
 		SQL_NextRow(query);
 	}
 
-	show_motd(id, topData, "Top15 Statystyk");
+	formatex(name, charsmax(name), "%L", id, "CSGO_RANKS_TOP15_STATS");
+
+	show_motd(id, topData, name);
 
 	return PLUGIN_HANDLED;
 }
@@ -1040,7 +1091,7 @@ public message_intermission()
 {
 	mapChange = true;
 
-	new playerName[32], winnersId[3], winnersFrags[3], tempFrags, swapFrags, swapId;
+	new playerName[32], medal[16], winnersId[3], winnersFrags[3], tempFrags, swapFrags, swapId;
 
 	for (new id = 1; id <= MAX_PLAYERS; id++) {
 		if (!is_user_connected(id) || is_user_hltv(id) || is_user_bot(id)) continue;
@@ -1073,12 +1124,8 @@ public message_intermission()
 
 	if (!winnersId[FIRST]) return PLUGIN_CONTINUE;
 
-	new const medals[][] = { "Brazowy", "Srebrny", "Zloty" };
-
-	client_print_color(0, 0, "^x04[CS:GO]^x01 Gratulacje dla^x03 Najlepszych Graczy^x01!");
-
 	for (new i = 2; i >= 0; i--) {
-		switch(i) {
+		switch (i) {
 			case THIRD: playerData[winnersId[i]][BRONZE]++;
 			case SECOND: playerData[winnersId[i]][SILVER]++;
 			case FIRST: {
@@ -1091,8 +1138,26 @@ public message_intermission()
 		save_data(winnersId[i], 1);
 
 		get_user_name(winnersId[i], playerName, charsmax(playerName));
+	}
 
-		client_print_color(0, 0, "^x04[CS:GO]^x03 %s^x01 -^x03 %i^x01 Zabojstw - %s Medal%s.", playerName, winnersFrags[i], medals[i], i == FIRST ? " (MVP)" : "");
+	for (new id = 1; id <= MAX_PLAYERS; id++) {
+		if (!is_user_connected(id) || is_user_hltv(id) || is_user_bot(id)) continue;
+
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_MEDALS_BEST");
+
+		for (new i = 2; i >= 0; i--) {
+			switch (i) {
+				case THIRD: formatex(medal, charsmax(medal), "%L", id, "CSGO_RANKS_MEDALS_BRONZE");
+				case SECOND: formatex(medal, charsmax(medal), "%L", id, "CSGO_RANKS_MEDALS_SILVER");
+				case FIRST: formatex(medal, charsmax(medal), "%L", id, "CSGO_RANKS_MEDALS_GOLD");
+			}
+
+			if (i == FIRST) {
+				client_print_color(id, id, "^4[CS:GO]^3 %L", id, "CSGO_RANKS_MEDALS_BEST_MVP", playerName, winnersFrags[i], medal);
+			} else {
+				client_print_color(id, id, "^4[CS:GO]^3 %L", id, "CSGO_RANKS_MEDALS_BEST_EVP", playerName, winnersFrags[i], medal);
+			}
+		}
 	}
 
 	for (new id = 1; id <= MAX_PLAYERS; id++) {
@@ -1117,9 +1182,9 @@ public say_text(msgId, msgDest, msgEnt)
 		if (rank > 3) return PLUGIN_CONTINUE;
 
 		switch (rank) {
-			case 1: formatex(chatPrefix, charsmax(chatPrefix), "^x04[TOP1]");
-			case 2: formatex(chatPrefix, charsmax(chatPrefix), "^x04[TOP2]");
-			case 3: formatex(chatPrefix, charsmax(chatPrefix), "^x04[TOP3]");
+			case 1: formatex(chatPrefix, charsmax(chatPrefix), "^4[TOP1]");
+			case 2: formatex(chatPrefix, charsmax(chatPrefix), "^4[TOP2]");
+			case 3: formatex(chatPrefix, charsmax(chatPrefix), "^4[TOP3]");
 		}
 
 		if (!equal(tempMessage, "#Cstrike_Chat_All")) {
@@ -1133,9 +1198,9 @@ public say_text(msgId, msgDest, msgEnt)
 	        set_msg_arg_string(4, "");
 
 	        add(message, charsmax(message), chatPrefix);
-	        add(message, charsmax(message), "^x03 ");
+	        add(message, charsmax(message), "^3 ");
 	        add(message, charsmax(message), playerName);
-	        add(message, charsmax(message), "^x01 :  ");
+	        add(message, charsmax(message), "^1 :  ");
 	        add(message, charsmax(message), tempMessage);
 		}
 
@@ -1149,28 +1214,32 @@ public change_hud(id)
 {
 	if (!is_user_connected(id) || !get_bit(id, hudLoaded)) return PLUGIN_HANDLED;
 
-	new menuData[64], menu = menu_create("\yKonfiguracja \rHUD\w", "change_hud_handle");
+	new menuData[64], menu;
 
-	format(menuData, charsmax(menuData), "\wKolor \yCzerwony: \r%i", playerData[id][PLAYER_HUD_RED]);
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_RANKS_HUD_SETTINGS_TITLE");
+
+	menu = menu_create(menuData, "change_hud_handle");
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_RANKS_HUD_SETTINGS_RED", playerData[id][PLAYER_HUD_RED]);
 	menu_additem(menu, menuData);
 
-	format(menuData, charsmax(menuData), "\wKolor \yZielony: \r%i", playerData[id][PLAYER_HUD_GREEN]);
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_RANKS_HUD_SETTINGS_GREEN", playerData[id][PLAYER_HUD_GREEN]);
 	menu_additem(menu, menuData);
 
-	format(menuData, charsmax(menuData), "\wKolor \yNiebieski: \r%i", playerData[id][PLAYER_HUD_BLUE]);
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_RANKS_HUD_SETTINGS_BLUE", playerData[id][PLAYER_HUD_BLUE]);
 	menu_additem(menu, menuData);
 
-	format(menuData, charsmax(menuData), "\wPolozenie \yOs X: \r%i%%", playerData[id][PLAYER_HUD_POSX]);
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_RANKS_HUD_SETTINGS_X", playerData[id][PLAYER_HUD_POSX]);
 	menu_additem(menu, menuData);
 
-	format(menuData, charsmax(menuData), "\wPolozenie \yOs Y: \r%i%%^n", playerData[id][PLAYER_HUD_POSY]);
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_RANKS_HUD_SETTINGS_Y", playerData[id][PLAYER_HUD_POSY]);
 	menu_additem(menu, menuData);
 
-	format(menuData, charsmax(menuData), "\yDomyslne \rUstawienia");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_RANKS_HUD_SETTINGS_DEFAULT");
 	menu_additem(menu, menuData);
 
-	formatex(menuData, charsmax(menuData), "Wyjscie");
-	menu_setprop(menu, MPROP_NEXTNAME, menuData);
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	menu_display(id, menu);
 

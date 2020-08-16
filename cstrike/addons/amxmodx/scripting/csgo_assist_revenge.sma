@@ -134,8 +134,12 @@ public player_die()
 			get_user_name(assistant, assistantName, charsmax(assistantName));
 			get_user_name(victim, victimName, charsmax(victimName));
 
-			set_hudmessage(255, 155, 0, 0.6, 0.2, 0, 0.0, 1.0, 0.3, 1.0, -1);
-			show_hudmessage(0, "%L", assistant, "CSGO_ASSIST_HUD", assistantName, killerName, victimName);
+			for (new i = 1; i <= MAX_PLAYERS; i++) {
+				if (!is_user_connected(i) || is_user_hltv(i) || is_user_bot(i)) continue;
+
+				set_hudmessage(255, 155, 0, 0.6, 0.2, 0, 0.0, 1.0, 0.3, 1.0, -1);
+				show_hudmessage(i, "%L", i, "CSGO_ASSIST_HUD", assistantName, killerName, victimName);
+			}
 
 			client_print_color(assistant, victim, "^4[CS:GO]^1 %L", assistant, "CSGO_ASSIST_CHAT", killerName, victimName);
 
