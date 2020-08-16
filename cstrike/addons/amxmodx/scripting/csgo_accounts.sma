@@ -135,7 +135,7 @@ public account_menu(id)
 		case GUEST: formatex(title, charsmax(title), "%L", id, "CSGO_ACCOUNTS_STATUS_GUEST");
 	}
 
-	formatex(menuData, charsmax(menuData), "CSGO_ACCOUNTS_MENU_TITLE", id, playerData[id][NAME], id, title);
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_ACCOUNTS_MENU_TITLE", playerData[id][NAME], title);
 
 	if ((playerData[id][STATUS] == NOT_LOGGED || playerData[id][STATUS] == LOGGED) && !get_bit(id, autoLogin)) {
 		format(menuData, charsmax(menuData), "%L", id, "CSGO_ACCOUNTS_MENU_INFO", menuData, setinfo);
