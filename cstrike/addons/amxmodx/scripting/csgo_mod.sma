@@ -425,7 +425,6 @@ public skins_menu(id)
 	menu_additem(menu, "\wKup \ySkin \r(/kup)");
 	menu_additem(menu, "\wWylosuj \ySkin \r(/losuj)");
 	menu_additem(menu, "\wRynek \ySkinow \r(/rynek)");
-	menu_additem(menu, "\wDoladuj \yPieniadze \r(/sklepsms)");
 	menu_additem(menu, "\wTransferuj \yPieniadze \r(/transfer)");
 	menu_additem(menu, "\wWymien \ySkin \r(/wymien)");
 	menu_additem(menu, "\wOddaj \ySkin \r(/oddaj)");
@@ -436,9 +435,14 @@ public skins_menu(id)
 	formatex(menuData, charsmax(menuData), "\wPropozycje \yWymiany \r[%s]", playerData[id][EXCHANGE_BLOCKED] ? "Wylaczone" : "Wlaczone");
 	menu_additem(menu, menuData);
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
-	menu_setprop(menu, MPROP_BACKNAME, "Poprzednie");
-	menu_setprop(menu, MPROP_NEXTNAME, "Nastepne");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_PREVIOUS");
+	menu_setprop(menu, MPROP_BACKNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_NEXT");
+	menu_setprop(menu, MPROP_NEXTNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	menu_display(id, menu);
 
@@ -458,11 +462,10 @@ public skins_menu_handle(id, menu, item)
 	switch (item) {
 		case 0, 1, 2: choose_weapon_menu(id, item);
 		case 3: market_menu(id);
-		case 4: client_cmd(id, "say /sklepsms");
-		case 5: client_cmd(id, "transfer");
-		case 6: exchange_skin_menu(id);
-		case 7: give_skin_menu(id);
-		case 8: {
+		case 4: client_cmd(id, "transfer");
+		case 5: exchange_skin_menu(id);
+		case 6: give_skin_menu(id);
+		case 7: {
 			playerData[id][MENU_BLOCKED] = !playerData[id][MENU_BLOCKED];
 
 			client_print_color(id, id, "^x04[CS:GO]^x01 Ustawiles^x03 %s^x01 menu kupowania.", playerData[id][MENU_BLOCKED] ? "standardowe" : "nowe");
@@ -470,7 +473,7 @@ public skins_menu_handle(id, menu, item)
 			save_data(id);
 
 			skins_menu(id);
-		} case 9: {
+		} case 8: {
 			playerData[id][EXCHANGE_BLOCKED] = !playerData[id][EXCHANGE_BLOCKED];
 
 			client_print_color(id, id, "^x04[CS:GO]^x01 Mozliwosc wysylania ci ofert wymiany zostala^x03 %s^x01.", playerData[id][EXCHANGE_BLOCKED] ? "wylaczona" : "wlaczona");
@@ -573,9 +576,14 @@ public choose_weapon_menu(id, type)
 		}
 	}
 
-	menu_setprop(menu, MPROP_BACKNAME, "Wroc");
-	menu_setprop(menu, MPROP_NEXTNAME, "Dalej");
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_PREVIOUS");
+	menu_setprop(menu, MPROP_BACKNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_NEXT");
+	menu_setprop(menu, MPROP_NEXTNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	if (!count) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Nie ma^x03 zadnych^x01 broni, dla ktorych mozna wylosowac skiny.");
@@ -619,7 +627,9 @@ public set_weapon_skin(id, weapon[])
 {
 	new menuData[64], tempId[5], skin[skinsInfo], skinId, skinsCount, menu = menu_create("\yWybierz \rSkin\w:", "set_weapon_skin_handle");
 
-	menu_additem(menu, "Domyslny", weapon);
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_DEFAULT");
+
+	menu_additem(menu, menuData, weapon);
 
 	for (new i = 0; i < ArraySize(skins); i++) {
 		ArrayGetArray(skins, i, skin);
@@ -642,9 +652,14 @@ public set_weapon_skin(id, weapon[])
 		}
 	}
 
-	menu_setprop(menu, MPROP_BACKNAME, "Wroc");
-	menu_setprop(menu, MPROP_NEXTNAME, "Dalej");
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_PREVIOUS");
+	menu_setprop(menu, MPROP_BACKNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_NEXT");
+	menu_setprop(menu, MPROP_NEXTNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	menu_display(id, menu);
 
@@ -720,9 +735,14 @@ public buy_weapon_skin(id, weapon[])
 		}
 	}
 
-	menu_setprop(menu, MPROP_BACKNAME, "Wroc");
-	menu_setprop(menu, MPROP_NEXTNAME, "Dalej");
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_PREVIOUS");
+	menu_setprop(menu, MPROP_BACKNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_NEXT");
+	menu_setprop(menu, MPROP_NEXTNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	if (!count) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Do kupienia nie ma^x03 zadnych^x01 skinow tej broni.");
@@ -778,7 +798,7 @@ public buy_weapon_skin_handle(id, menu, item)
 
 public buy_weapon_skin_confirm(id)
 {
-	new skin[skinsInfo], menuData[256];
+	new skin[skinsInfo], menuData[256], itemData[32];
 
 	ArrayGetArray(skins, playerData[id][TEMP][BUY_SKIN], skin);
 
@@ -790,7 +810,8 @@ public buy_weapon_skin_confirm(id)
 	menu_additem(menu, "\rKup^n");
 	menu_additem(menu, "Wroc");
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, itemData);
 
 	menu_display(id, menu);
 
@@ -869,9 +890,11 @@ public buy_weapon_skin_confirm_handle(id, menu, item)
 
 public random_weapon_skin(id, weapon[])
 {
-	new menuData[256], Float:chance = (csgo_get_user_svip(id) ? skinChanceSVIP : skinChance) + csgo_get_clan_members(csgo_get_user_clan(id)) * skinChancePerMember;
+	new menuData[256], itemData[32], allName[32], Float:chance = (csgo_get_user_svip(id) ? skinChanceSVIP : skinChance) + csgo_get_clan_members(csgo_get_user_clan(id)) * skinChancePerMember;
 
-	if (equal(weapon, "Wszystkie")) {
+	formatex(allName, charsmax(allName), "%L", id, "CSGO_CORE_ALL");
+
+	if (equal(weapon, allName)) {
 		formatex(menuData, charsmax(menuData), "\yCzy chcesz sprobowac \rwylosowac \yskina dowolnej broni za \r%.2f Euro\y?\w^nSzansa na wylosowanie: \y%.2f%%\w.", randomSkinPrice[WEAPON_ALL], chance);
 	} else {
 		formatex(menuData, charsmax(menuData), "\yCzy chcesz sprobowac \rwylosowac \yskina broni %s za \r%.2f Euro\y?\w^nSzansa na wylosowanie: \y%.2f%%\w.", weapon, randomSkinPrice[get_weapon_id(weapon)], chance);
@@ -879,14 +902,18 @@ public random_weapon_skin(id, weapon[])
 
 	new menu = menu_create(menuData, "random_weapon_skin_handle");
 
-	menu_additem(menu, "\yTak", weapon);
-	menu_additem(menu, "Nie^n");
+	formatex(itemData, charsmax(itemData), "\y%L", id, "CSGO_MENU_YES");
+	menu_additem(menu, itemData, weapon);
+
+	formatex(menuData, charsmax(itemData), "\w%L^n", id, "CSGO_MENU_NO");
+	menu_additem(menu, itemData);
 
 	formatex(menuData, charsmax(menuData), "\wAby zwiekszyc szanse wylosowania kup \ySVIPa \r(+%i%%)^n\wlub \ydolacz do klanu \r(+%.2f%% za kazdego czlonka)\w.", skinChanceSVIP - skinChance, skinChancePerMember);
 
 	menu_addtext(menu, menuData);
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, itemData);
 
 	menu_display(id, menu);
 
@@ -903,12 +930,14 @@ public random_weapon_skin_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	new weapon[32], itemAccess, itemCallback;
+	new weapon[32], allName[32], itemAccess, itemCallback;
 
 	menu_item_getinfo(menu, item, itemAccess, weapon, charsmax(weapon), _, _, itemCallback);
 
+	formatex(allName, charsmax(allName), "%L", id, "CSGO_CORE_ALL");
+
 	if (!multipleSkins && !get_missing_weapon_skins_count(id, weapon)) {
-		if (equal(weapon, "Wszystkie")) {
+		if (equal(weapon, allName)) {
 			client_print_color(id, id, "^x04[CS:GO]^x01 Masz juz wszystkie dostepne skiny^x01.", weapon);
 		} else {
 			client_print_color(id, id, "^x04[CS:GO]^x01 Masz juz wszystkie dostepne skiny broni^x03 %s^x01.", weapon);
@@ -917,7 +946,7 @@ public random_weapon_skin_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	new Float:price = randomSkinPrice[equal(weapon, "Wszystkie") ? WEAPON_ALL : get_weapon_id(weapon)];
+	new Float:price = randomSkinPrice[equal(weapon, allName) ? WEAPON_ALL : get_weapon_id(weapon)];
 
 	if (playerData[id][MONEY] < price) {
 		client_print_color(id, id, "^x04[CS:GO]^x01 Nie masz wystarczajacej ilosci^x03 pieniedzy^x01.");
@@ -928,12 +957,12 @@ public random_weapon_skin_handle(id, menu, item)
 	new chance = (csgo_get_user_svip(id) ? skinChanceSVIP : skinChance) + floatround(csgo_get_clan_members(csgo_get_user_clan(id)) * skinChancePerMember, floatround_floor);
 
 	if (random_num(1, 100) <= chance) {
-		new skin[skinsInfo], skinId, skinsChance = 0, skinChance = random_num(1, multipleSkins ? get_weapon_skins_count(weapon, 1) : get_missing_weapon_skins_count(id, weapon, 1));
+		new skin[skinsInfo], skinId, skinsChance = 0, skinChance = random_num(1, multipleSkins ? get_weapon_skins_count(id, weapon, 1) : get_missing_weapon_skins_count(id, weapon, 1));
 
 		for (new i = 0; i < ArraySize(skins); i++) {
 			ArrayGetArray(skins, i, skin);
 
-			if (equali(weapon, skin[SKIN_WEAPON]) || equal(weapon, "Wszystkie")) {
+			if (equali(weapon, skin[SKIN_WEAPON]) || equal(weapon, allName)) {
 				if (!multipleSkins && has_skin(id, i)) continue;
 
 				skinsChance += skin[SKIN_CHANCE];
@@ -988,9 +1017,14 @@ public exchange_skin_menu(id)
 		players++;
 	}
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
-	menu_setprop(menu, MPROP_BACKNAME, "Poprzednie");
-	menu_setprop(menu, MPROP_NEXTNAME, "Nastepne");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_PREVIOUS");
+	menu_setprop(menu, MPROP_BACKNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_NEXT");
+	menu_setprop(menu, MPROP_NEXTNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	if (!players) {
 		menu_destroy(menu);
@@ -1056,9 +1090,14 @@ public exchange_skin_menu_handle(id, menu, item)
 		menu_additem(menu, menuData, tempId);
 	}
 
-	menu_setprop(menu, MPROP_BACKNAME, "Wroc");
-	menu_setprop(menu, MPROP_NEXTNAME, "Dalej");
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_PREVIOUS");
+	menu_setprop(menu, MPROP_BACKNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_NEXT");
+	menu_setprop(menu, MPROP_NEXTNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	menu_display(id, menu);
 
@@ -1121,9 +1160,14 @@ public exchange_skin_handle(id, menu, item)
 		skinsCount++;
 	}
 
-	menu_setprop(menu, MPROP_BACKNAME, "Wroc");
-	menu_setprop(menu, MPROP_NEXTNAME, "Dalej");
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_PREVIOUS");
+	menu_setprop(menu, MPROP_BACKNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_NEXT");
+	menu_setprop(menu, MPROP_NEXTNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	if (!skinsCount) {
 		menu_destroy(menu);
@@ -1264,9 +1308,14 @@ public give_skin_menu(id)
 		players++;
 	}
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
-	menu_setprop(menu, MPROP_BACKNAME, "Poprzednie");
-	menu_setprop(menu, MPROP_NEXTNAME, "Nastepne");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_PREVIOUS");
+	menu_setprop(menu, MPROP_BACKNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_NEXT");
+	menu_setprop(menu, MPROP_NEXTNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	if (!players) {
 		menu_destroy(menu);
@@ -1328,9 +1377,14 @@ public give_skin_menu_handle(id, menu, item)
 		skinsCount++;
 	}
 
-	menu_setprop(menu, MPROP_BACKNAME, "Wroc");
-	menu_setprop(menu, MPROP_NEXTNAME, "Dalej");
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_PREVIOUS");
+	menu_setprop(menu, MPROP_BACKNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_NEXT");
+	menu_setprop(menu, MPROP_NEXTNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	if (!skinsCount) {
 		menu_destroy(menu);
@@ -1405,13 +1459,14 @@ public market_menu(id)
 		return PLUGIN_HANDLED;
 	}
 
-	new menu = menu_create("\yMenu \rRynku", "market_menu_handle"), callback = menu_makecallback("market_menu_callback");
+	new menuData[64], menu = menu_create("\yMenu \rRynku", "market_menu_handle"), callback = menu_makecallback("market_menu_callback");
 
 	menu_additem(menu, "Wystaw \ySkin \r(/wystaw)", _, _, callback);
 	menu_additem(menu, "Wykup \ySkin \r(/wykup)", _, _, callback);
 	menu_additem(menu, "Wycofaj \ySkin \r(/wycofaj)", _, _, callback);
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	menu_display(id, menu);
 
@@ -1490,9 +1545,14 @@ public market_sell_skin(id)
 		menu_additem(menu, menuData, tempId);
 	}
 
-	menu_setprop(menu, MPROP_BACKNAME, "Wroc");
-	menu_setprop(menu, MPROP_NEXTNAME, "Dalej");
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_PREVIOUS");
+	menu_setprop(menu, MPROP_BACKNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_NEXT");
+	menu_setprop(menu, MPROP_NEXTNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	menu_display(id, menu);
 
@@ -1607,9 +1667,14 @@ public market_buy_skin(id)
 		skinsCounts++;
 	}
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
-	menu_setprop(menu, MPROP_BACKNAME, "Poprzednie");
-	menu_setprop(menu, MPROP_NEXTNAME, "Nastepne");
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_PREVIOUS");
+	menu_setprop(menu, MPROP_BACKNAME, itemData);
+
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_NEXT");
+	menu_setprop(menu, MPROP_NEXTNAME, itemData);
+
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, itemData);
 
 	if (!skinsCounts) {
 		menu_destroy(menu);
@@ -1646,7 +1711,7 @@ public market_buy_skin_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	new marketSkin[marketInfo], skin[skinsInfo], menuData[512], length = 0, maxLength = charsmax(menuData);
+	new marketSkin[marketInfo], skin[skinsInfo], menuData[512], itemData[32], length = 0, maxLength = charsmax(menuData);
 
 	ArrayGetArray(market, skinId, marketSkin);
 
@@ -1659,10 +1724,14 @@ public market_buy_skin_handle(id, menu, item)
 
 	new menu = menu_create(menuData, "market_buy_confirm_handle");
 
-	menu_additem(menu, "\yTak", itemIds);
-	menu_additem(menu, "\wNie");
+	formatex(itemData, charsmax(itemData), "\y%L", id, "CSGO_MENU_YES");
+	menu_additem(menu, itemData, itemIds);
 
-	menu_setprop(menu, MPROP_EXITNAME, "\wWyjscie");
+	formatex(menuData, charsmax(itemData), "\w%L^n", id, "CSGO_MENU_NO");
+	menu_additem(menu, itemData);
+
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, itemData);
 
 	menu_display(id, menu);
 
@@ -1757,9 +1826,14 @@ public market_withdraw_skin(id)
 		skinsCounts++;
 	}
 
-	menu_setprop(menu, MPROP_EXITNAME, "Wyjscie");
-	menu_setprop(menu, MPROP_BACKNAME, "Poprzednie");
-	menu_setprop(menu, MPROP_NEXTNAME, "Nastepne");
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_PREVIOUS");
+	menu_setprop(menu, MPROP_BACKNAME, itemData);
+
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_NEXT");
+	menu_setprop(menu, MPROP_NEXTNAME, itemData);
+
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, itemData);
 
 	if (!skinsCounts) {
 		menu_destroy(menu);
@@ -1796,7 +1870,7 @@ public market_withdraw_skin_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	new marketSkin[marketInfo], skin[skinsInfo], menuData[512], length = 0, maxLength = charsmax(menuData);
+	new marketSkin[marketInfo], skin[skinsInfo], menuData[512], itemData[32], length = 0, maxLength = charsmax(menuData);
 
 	ArrayGetArray(market, skinId, marketSkin);
 	ArrayGetArray(skins, marketSkin[MARKET_SKIN], skin);
@@ -1808,10 +1882,14 @@ public market_withdraw_skin_handle(id, menu, item)
 
 	new menu = menu_create(menuData, "market_withdraw_confirm_handle");
 
-	menu_additem(menu, "\yTak", itemIds);
-	menu_additem(menu, "\wNie");
+	formatex(itemData, charsmax(itemData), "\y%L", id, "CSGO_MENU_YES");
+	menu_additem(menu, itemData, itemIds);
 
-	menu_setprop(menu, MPROP_EXITNAME, "\wWyjscie");
+	formatex(menuData, charsmax(itemData), "\w%L^n", id, "CSGO_MENU_NO");
+	menu_additem(menu, itemData);
+
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, itemData);
 
 	menu_display(id, menu);
 
@@ -2856,12 +2934,12 @@ public _csgo_get_skin(id)
 public _csgo_get_weapon_skin(id, weapon)
 	return get_weapon_skin(id, weapon);
 
-public _csgo_get_skin_name(skin, dataReturn[], dataLength)
+public _csgo_get_skin_name(id, skin, dataReturn[], dataLength)
 {
 	param_convert(2);
 
 	if (skin > NONE) get_skin_info(skin, SKIN_NAME, dataReturn, dataLength);
-	else formatex(dataReturn, dataLength, "Domyslny");
+	else formatex(dataReturn, dataLength, "%L", id, "CSGO_CORE_DEFAULT");
 }
 
 public _csgo_get_current_skin_name(id, dataReturn[], dataLength)
@@ -2871,13 +2949,15 @@ public _csgo_get_current_skin_name(id, dataReturn[], dataLength)
 	if (get_weapon_skin_name(id, playerData[id][TEMP][WEAPON_ENT], dataReturn, dataLength, 0, 1)) return;
 
 	if (playerData[id][SKIN] > NONE) get_skin_info(playerData[id][SKIN], SKIN_NAME, dataReturn, dataLength);
-	else formatex(dataReturn, dataLength, "Domyslny");
+	else formatex(dataReturn, dataLength, "%L", id, "CSGO_CORE_DEFAULT");
 }
 
 stock get_weapon_skin_name(id, ent, dataReturn[], dataLength, weapon = 0, check = 0)
 {
-	static ownerName[32], weaponName[32], skinWeapon[32], weaponOwner, weaponSkin;
+	static ownerName[32], weaponName[32], skinWeapon[32], defaultName[32], weaponOwner, weaponSkin;
 	weaponOwner = 0, weaponSkin = NONE;
+
+	formatex(defaultName, charsmax(defaultName), "%L", id, "CSGO_CORE_DEFAULT");
 
 	if (is_valid_ent(ent)) {
 		weaponOwner = entity_get_int(ent, EV_INT_iuser1);
@@ -2894,10 +2974,10 @@ stock get_weapon_skin_name(id, ent, dataReturn[], dataLength, weapon = 0, check 
 					entity_set_int(ent, EV_INT_iuser1, 0);
 					entity_set_int(ent, EV_INT_iuser2, NONE);
 
-					formatex(dataReturn, dataLength, "Domyslny");
+					copy(dataReturn, dataLength, defaultName);
 				}
 			} else {
-				formatex(dataReturn, dataLength, "Domyslny");
+				copy(dataReturn, dataLength, defaultName);
 			}
 
 			if (check && weaponOwner != id) {
@@ -2914,7 +2994,7 @@ stock get_weapon_skin_name(id, ent, dataReturn[], dataLength, weapon = 0, check 
 
 			strtoupper(weaponName);
 
-			if (equal(dataReturn, "Domyslny") || !dataReturn[0]) formatex(dataReturn, dataLength, weaponName[7]);
+			if (equal(dataReturn, defaultName) || !dataReturn[0]) formatex(dataReturn, dataLength, weaponName[7]);
 			else format(dataReturn, dataLength, "%s | %s", weaponName[7], dataReturn);
 		}
 	}
@@ -2929,14 +3009,16 @@ stock Float:get_multiplier(id)
 	else return 1.0;
 }
 
-stock get_weapon_skins_count(weapon[], chance = 0)
+stock get_weapon_skins_count(id, weapon[], chance = 0)
 {
-	new skin[skinsInfo], weaponSkinsCount = 0;
+	new skin[skinsInfo], allName[32], weaponSkinsCount = 0;
+
+	formatex(allName, charsmax(allName), "%L", id, "CSGO_CORE_ALL");
 
 	for (new i = 0; i < ArraySize(skins); i++) {
 		ArrayGetArray(skins, i, skin);
 
-		if (equal(weapon, skin[SKIN_WEAPON]) || equal(weapon, "Wszystkie")) weaponSkinsCount += chance ? skin[SKIN_CHANCE] : 1;
+		if (equal(weapon, skin[SKIN_WEAPON]) || equal(weapon, allName)) weaponSkinsCount += chance ? skin[SKIN_CHANCE] : 1;
 	}
 
 	return weaponSkinsCount;
@@ -2944,14 +3026,16 @@ stock get_weapon_skins_count(weapon[], chance = 0)
 
 stock get_missing_weapon_skins_count(id, weapon[], chance = 0)
 {
-	new skin[skinsInfo], marketSkin[marketInfo], playerSkinsCount = 0, skinId;
+	new skin[skinsInfo], marketSkin[marketInfo], allName[32], playerSkinsCount = 0, skinId;
+
+	formatex(allName, charsmax(allName), "%L", id, "CSGO_CORE_ALL");
 
 	for (new i = 0; i < ArraySize(playerSkins[id]); i++) {
 		skinId = get_player_skin_info(id, i, SKIN_ID);
 
 		ArrayGetArray(skins, skinId, skin);
 
-		if (equal(weapon, skin[SKIN_WEAPON]) || equal(weapon, "Wszystkie")) playerSkinsCount += chance ? skin[SKIN_CHANCE] : 1;
+		if (equal(weapon, skin[SKIN_WEAPON]) || equal(weapon, allName)) playerSkinsCount += chance ? skin[SKIN_CHANCE] : 1;
 	}
 
 	for (new i = 0; i < ArraySize(market); i++) {
@@ -2960,11 +3044,11 @@ stock get_missing_weapon_skins_count(id, weapon[], chance = 0)
 		if (marketSkin[MARKET_OWNER] == id) {
 			ArrayGetArray(skins, marketSkin[MARKET_SKIN], skin);
 
-			if (equal(weapon, skin[SKIN_WEAPON]) || equal(weapon, "Wszystkie")) playerSkinsCount += chance ? skin[SKIN_CHANCE] : 1;
+			if (equal(weapon, skin[SKIN_WEAPON]) || equal(weapon, allName)) playerSkinsCount += chance ? skin[SKIN_CHANCE] : 1;
 		}
 	}
 
-	return get_weapon_skins_count(weapon) - playerSkinsCount;
+	return get_weapon_skins_count(id, weapon) - playerSkinsCount;
 }
 
 stock get_weapon_id(weapon[])

@@ -7,6 +7,8 @@
     #error THIS VERSION IS NOT SUPPORTED! PLEASE USE AMXX 1.8.3+!
 #endif
 
+#define VERSION	"2.0.0"
+
 #define get_bit(%2,%1) (%1 & (1<<(%2&31)))
 #define set_bit(%2,%1) (%1 |= (1<<(%2&31)))
 #define rem_bit(%2,%1) (%1 &= ~(1 <<(%2&31)))
@@ -33,8 +35,6 @@
 
 #define weapon_entity(%0) (get_pdata_int(%0, OFFSET_ID, OFFSET_ITEM_LINUX))
 #define is_user_valid(%1) (1 <= %1 <= MAX_PLAYERS)
-
-#define VERSION	"2.0.0"
 
 /**
  * Checks if player is logged in his account.
@@ -147,20 +147,17 @@ native csgo_get_weapon_skin(id, weapon);
 /**
  * Retrieves name of skin with given id.
  *
- * @note "Domyslny" if there is no skin.
- *
+ * @param id        Player index (for multilang purpose)
  * @param skin      Skin index
  * @param data      Buffer to copy text to
  * @param lenth     Maximum buffer size
  *
  * @noreturn
  */
-native csgo_get_skin_name(skin, data[], length);
+native csgo_get_skin_name(id, skin, data[], length);
 
 /**
  * Retrieves name of skin for current player weapon.
- *
- * @note "Domyslny" if there is no skin.
  *
  * @param id        Player index
  * @param data      Buffer to copy text to
