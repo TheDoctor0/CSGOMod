@@ -368,6 +368,20 @@ CSGO_CLANS_INFO_WARS=You have^3 %i declarations of war^1 in the^4 clan^1 to cons
 
 CSGO_CORE_DEFAULT=Default
 CSGO_CORE_ALL=All
+CSGO_CORE_INFO_CREATED=You are playing on a ^3 %s (v%s)^1 server created by^3 %s^1.
+CSGO_CORE_INFO_HELP=For information about the commands, type^3 /menu^1 (key^3 ^"v^"^1).
+CSGO_CORE_INFO_LOADING=Your skins are being loaded...
+CSGO_CORE_PICKUP=[E] Pickup %s
+CSGO_CORE_SKIN_COUNTDOWN=Skin will be reversed after %0.1fs
+CSGO_CORE_MAP_REWARD=For playing on this map, you get^3 %.2f Euro^1.
+CSGO_CORE_ROUND_WIN=You got^3 %.2f Euro^1 for winning the round.
+CSGO_CORE_HOSTAGES_RESCUED=You got^3 %.2f Euro^1 for rescuing hostages.
+CSGO_CORE_BOMB_PLANTED=You got^3 %.2f Euro^1 for planting the bomb.
+CSGO_CORE_BOMB_DEFUSED=You got^3 %.2f Euro^1 for defusing the bomb.
+CSGO_CORE_ADD_MONEY_NO_PLAYER=The player was not found!
+CSGO_CORE_ADD_MONEY_TOO_LOW=A minimum of 0.1 Euro can be added!
+CSGO_CORE_ADD_MONEY_GIVE=%s^1 gave you^4 %.2f Euro^1!
+CSGO_CORE_ADD_MONEY_GIVE2=You gave^4 %.2f Euro^1 to player^3 %s^1.
 
 [pl]
 CSGO_MENU_EXIT=Wyjscie
@@ -736,3 +750,17 @@ CSGO_CLANS_INFO_WARS=Masz do rozpatrzenia^3 %i deklaracje wojny^1 w^4 klanie^1.
 
 CSGO_CORE_DEFAULT=Domyslny
 CSGO_CORE_ALL=Wszystkie
+CSGO_CORE_INFO_CREATED=Grasz na serwerze^3 %s (v%s)^1 stworzonym przez^3 %s^1.
+CSGO_CORE_INFO_HELP=W celu uzyskania informacji o komendach wpisz^3 /menu^1 (klawisz^3 ^"v^"^1).
+CSGO_CORE_INFO_LOADING=Trwa ladowanie twoich skinow...
+CSGO_CORE_PICKUP=[E] Podnies %s
+CSGO_CORE_SKIN_COUNTDOWN=Skin zostanie zresetowany za %0.1fs
+CSGO_CORE_MAP_REWARD=Za gre na tej mapie otrzymujesz^3 %.2f Euro^1.
+CSGO_CORE_ROUND_WIN=Dostales^3 %.2f Euro^1 za wygrana runde.
+CSGO_CORE_HOSTAGES_RESCUED=Dostales^3 %.2f Euro^1 za uratowanie zakladnikow.
+CSGO_CORE_BOMB_PLANTED=Dostales^3 %.2f Euro^1 za podlozenie bomby.
+CSGO_CORE_BOMB_DEFUSED=Dostales^3 %.2f Euro^1 za rozbrojenie bomby.
+CSGO_CORE_ADD_MONEY_NO_PLAYER=Nie znaleziono podanego gracza!
+CSGO_CORE_ADD_MONEY_TOO_LOW=Minimalnie mozna dodac 0.1 Euro!
+CSGO_CORE_ADD_MONEY_GIVE=%s^1 przyznal ci^4 %.2f Euro^1!
+CSGO_CORE_ADD_MONEY_GIVE2=Przyznales^4 %.2f Euro^1 graczowi^3 %s^1.
