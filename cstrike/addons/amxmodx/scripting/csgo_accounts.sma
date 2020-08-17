@@ -160,7 +160,8 @@ public account_menu(id)
 
 	if (playerData[id][STATUS] >= LOGGED) {
 		formatex(title, charsmax(title), "%L", id, "CSGO_MENU_EXIT");
-		menu_additem(menu, title, _, _, callback);
+
+		menu_setprop(menu, MPROP_EXITNAME, title);
 	} else {
 		menu_setprop(menu, MPROP_EXIT, MEXIT_NEVER);
 	}
@@ -186,7 +187,7 @@ public account_menu_handle(id, menu, item)
 {
 	if (!is_user_connected(id)) return PLUGIN_HANDLED;
 
-	if (item == MENU_EXIT || item == 5) {
+	if (item == MENU_EXIT) {
 		menu_destroy(menu);
 
 		return PLUGIN_HANDLED;
@@ -587,10 +588,8 @@ public delete_account(id)
 	formatex(title, charsmax(title), "\w%L", id, "CSGO_MENU_NO");
 	menu_additem(menu, title);
 
-	formatex(title, charsmax(title), "\w%L", id, "CSGO_MENU_EXIT");
-	menu_additem(menu, title);
-
-	menu_setprop(menu, MPROP_EXIT, MEXIT_NEVER);
+	formatex(title, charsmax(title), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, title);
 
 	menu_display(id, menu);
 
@@ -599,22 +598,28 @@ public delete_account(id)
 
 public delete_account_handle(id, menu, item)
 {
-	if (item == 0) {
-		account_query(id, DELETE);
+	if (!is_user_connected(id)) return PLUGIN_HANDLED;
 
-		new info[128];
+	if (item == MENU_EXIT || item) {
+		menu_destroy(menu);
 
-		console_print(id, "==================================");
-		console_print(id, "==========%L==========", id, "CSGO_ACCOUNTS_CONSOLE_TITLE");
-		console_print(id, "              %L", id, "CSGO_ACCOUNTS_CONSOLE_INFO", playerData[id][NAME]);
-		console_print(id, "==================================");
-
-		formatex(info, charsmax(info), "%L", id, "CSGO_ACCOUNTS_DELETED");
-
-		server_cmd("kick #%d ^"%s^"", get_user_userid(id), info);
+		return PLUGIN_HANDLED;
 	}
 
 	menu_destroy(menu);
+
+	account_query(id, DELETE);
+
+	new info[128];
+
+	console_print(id, "==================================");
+	console_print(id, "==========%L==========", id, "CSGO_ACCOUNTS_CONSOLE_TITLE");
+	console_print(id, "              %L", id, "CSGO_ACCOUNTS_CONSOLE_INFO", playerData[id][NAME]);
+	console_print(id, "==================================");
+
+	formatex(info, charsmax(info), "%L", id, "CSGO_ACCOUNTS_DELETED");
+
+	server_cmd("kick #%d ^"%s^"", get_user_userid(id), info);
 
 	return PLUGIN_CONTINUE;
 }

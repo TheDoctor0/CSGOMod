@@ -195,6 +195,12 @@ public select_operation(id)
 		menu_additem(menu, menuData, operationId);
 	}
 
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_PREVIOUS");
+	menu_setprop(menu, MPROP_BACKNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_NEXT");
+	menu_setprop(menu, MPROP_NEXTNAME, menuData);
+
 	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
 	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
