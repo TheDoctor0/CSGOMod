@@ -39,9 +39,13 @@ csgo_add_money <nick> <amount>
 To use it you need **ADMIN_ADMIN** access, so better add yourself *"abcdefghijklmnopqrstuvxy"* flags.
 
 ## Known issues
-Server may crash on map `csgo_dust2_new` with message `FATAL ERROR (shutting down): Cache_TryAlloc: x is greater then free hunk`.
+1. Server may crash on map `csgo_dust2_new` with message `FATAL ERROR (shutting down): Cache_TryAlloc: x is greater then free hunk`.
 
-Please add `-heapsize 65536` to server starting options to solve this issue.
+Solution: Add `-heapsize 65536` to server starting options.
+
+2. After few mapchanges client may crash with error `Texture overflow: GL_MAXTEXTURES`.
+
+Solution: This is a bug in GoldSource itself that is being tracked [here](https://github.com/ValveSoftware/halflife/issues/2234) and will be fixed in next release.
 
 ## Servers
 List of servers that are using this mod is available [HERE](https://www.gametracker.com/search/?search_by=server_variable&search_by2=csgo_version&query=&loc=_all&sort=&order=).
