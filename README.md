@@ -57,8 +57,9 @@ List of servers that are using this mod is available [HERE](https://www.gametrac
 
 ## Credits
 
-- [CS:GO Ports](https://gamebanana.com/studios/34724) for CS:GO maps, pack of weapon textures, original models and more!
+- [CS:GO Ports](https://gamebanana.com/studios/34724) for CS:GO maps, pack of weapon textures, original models and more
 - [Hanna](https://forums.alliedmods.net/member.php?u=273346) and [1xAero](https://forums.alliedmods.net/member.php?u=284061) for ability to change viewmodel bodygroup that is required for submodels
+- [In-line](https://github.com/In-line) for Unprecacher module
 - [wopox1337](https://dev-cs.ru/members/4/) for base zeus plugin
 - [DynamicBits](https://forums.alliedmods.net/member.php?u=30983) for base molotov plugin
 - [MPNumB](https://forums.alliedmods.net/member.php?u=25348) for base smoke plugin
