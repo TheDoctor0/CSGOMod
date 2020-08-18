@@ -1,7 +1,9 @@
 # CSGOMod
-Counter-Strike: Global Offensive mod for Counter-Strike 1.6 (AMXX 1.8.3 / 1.9 / 1.10).
+Counter-Strike: Global Offensive mod for CS 1.6 (AMXX 1.8.3 / 1.9 / 1.10).
 
 [Release pack](https://github.com/TheDoctor0/CSGOMod/releases/latest) contains configuration and plugins with all needed resources: skins, maps, sounds, sprites etc.
+
+Feel free to suggest new functionality, changes and of course please report any found bugs.
 
 ## Compatibility
 Mod was tested on AMXX builds:
@@ -52,3 +54,11 @@ Solution: This is a bug in GoldSource itself that is being tracked [here](https:
 
 ## Servers
 List of servers that are using this mod is available [HERE](https://www.gametracker.com/search/?search_by=server_variable&search_by2=csgo_version&query=&loc=_all&sort=&order=).
+
+## Credits
+
+- [CS:GO Ports](https://gamebanana.com/studios/34724) for CS:GO maps, pack of weapon textures, original models and more!
+- [Hanna](https://forums.alliedmods.net/member.php?u=273346) and [1xAero](https://forums.alliedmods.net/member.php?u=284061) for ability to change viewmodel bodygroup that is required for submodels
+- [wopox1337](https://dev-cs.ru/members/4/) for base zeus plugin
+- [DynamicBits](https://forums.alliedmods.net/member.php?u=30983) for base molotov plugin
+- [MPNumB](https://forums.alliedmods.net/member.php?u=25348) for base smoke plugin
