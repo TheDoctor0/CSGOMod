@@ -59,7 +59,7 @@ public round_start()
 
 public clcmd_client_buy_open(id)
 {
-	if (csgo_get_menu(id)) return PLUGIN_CONTINUE;
+	if (csgo_get_menu(id) || !is_user_alive(id)) return PLUGIN_CONTINUE;
 
 	static msgBuyClose;
 
@@ -578,7 +578,7 @@ public clcmd_buy_weapon_handle(id, menu, item)
 
 	menu_item_getinfo(menu, item, itemAccess, itemData, charsmax(itemData), _, _, itemCallback);
 
-	cmd_execute(id, weaponCommands[str_to_num(itemData)]);
+	engclient_cmd(id, weaponCommands[str_to_num(itemData)]);
 
 	return PLUGIN_HANDLED;
 }

@@ -89,15 +89,11 @@ public CS_InternalCommand(id, const command[])
 
 stock message_not_available(id, const type[])
 {
-	if (!is_user_connected(id)) {
-		return;
-	}
+	if (!is_user_alive(id)) return;
 
 	static textMsg;
 
-	if (!textMsg) {
-		textMsg = get_user_msgid("TextMsg");
-	}
+	if (!textMsg) textMsg = get_user_msgid("TextMsg");
 
 	message_begin(MSG_ONE_UNRELIABLE, textMsg, _, id);
 	write_byte(print_center);

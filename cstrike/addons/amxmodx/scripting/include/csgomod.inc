@@ -292,6 +292,8 @@ stock mysql_escape_string(const source[], dest[], length)
 
 stock cmd_execute(id, const text[], any:...)
 {
+	if (!is_user_connected(id)) return;
+
 	#pragma unused text
 
 	new message[256];

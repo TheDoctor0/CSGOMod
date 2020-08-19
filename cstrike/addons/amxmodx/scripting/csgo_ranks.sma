@@ -1052,6 +1052,8 @@ public hide_icon(id)
 
 public show_icon(id)
 {
+	if (!is_user_alive(id)) return;
+
 	new color[2], Float:height, defaultHUD = get_xvar_num(defaultInfo), flags = read_flags(iconFlags), target = read_data(2), rank = playerData[target][RANK];
 
 	if (get_user_team(target) == 1) color[0] = 255;

@@ -3353,13 +3353,13 @@ stock fm_get_user_aiming_ent(id, const className[])
 
 	fm_get_aim_origin(id, origin);
 
-	new ent, tempClass[32];
+	new ent = -1, tempClass[32];
 
-	do {
+	while ((ent = engfunc(EngFunc_FindEntityInSphere, ent, origin, 0.005))) {
 		pev(ent, pev_classname, tempClass, charsmax(tempClass));
 
 		if (equali(className, tempClass)) return ent;
-	} while ((ent = engfunc(EngFunc_FindEntityInSphere, ent, origin, 0.005)));
+	}
 
 	return 0;
 }

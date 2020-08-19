@@ -12,7 +12,7 @@ public plugin_init()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR);
 
-	for (new i; i < sizeof menuCommands; i++) register_clcmd(menuCommands[i], "CSGO_SERVER_MENU");
+	for (new i; i < sizeof menuCommands; i++) register_clcmd(menuCommands[i], "server_menu");
 }
 
 public plugin_cfg()
@@ -50,17 +50,14 @@ public plugin_cfg()
 }
 
 public client_putinserver(id)
-{
-	client_cmd(id, "bind ^"v^" ^"menu^"");
 	cmd_execute(id, "bind v menu");
-}
 
-public CSGO_SERVER_MENU(id)
+public server_menu(id)
 {
 	new title[64], menu;
 
 	formatex(title, charsmax(title), "%L", id, "CSGO_SERVER_MENU");
-	menu = menu_create(title, "CSGO_SERVER_MENU_handler");
+	menu = menu_create(title, "server_menu_handler");
 
 	for (new i; i < ArraySize(titles); i++) {
 		ArrayGetString(titles, i, title, charsmax(title));
@@ -86,7 +83,7 @@ public CSGO_SERVER_MENU(id)
 	return PLUGIN_HANDLED;
 }
 
-public CSGO_SERVER_MENU_handler(id, menu, item)
+public server_menu_handler(id, menu, item)
 {
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -98,8 +95,6 @@ public CSGO_SERVER_MENU_handler(id, menu, item)
 
 	ArrayGetString(commands, item, command, charsmax(command));
 
-	client_cmd(id, command);
-	engclient_cmd(id, command);
 	cmd_execute(id, command);
 
 	menu_destroy(menu);
