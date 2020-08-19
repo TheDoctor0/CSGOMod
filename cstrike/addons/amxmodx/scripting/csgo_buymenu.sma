@@ -589,12 +589,16 @@ stock can_buy(id)
 
 	new Float:buyTime;
 
+	static msgText;
+
+	if (!msgText) msgText = get_user_msgid("TextMsg");
+
 	if (cvarBuyTime != -1.0 && !(get_gametime() < roundStartTime + (buyTime = cvarBuyTime * 60.0))) {
 		new buyTimeText[8];
 
 		num_to_str(floatround(buyTime), buyTimeText, charsmax(buyTimeText));
 
-		message_begin(MSG_ONE, get_user_msgid("TextMsg"), .player = id);
+		message_begin(MSG_ONE, msgText, _, id);
 		write_byte(print_center);
 		write_string("#Cant_buy");
 		write_string(buyTimeText);
@@ -604,7 +608,7 @@ stock can_buy(id)
 	}
 
 	if ((mapBuyBlock == 1 && cs_get_user_team(id) == CS_TEAM_CT) || (mapBuyBlock == 2 && cs_get_user_team(id) == CS_TEAM_T) || mapBuyBlock == 3) {
-		message_begin(MSG_ONE, get_user_msgid("TextMsg"), .player = id);
+		message_begin(MSG_ONE, msgText, _, id);
 		write_byte(print_center);
 
 		if (cs_get_user_team(id) == CS_TEAM_T) write_string("#Cstrike_TitlesTXT_Terrorist_cant_buy");

@@ -2484,7 +2484,7 @@ public check_aim_weapon(id)
 
 	if (!weaponHud) weaponHud = CreateHudSyncObj();
 
-	if (!is_valid_ent(ent) || task_exists(ent)) {
+	if (!pev_valid(ent) || task_exists(ent)) {
 		if (canPickup[id]) ClearSyncHud(id, weaponHud);
 
 		canPickup[id] = false;
@@ -3345,11 +3345,13 @@ stock remove_seller(id)
 	}
 }
 
-stock fm_get_user_aiming_ent(index, const className[])
+stock fm_get_user_aiming_ent(id, const className[])
 {
+	if (!is_user_alive(id)) return 0;
+
 	new Float:origin[3];
 
-	fm_get_aim_origin(index, origin);
+	fm_get_aim_origin(id, origin);
 
 	new ent, tempClass[32];
 

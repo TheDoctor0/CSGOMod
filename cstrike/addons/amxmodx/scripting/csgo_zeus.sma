@@ -120,12 +120,16 @@ public buy_zeus(id)
 
 	new Float:cvarBuyTime = get_cvar_float("mp_buytime"), Float:buyTime;
 
+	static msgText;
+
+	if (!msgText) get_user_msgid("TextMsg");
+
 	if (cvarBuyTime != -1.0 && !(get_gametime() < gameTime + (buyTime = cvarBuyTime * 60.0))) {
 		new buyTimeText[8];
 
 		num_to_str(floatround(buyTime), buyTimeText, charsmax(buyTimeText));
 
-		message_begin(MSG_ONE, get_user_msgid("TextMsg"), .player = id);
+		message_begin(MSG_ONE, msgText, _, id);
 		write_byte(print_center);
 		write_string("#Cant_buy");
 		write_string(buyTimeText);
@@ -135,7 +139,7 @@ public buy_zeus(id)
 	}
 
 	if ((mapBuyBlock == 1 && cs_get_user_team(id) == CS_TEAM_CT) || (mapBuyBlock == 2 && cs_get_user_team(id) == CS_TEAM_T) || mapBuyBlock == 3) {
-		message_begin(MSG_ONE, get_user_msgid("TextMsg"), .player = id);
+		message_begin(MSG_ONE, msgText, _, id);
 		write_byte(print_center);
 
 		if (cs_get_user_team(id) == CS_TEAM_T) write_string("#Cstrike_TitlesTXT_Terrorist_cant_buy");
@@ -149,7 +153,7 @@ public buy_zeus(id)
 	new money = cs_get_user_money(id);
 
 	if (money < zeusPrice) {
-		message_begin(MSG_ONE, get_user_msgid("TextMsg"), .player = id);
+		message_begin(MSG_ONE, msgText, _, id);
 		write_byte(print_center);
 		write_string("#Not_Enough_Money");
 		message_end();
@@ -158,7 +162,7 @@ public buy_zeus(id)
 	}
 
 	if (get_bit(id, zeus)) {
-		message_begin(MSG_ONE, get_user_msgid("TextMsg"), .player = id);
+		message_begin(MSG_ONE, msgText, _, id);
 		write_byte(print_center);
 		write_string("#Already_Have_One");
 		message_end();
@@ -314,7 +318,7 @@ stock send_weapon_animation(const id, const animation)
 {
 	set_pev(id, pev_weaponanim, animation);
 
-	message_begin(MSG_ONE_UNRELIABLE, SVC_WEAPONANIM, .player = id);
+	message_begin(MSG_ONE_UNRELIABLE, SVC_WEAPONANIM, _, id);
 	write_byte(animation);
 	write_byte(pev(id, pev_body));
 	message_end();

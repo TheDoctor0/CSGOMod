@@ -11,8 +11,6 @@
 
 new const shield[] = "shield", nightvision[] = "nightvision";
 
-new textMsgId;
-
 public plugin_init()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR);
@@ -95,11 +93,13 @@ stock message_not_available(id, const type[])
 		return;
 	}
 
-	if (!textMsgId) {
-		textMsgId = get_user_msgid("TextMsg");
+	static textMsg;
+
+	if (!textMsg) {
+		textMsg = get_user_msgid("TextMsg");
 	}
 
-	message_begin(MSG_ONE_UNRELIABLE, textMsgId, .player=id);
+	message_begin(MSG_ONE_UNRELIABLE, textMsg, _, id);
 	write_byte(print_center);
 	write_string("#Weapon_Not_Available");
 
