@@ -9,7 +9,7 @@
 #include <xs>
 #include <csgomod>
 
-#define PLUGIN	"CS:GO Mod"
+#define PLUGIN	"CS:GO Mod Core"
 #define AUTHOR	"O'Zone"
 
 #pragma dynamic 65536
