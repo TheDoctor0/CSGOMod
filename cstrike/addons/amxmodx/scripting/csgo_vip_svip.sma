@@ -381,6 +381,8 @@ public vip_menu_handle(id, menu, item)
 		}
 	}
 
+	remove_task(id);
+
 	menu_destroy(menu);
 
 	return PLUGIN_HANDLED;
@@ -521,6 +523,8 @@ public vip_menu_pistol_handle(id, menu, item)
 			client_print(id, print_center, "%L", id, "CSGO_VIP_GLOCK");
 		}
 	}
+
+	remove_task(id);
 
 	menu_destroy(menu);
 
