@@ -24,10 +24,6 @@
 #define TASK_DEPLOY 7321
 #define TASK_FORCE  8568
 
-// Comment this line if you want to use default CS 1.6 models
-// Remember to also remove them from Unprecacher config.
-#define OVERRIDE_DEFAULT_SKINS
-
 #define WPNSTATE_USP_SILENCED		(1<<0)
 #define WPNSTATE_GLOCK18_BURST_MODE	(1<<1)
 #define WPNSTATE_M4A1_SILENCED		(1<<2)
@@ -63,20 +59,10 @@ new const commandSell[][] = { "wystaw", "say /wystaw", "say_team /wystaw", "say 
 new const commandPurchase[][] = { "wykup", "say /wykup", "say_team /wykup", "say /purchase", "say_team /purchase" };
 new const commandWithdraw[][] = { "wycofaj", "say /wycofaj", "say_team /wycofaj", "say /withdraw", "say_team /withdraw" };
 
-#if defined OVERRIDE_DEFAULT_SKINS
-new const defaultSkins[][] = { "", "models/csgo_ozone/p228/v_p228.mdl", "", "models/csgo_ozone/scout/v_scout.mdl", "", "models/csgo_ozone/xm1014/v_xm1014.mdl", "",
-	"models/csgo_ozone/mac10/v_mac10.mdl", "models/csgo_ozone/aug/v_aug.mdl", "", "models/csgo_ozone/elite/v_elite.mdl", "models/csgo_ozone/fiveseven/v_fiveseven.mdl",
-	"models/csgo_ozone/ump45/v_ump45.mdl", "models/csgo_ozone/sg550/v_sg550.mdl", "models/csgo_ozone/galil/v_galil.mdl", "models/csgo_ozone/famas/v_famas.mdl",
-	"models/csgo_ozone/usp/v_usp.mdl","models/csgo_ozone/glock18/v_glock18.mdl", "models/csgo_ozone/awp/v_awp.mdl", "models/csgo_ozone/mp5/v_mp5.mdl",
-	"models/csgo_ozone/m249/v_m249.mdl", "models/csgo_ozone/m3/v_m3.mdl", "models/csgo_ozone/m4a1/v_m4a1.mdl", "models/csgo_ozone/tmp/v_tmp.mdl",
-	"models/csgo_ozone/g3sg1/v_g3sg1.mdl", "", "models/csgo_ozone/deagle/v_deagle.mdl", "models/csgo_ozone/sg552/v_sg552.mdl",
-	"models/csgo_ozone/ak47/v_ak47.mdl", "models/csgo_ozone/knife/v_knife.mdl", "models/csgo_ozone/p90/v_p90.mdl" };
-#else
-new const defaultSkins[][] = { "", "models/v_p228.mdl", "", "models/v_scout.mdl", "", "models/v_xm1014.mdl", "", "models/v_mac10.mdl", "models/v_aug.mdl", "",
-	"models/v_elite.mdl", "models/v_fiveseven.mdl", "models/v_ump45.mdl", "models/csgo_ozone/sg550/v_sg550.mdl", "models/csgo_ozone/galil/v_galil.mdl",
-	"models/v_famas.mdl", "models/v_usp.mdl","models/v_glock18.mdl", "models/v_awp.mdl", "models/v_mp5.mdl", "models/v_m249.mdl", "models/v_m3.mdl",  "models/v_m4a1.mdl",
-	"models/v_tmp.mdl", "models/v_g3sg1.mdl", "", "models/v_deagle.mdl", "models/v_sg552.mdl", "models/v_ak47.mdl", "models/v_knife.mdl", "models/v_p90.mdl" };
-#endif
+new const defaultModels[][] = { "", "models/v_p228.mdl", "", "models/v_scout.mdl", "", "models/v_xm1014.mdl", "", "models/v_mac10.mdl", "models/v_aug.mdl", "",
+	"models/v_elite.mdl", "models/v_fiveseven.mdl", "models/v_ump45.mdl", "models/csgo_ozone/sg550/v_sg550.mdl", "models/csgo_ozone/galil/v_galil.mdl", "models/v_famas.mdl",
+    "models/v_usp.mdl","models/v_glock18.mdl", "models/v_awp.mdl", "models/v_mp5.mdl", "models/v_m249.mdl", "models/v_m3.mdl",  "models/v_m4a1.mdl", "models/v_tmp.mdl",
+    "models/v_g3sg1.mdl", "", "models/v_deagle.mdl", "models/v_sg552.mdl", "models/v_ak47.mdl", "models/v_knife.mdl", "models/v_p90.mdl" };
 
 new const ammoType[][] = { "", "357sig", "", "762nato", "", "buckshot", "", "45acp", "556nato", "", "9mm", "57mm", "45acp", "556nato", "556nato", "556nato",
 						"45acp", "9mm", "338magnum", "9mm", "556natobox", "buckshot", "556nato", "9mm", "762nato", "", "50ae", "556nato", "762nato", "", "57mm" };
@@ -256,16 +242,6 @@ public plugin_precache()
 	if (!ArraySize(skins)) set_fail_state("[CS:GO] No skin has been loaded. Check the configuration file csgo_skins.ini!");
 
 	for (new i = 1; i <= MAX_PLAYERS; i++) playerSkins[i] = ArrayCreate(playerSkinsInfo);
-
-	for (new i = 0; i < sizeof(defaultSkins); i++) {
-		if (!defaultSkins[i][0]) continue;
-
-		if (!file_exists(defaultSkins[i])) {
-			log_to_file("csgo-error.log", "[CS:GO] The skins file %s does not exists!", defaultSkins[i]);
-
-			error = true;
-		}
-	}
 
 	if (error) set_fail_state("[CS:GO] Not all standard skins were loaded. Check the error logs!");
 
@@ -2648,7 +2624,7 @@ public deploy_weapon_switch(id)
 		set_pev(id, pev_viewmodel2, skin[SKIN_MODEL]);
 		set_pev(id, pev_body, skin[SKIN_SUBMODEL]);
 	} else {
-		set_pev(id, pev_viewmodel2, defaultSkins[playerData[id][TEMP][WEAPON]]);
+		set_pev(id, pev_viewmodel2, defaultModels[playerData[id][TEMP][WEAPON]]);
 		set_pev(id, pev_body, 0);
 	}
 
