@@ -67,16 +67,22 @@ new const rankElo[MAX_RANKS + 1] = {
 	450
 };
 
-new const commandRank[][] = { "ranga", "say /ranga", "say_team /ranga"};
-new const commandRanks[][] = { "rangi", "say /rangi", "say_team /rangi"};
-new const commandTopRanks[][] = { "toprangi", "say /toprangi", "say_team /toprangi", "say /rangitop15", "say_team /rangitop15", "say /rtop15", "say_team /rtop15"};
-new const commandTime[][] = { "czas", "say /czas", "say_team /czas"};
-new const commandTopTime[][] = { "topczas", "say /topczas", "say_team /topczas", "say /czastop15", "say_team /czastop15", "say /ctop15", "say_team /ctop15"};
-new const commandMedals[][] = { "medale", "say /medale", "say_team /medale"};
-new const commandTopMedals[][] = { "topmedale", "say /topmedale", "say_team /topmedale", "say /medaletop15", "say_team /medaletop15", "say /mtop15", "say_team /mtop15"};
-new const commandStats[][] = { "staty", "say /staty", "say_team /staty"};
-new const commandTopStats[][] = { "topstaty", "say /topstaty", "say_team /topstaty", "say /statytop15", "say_team /statytop15", "say /stop15", "say_team /stop15"};
-new const commandHud[][] = { "hud", "say /hud", "say_team /hud", "say /zmienhud", "say_team /zmienhud", "say /change_hud", "say_team /change_hud" };
+new const commandMenu[][] = { "menustaty", "say /statsmenu", "say_team /statsmenu", "say /statymenu", "say_team /statymenu",
+	"say /menustaty", "say_team /menustaty" };
+new const commandRank[][] = { "ranga", "say /ranga", "say_team /ranga", "say /myrank", "say_team /myrank" };
+new const commandRanks[][] = { "rangi", "say /rangi", "say_team /rangi", "say /ranks", "say_team /ranks" };
+new const commandTopRanks[][] = { "toprangi", "say /toprangi", "say_team /toprangi", "say /topranks", "say_team /topranks",
+	"say /rangitop15", "say_team /rangitop15", "say /rankstop15", "say_team /rankstop15", "say /rtop15", "say_team /rtop15"};
+new const commandTime[][] = { "czas", "say /czas", "say_team /czas", "say /time", "say_team /time" };
+new const commandTopTime[][] = { "topczas", "say /topczas", "say_team /topczas", "say /toptime", "say_team /toptime", "say /czastop15",
+	"say_team /czastop15", "say /timetop15", "say_team /timetop15", "say /ttop15", "say_team /ttop15", "say /ctop15", "say_team /ctop15" };
+new const commandMedals[][] = { "medale", "say /medale", "say_team /medale", "say /medals", "say_team /medals" };
+new const commandTopMedals[][] = { "topmedale", "say /topmedale", "say_team /topmedale", "say /topmedals", "say_team /topmedals",
+	"say /medalstop15", "say_team /medalstop15", "say /medaletop15", "say_team /medaletop15", "say /mtop15", "say_team /mtop15"};
+new const commandStats[][] = { "staty", "say /staty", "say_team /staty", "say /beststats", "say_team /beststats" };
+new const commandTopStats[][] = { "topstaty", "say /topstaty", "say_team /topstaty", "say /topstats", "say_team /topstats",
+	"say /statytop15", "say_team /statytop15", "say /statstop15", "say_team /statstop15", "say /stop15", "say_team /stop15"};
+new const commandHud[][] = { "hud", "say /hud", "say_team /hud", "say /zmienhud", "say_team /zmienhud", "say /changehud", "say_team /changehud" };
 
 enum _:playerInfo { KILLS, RANK, TIME, FIRST_VISIT, LAST_VISIT, BRONZE, SILVER, GOLD, MEDALS, BEST_STATS, BEST_KILLS,
 	BEST_DEATHS, BEST_HS, CURRENT_STATS, CURRENT_KILLS, CURRENT_DEATHS, CURRENT_HS, PLAYER_HUD_RED, PLAYER_HUD_GREEN,
@@ -99,6 +105,7 @@ public plugin_init()
 
 	bind_pcvar_num(get_cvar_pointer("csgo_min_players"), minPlayers);
 
+	for (new i; i < sizeof commandMenu; i++) register_clcmd(commandMenu[i], "cmd_menu");
 	for (new i; i < sizeof commandRank; i++) register_clcmd(commandRank[i], "cmd_rank");
 	for (new i; i < sizeof commandRanks; i++) register_clcmd(commandRanks[i], "cmd_ranks");
 	for (new i; i < sizeof commandTopRanks; i++) register_clcmd(commandTopRanks[i], "cmd_topranks");
@@ -669,6 +676,82 @@ public check_time(id)
 	}
 }
 
+public cmd_menu(id)
+{
+	new menuData[64];
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_RANKS_MENU_TITLE");
+
+	new menu = menu_create(menuData, "cmd_menu_handle");
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_RANKS_MENU_RANKS");
+	menu_additem(menu, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_RANKS_MENU_RANK");
+	menu_additem(menu, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_RANKS_MENU_TOP_RANKS");
+	menu_additem(menu, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_RANKS_MENU_TIME");
+	menu_additem(menu, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_RANKS_MENU_TOP_TIME");
+	menu_additem(menu, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_RANKS_MENU_STATS");
+	menu_additem(menu, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_RANKS_MENU_TOP_STATS");
+	menu_additem(menu, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_RANKS_MENU_MEDALS");
+	menu_additem(menu, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_RANKS_MENU_TOP_MEDALS");
+	menu_additem(menu, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_PREVIOUS");
+	menu_setprop(menu, MPROP_BACKNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_NEXT");
+	menu_setprop(menu, MPROP_NEXTNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
+
+	menu_display(id, menu);
+
+	return PLUGIN_HANDLED;
+}
+
+public cmd_menu_handle(id, menu, item)
+{
+	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+
+	if (item == MENU_EXIT) {
+		menu_destroy(menu);
+
+		return PLUGIN_HANDLED;
+	}
+
+	switch (item) {
+		case 0: cmd_ranks(id);
+		case 1: cmd_rank(id);
+		case 2: cmd_topranks(id);
+		case 3: cmd_time(id);
+		case 4: cmd_toptime(id);
+		case 5: cmd_stats(id);
+		case 6: cmd_topstats(id);
+		case 7: cmd_medals(id);
+		case 8: cmd_topmedals(id);
+	}
+
+	menu_destroy(menu);
+
+	return PLUGIN_HANDLED;
+}
+
 public cmd_ranks(id)
 {
 	new motdTitle[32], motdFile[32];
@@ -685,8 +768,8 @@ public cmd_rank(id)
 {
 	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_CURRENT_RANK", rankName[playerData[id][RANK]]);
 
-	if (playerData[id][RANK] < MAX_RANKS) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_CURRENT_RANK", rankName[playerData[id][RANK] + 1], rankElo[playerData[id][RANK] + 1] - playerData[id][ELO_RANK]);
+	if (playerData[id][RANK] < MAX_RANKS && playerData[id][RANK] > 0) {
+		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_NEXT_RANK", rankName[playerData[id][RANK] + 1], rankElo[playerData[id][RANK] + 1] - playerData[id][ELO_RANK]);
 	}
 
 	return PLUGIN_HANDLED;
@@ -698,7 +781,7 @@ public cmd_topranks(id)
 
 	playerId[0] = id;
 
-	format(queryData, charsmax(queryData), "SELECT name, elorank, rank FROM `csgo_ranks` ORDER BY elorank DESC WHERE rank > 0 LIMIT 15");
+	format(queryData, charsmax(queryData), "SELECT name, elorank, rank FROM `csgo_ranks` WHERE rank > 0 ORDER BY elorank DESC LIMIT 15");
 
 	SQL_ThreadQuery(sql, "show_topranks", queryData, playerId, sizeof(playerId));
 
@@ -882,7 +965,7 @@ public show_medals(failState, Handle:query, error[], errorNum, playerId[], dataS
 	new id = playerId[0], rank = SQL_ReadResult(query, 0) + 1, players = SQL_ReadResult(query, 1);
 
 	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_MEDALS_INFO", playerData[id][GOLD], playerData[id][SILVER], playerData[id][BRONZE]);
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_MEDALS_INFO", rank, players);
+	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_MEDALS_TOP", rank, players);
 
 	return PLUGIN_HANDLED;
 }
