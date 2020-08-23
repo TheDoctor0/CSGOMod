@@ -1135,9 +1135,11 @@ public hide_icon(id)
 
 public show_icon(id)
 {
-	if (!is_user_alive(id)) return;
+	new target = read_data(2);
 
-	new color[2], Float:height, defaultHUD = get_xvar_num(defaultInfo), flags = read_flags(iconFlags), target = read_data(2), rank = playerData[target][RANK];
+	if (!is_user_alive(id) || !is_user_alive(target)) return;
+
+	new color[2], Float:height, defaultHUD = get_xvar_num(defaultInfo), flags = read_flags(iconFlags), rank = playerData[target][RANK];
 
 	if (get_user_team(target) == 1) color[0] = 255;
 	else color[1] = 255;
@@ -1412,11 +1414,13 @@ stock get_loguser_index()
 	return get_user_index(name);
 }
 
-stock create_attachment(id, entity, offset, sprite, life)
+stock create_attachment(id, target, offset, sprite, life)
 {
+	if (!is_user_alive(id) || !is_user_alive(target)) return;
+
 	message_begin(MSG_ONE_UNRELIABLE, SVC_TEMPENTITY, _, id);
 	write_byte(TE_PLAYERATTACHMENT);
-	write_byte(entity);
+	write_byte(target);
 	write_coord(offset);
 	write_short(sprite);
 	write_short(life);
