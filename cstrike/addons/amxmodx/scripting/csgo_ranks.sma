@@ -91,8 +91,8 @@ enum _:playerInfo { KILLS, RANK, TIME, FIRST_VISIT, LAST_VISIT, BRONZE, SILVER, 
 enum _:winners { THIRD, SECOND, FIRST };
 
 new playerData[MAX_PLAYERS + 1][playerInfo], sprites[MAX_RANKS + 1], Handle:sql, bool:sqlConnected, bool:mapChange,
-	bool:block, loaded, hudLoaded, visit, hud, aimHUD, defaultInfo, round, site[64], iconFlags[8], unrankedKills,
-	minPlayers, Float:winnerReward;
+	bool:block, loaded, hudLoaded, visit, hud, aimHUD, defaultInfo, round, hudSite[64], hudAccount, hudClan, hudOperation,
+	iconFlags[8], unrankedKills, minPlayers, Float:winnerReward;
 
 public plugin_init()
 {
@@ -100,8 +100,12 @@ public plugin_init()
 
 	bind_pcvar_num(create_cvar("csgo_ranks_unranked_kills", "100"), unrankedKills);
 	bind_pcvar_float(create_cvar("csgo_ranks_winner_reward", "10.0"), winnerReward);
-	bind_pcvar_string(create_cvar("csgo_ranks_site", ""), site, charsmax(site));
 	bind_pcvar_string(create_cvar("csgo_ranks_icon_flags", "abcd"), iconFlags, charsmax(iconFlags));
+
+	bind_pcvar_string(create_cvar("csgo_ranks_hud_site", ""), hudSite, charsmax(hudSite));
+	bind_pcvar_num(create_cvar("csgo_ranks_hud_account", "0"), hudAccount);
+	bind_pcvar_num(create_cvar("csgo_ranks_hud_clan", "0"), hudClan);
+	bind_pcvar_num(create_cvar("csgo_ranks_hud_operation", "0"), hudOperation);
 
 	bind_pcvar_num(get_cvar_pointer("csgo_min_players"), minPlayers);
 
@@ -420,7 +424,7 @@ public display_hud(id)
 
 	if (is_user_bot(id) || !is_user_connected(id) || !get_bit(id, hudLoaded)) return PLUGIN_CONTINUE;
 
-	static address[64], clan[64], operation[64], skin[64], statTrak[64], account[16], weaponStatTrak, target;
+	static address[64], clan[64], operation[64], skin[64], statTrak[64], account[64], weaponStatTrak = -1, target;
 
 	target = id;
 
@@ -455,11 +459,33 @@ public display_hud(id)
 	csgo_get_current_skin_name(target, skin, charsmax(skin));
 
 	format(skin, charsmax(skin), "%L", id, "CSGO_RANKS_HUD_SKIN", skin);
-	format(operation, charsmax(operation), "%L", id, "CSGO_RANKS_HUD_OPERATION", operation);
-	format(clan, charsmax(clan), "%L", id, "CSGO_RANKS_HUD_CLAN", clan);
 
-	if (strlen(site)) {
-		formatex(address, charsmax(address), "%L", id, "CSGO_RANKS_HUD_SITE", site);
+	if (hudAccount) {
+		if (csgo_get_user_svip(target)) {
+			formatex(account, charsmax(account), "%L", id, "CSGO_RANKS_HUD_SUPERVIP");
+		} else if (csgo_get_user_vip(target)) {
+			formatex(account, charsmax(account), "%L", id, "CSGO_RANKS_HUD_VIP");
+		} else {
+			formatex(account, charsmax(account), "%L", id, "CSGO_RANKS_HUD_DEFAULT");
+		}
+	} else {
+		account = "";
+	}
+
+	if (hudClan) {
+		format(clan, charsmax(clan), "%L", id, "CSGO_RANKS_HUD_CLAN", clan);
+	} else {
+		clan = "";
+	}
+
+	if (hudOperation) {
+		format(operation, charsmax(operation), "%L", id, "CSGO_RANKS_HUD_OPERATION", operation);
+	} else {
+		operation = "";
+	}
+
+	if (strlen(hudSite)) {
+		formatex(address, charsmax(address), "%L", id, "CSGO_RANKS_HUD_SITE", hudSite);
 	} else {
 		address = "";
 	}
@@ -472,20 +498,12 @@ public display_hud(id)
 		statTrak = "";
 	}
 
-	if (csgo_get_user_svip(target)) {
-		formatex(account, charsmax(account), "%L", id, "CSGO_RANKS_HUD_SUPERVIP");
-	} else if (csgo_get_user_vip(target)) {
-		formatex(account, charsmax(account), "%L", id, "CSGO_RANKS_HUD_VIP");
-	} else {
-		formatex(account, charsmax(account), "%L", id, "CSGO_RANKS_HUD_DEFAULT");
-	}
-
 	if (!playerData[target][RANK]) {
-		ShowSyncHudMsg(id, hud, "%L", id, "CSGO_RANKS_HUD_NO_RANK", site, account, clan, rankName[playerData[target][RANK]], playerData[target][KILLS], unrankedKills, skin, statTrak, csgo_get_money(target), operation, hours, minutes, seconds);
+		ShowSyncHudMsg(id, hud, "%L", id, "CSGO_RANKS_HUD_NO_RANK", address, account, clan, rankName[playerData[target][RANK]], playerData[target][KILLS], unrankedKills, skin, statTrak, csgo_get_money(target), operation, hours, minutes, seconds);
 	} else if (playerData[target][RANK] < MAX_RANKS) {
-		ShowSyncHudMsg(id, hud, "%L", id, "CSGO_RANKS_HUD_RANK", site, account, clan, rankName[playerData[target][RANK]], playerData[target][ELO_RANK], rankElo[playerData[target][RANK] + 1], skin, statTrak, csgo_get_money(target), operation, hours, minutes, seconds);
+		ShowSyncHudMsg(id, hud, "%L", id, "CSGO_RANKS_HUD_RANK", address, account, clan, rankName[playerData[target][RANK]], playerData[target][ELO_RANK], rankElo[playerData[target][RANK] + 1], skin, statTrak, csgo_get_money(target), operation, hours, minutes, seconds);
 	} else {
-		ShowSyncHudMsg(id, hud, "%L", id, "CSGO_RANKS_HUD_MAX_RANK", site, account, clan, rankName[playerData[target][RANK]], playerData[target][ELO_RANK], skin, statTrak, csgo_get_money(target), operation, hours, minutes, seconds);
+		ShowSyncHudMsg(id, hud, "%L", id, "CSGO_RANKS_HUD_MAX_RANK", address, account, clan, rankName[playerData[target][RANK]], playerData[target][ELO_RANK], skin, statTrak, csgo_get_money(target), operation, hours, minutes, seconds);
 	}
 
 	return PLUGIN_CONTINUE;
