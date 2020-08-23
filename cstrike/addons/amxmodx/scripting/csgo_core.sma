@@ -61,8 +61,8 @@ new const commandWithdraw[][] = { "wycofaj", "say /wycofaj", "say_team /wycofaj"
 
 new const defaultModels[][] = { "", "models/v_p228.mdl", "", "models/v_scout.mdl", "", "models/v_xm1014.mdl", "", "models/v_mac10.mdl", "models/v_aug.mdl", "",
 	"models/v_elite.mdl", "models/v_fiveseven.mdl", "models/v_ump45.mdl", "models/csgo_ozone/sg550/v_sg550.mdl", "models/csgo_ozone/galil/v_galil.mdl", "models/v_famas.mdl",
-    "models/v_usp.mdl","models/v_glock18.mdl", "models/v_awp.mdl", "models/v_mp5.mdl", "models/v_m249.mdl", "models/v_m3.mdl",  "models/v_m4a1.mdl", "models/v_tmp.mdl",
-    "models/v_g3sg1.mdl", "", "models/v_deagle.mdl", "models/v_sg552.mdl", "models/v_ak47.mdl", "models/v_knife.mdl", "models/v_p90.mdl" };
+	"models/v_usp.mdl","models/v_glock18.mdl", "models/v_awp.mdl", "models/v_mp5.mdl", "models/v_m249.mdl", "models/v_m3.mdl",  "models/v_m4a1.mdl", "models/v_tmp.mdl",
+	"models/v_g3sg1.mdl", "", "models/v_deagle.mdl", "models/v_sg552.mdl", "models/v_ak47.mdl", "models/v_knife.mdl", "models/v_p90.mdl" };
 
 new const ammoType[][] = { "", "357sig", "", "762nato", "", "buckshot", "", "45acp", "556nato", "", "9mm", "57mm", "45acp", "556nato", "556nato", "556nato",
 						"45acp", "9mm", "338magnum", "9mm", "556natobox", "buckshot", "556nato", "9mm", "762nato", "", "50ae", "556nato", "762nato", "", "57mm" };
@@ -71,7 +71,7 @@ new const weaponSlots[] = { -1, 2, -1, 1, 4, 1, 5, 1, 1, 4, 2, 2, 1, 1, 1, 1, 2,
 new const maxBPAmmo[] = { -1, 52, -1, 90, 1, 32, 1, 100, 90, 1, 120, 100, 100, 90, 90, 90, 100, 120, 30, 120, 200, 32, 90, 120, 90, 2, 35, 90, 90, -1, 100 };
 
 new const defaultShell[] = "models/pshell.mdl",
-	      shotgunShell[] = "models/shotgunshell.mdl";
+		  shotgunShell[] = "models/shotgunshell.mdl";
 
 enum _:tempInfo { WEAPON, WEAPONS, WEAPON_ENT, EXCHANGE_PLAYER, EXCHANGE, EXCHANGE_FOR_SKIN, GIVE_PLAYER, SALE_SKIN, BUY, BUY_WEAPON, BUY_SUBMODEL, Float:COUNTDOWN };
 enum _:playerInfo { ACTIVE[CSW_P90 + 1], Float:MONEY, SKIN, SUBMODEL, bool:SKINS_LOADED, bool:DATA_LOADED, bool:EXCHANGE_BLOCKED, bool:MENU_BLOCKED, TEMP[tempInfo], NAME[32], SAFE_NAME[64] };
@@ -1593,10 +1593,10 @@ public market_sell_skin(id)
 
 	new menuTitle[128], menuData[64], skin[skinsInfo], tempId[5], skinId, skinsCount;
 
-	formatex(menuTitle, charsmax(menuTitle), "%L", id, "CSGO_CORE_SELL_MENU");
-
 	if (marketCommision > 0.0) {
-		format(menuTitle, charsmax(menuTitle), "%s%L", id, "CSGO_CORE_SELL_COMISSION", menuTitle, marketCommision);
+		formatex(menuTitle, charsmax(menuTitle), "%L", id, "CSGO_CORE_SELL_MENU_COMISSION", marketCommision);
+	} else {
+		formatex(menuTitle, charsmax(menuTitle), "%L", id, "CSGO_CORE_SELL_MENU");
 	}
 
 	new menu = menu_create(menuTitle, "market_sell_skin_handle");
