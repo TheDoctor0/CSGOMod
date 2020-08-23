@@ -356,9 +356,9 @@ public members_online_menu(id)
 		get_user_name(player, menuData, charsmax(menuData));
 
 		switch (get_user_status(player)) {
-			case STATUS_MEMBER: format(menuData, charsmax(menuData), "%s \y[%L]", id, "CSGO_CLANS_STATUS_MEMBER", menuData);
-			case STATUS_DEPUTY: format(menuData, charsmax(menuData), "%s \y[%L]", id, "CSGO_CLANS_STATUS_DEPUTY", menuData);
-			case STATUS_LEADER: format(menuData, charsmax(menuData), "%s \y[%L]", id, "CSGO_CLANS_STATUS_LEADER", menuData);
+			case STATUS_MEMBER: format(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_STATUS_MEMBER", menuData);
+			case STATUS_DEPUTY: format(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_STATUS_DEPUTY", menuData);
+			case STATUS_LEADER: format(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_STATUS_LEADER", menuData);
 		}
 
 		menu_additem(menu, menuData);
@@ -854,9 +854,9 @@ public members_menu_handle(failState, Handle:query, error[], errorNum, tempId[],
 		formatex(itemData, charsmax(itemData), "%s#%i", userName, status);
 
 		switch (status) {
-			case STATUS_MEMBER: format(userName, charsmax(userName), "%s \y[%L]", id, "CSGO_CLANS_STATUS_MEMBER", userName);
-			case STATUS_DEPUTY: format(userName, charsmax(userName), "%s \y[%L]", id, "CSGO_CLANS_STATUS_DEPUTY", userName);
-			case STATUS_LEADER: format(userName, charsmax(userName), "%s \y[%L]", id, "CSGO_CLANS_STATUS_LEADER", userName);
+			case STATUS_MEMBER: format(userName, charsmax(userName), "%L", id, "CSGO_CLANS_STATUS_MEMBER", userName);
+			case STATUS_DEPUTY: format(userName, charsmax(userName), "%L", id, "CSGO_CLANS_STATUS_DEPUTY", userName);
+			case STATUS_LEADER: format(userName, charsmax(userName), "%L", id, "CSGO_CLANS_STATUS_LEADER", userName);
 		}
 
 		menu_additem(menu, userName, itemData);
