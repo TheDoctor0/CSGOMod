@@ -2248,7 +2248,7 @@ public weapon_deploy_post(ent)
 	weapon = cs_get_weapon_id(ent);
 	playerData[id][TEMP][WEAPON] = weapon;
 
-	if (weapon == CSW_P228 && csgo_get_zeus(id)) return HAM_IGNORED;
+	if (weapon == CSW_P228 && csgo_get_user_zeus(id)) return HAM_IGNORED;
 
 	if (weapon != CSW_HEGRENADE && weapon != CSW_SMOKEGRENADE && weapon != CSW_FLASHBANG && weapon != CSW_C4) {
 		set_pev(id, pev_viewmodel2, "");
@@ -2288,7 +2288,7 @@ public weapon_primary_attack(ent)
 	switch (weapon) {
 		case CSW_C4, CSW_HEGRENADE, CSW_FLASHBANG, CSW_SMOKEGRENADE: return HAM_IGNORED;
 		default: {
-			if (weapon == CSW_P228 && csgo_get_zeus(id)) return HAM_IGNORED;
+			if (weapon == CSW_P228 && csgo_get_user_zeus(id)) return HAM_IGNORED;
 
 			emulate_primary_attack(ent);
 		}

@@ -267,6 +267,24 @@ native csgo_get_user_vip(id);
 native csgo_get_user_svip(id);
 
 /**
+ * Checks if player has zeus.
+ *
+ * @param id        Player index
+ *
+ * @return          1 if player has zeus 0 otherwise
+ */
+native csgo_get_user_zeus(id);
+
+/**
+ * Checks if player has molotov.
+ *
+ * @param id        Player index
+ *
+ * @return          1 if player has molotov 0 otherwise
+ */
+native csgo_get_user_molotov(id);
+
+/**
  * Multiforward called when player has logged in.
  *
  * @param id        Player index

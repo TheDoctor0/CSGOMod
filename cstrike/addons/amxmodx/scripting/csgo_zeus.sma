@@ -58,7 +58,7 @@ public plugin_init()
 }
 
 public plugin_natives()
-	register_native("csgo_get_zeus", "_csgo_get_zeus", 1);
+	register_native("csgo_get_user_zeus", "_csgo_get_user_zeus", 1);
 
 public plugin_precache()
 {
@@ -311,7 +311,7 @@ public set_model(ent, model[])
 	return FMRES_IGNORED;
 }
 
-public _csgo_get_zeus(id)
+public _csgo_get_user_zeus(id)
 	return get_bit(id, zeus);
 
 stock send_weapon_animation(const id, const animation)

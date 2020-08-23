@@ -19,6 +19,8 @@ new const commandSVIPs[][] = { "svips", "say /svips", "say_team /svips", "say /s
 new const commandVIPMotd[][] = { "vip", "say /vip", "say_team /vip" };
 new const commandSVIPMotd[][] = { "svip", "say /svip", "say_team /svip", "say /supervip", "say_team /supervip" };
 
+new const zeusWeaponName[] = "weapon_p228";
+
 new disallowedWeapons[] = { CSW_XM1014, CSW_MAC10, CSW_AUG, CSW_M249, CSW_GALIL, CSW_AK47, CSW_M4A1, CSW_AWP,
 	CSW_SG550, CSW_G3SG1, CSW_UMP45, CSW_MP5NAVY, CSW_FAMAS, CSW_SG552, CSW_TMP, CSW_P90, CSW_M3 };
 
@@ -264,6 +266,10 @@ public player_spawn(id)
 	if (roundNum >= 2) {
 		StripWeapons(id, Secondary);
 
+		if (csgo_get_user_zeus(id)) {
+			give_item(id, zeusWeaponName);
+		}
+
 		give_item(id, "weapon_deagle");
 		give_item(id, "ammo_50ae");
 
@@ -335,6 +341,10 @@ public vip_menu_handle(id, menu, item)
 		case 0: {
 			StripWeapons(id, Secondary);
 
+			if (csgo_get_user_zeus(id)) {
+				give_item(id, zeusWeaponName);
+			}
+
 			give_item(id, "weapon_deagle");
 			give_item(id, "ammo_50ae");
 
@@ -351,6 +361,10 @@ public vip_menu_handle(id, menu, item)
 		} case 1: {
 			StripWeapons(id, Secondary);
 
+			if (csgo_get_user_zeus(id)) {
+				give_item(id, zeusWeaponName);
+			}
+
 			give_item(id, "weapon_deagle");
 			give_item(id, "ammo_50ae");
 
@@ -365,6 +379,12 @@ public vip_menu_handle(id, menu, item)
 
 			client_print(id, print_center, "%L", id, "CSGO_VIP_AK47");
 		} case 2: {
+			StripWeapons(id, Secondary);
+
+			if (csgo_get_user_zeus(id)) {
+				give_item(id, zeusWeaponName);
+			}
+
 			give_item(id, "weapon_deagle");
 			give_item(id, "ammo_50ae");
 
@@ -405,6 +425,10 @@ public close_vip_menu(id)
 			case 0: {
 				StripWeapons(id, Secondary);
 
+				if (csgo_get_user_zeus(id)) {
+					give_item(id, zeusWeaponName);
+				}
+
 				give_item(id, "weapon_deagle");
 				give_item(id, "ammo_50ae");
 
@@ -421,6 +445,10 @@ public close_vip_menu(id)
 			} case 1: {
 				StripWeapons(id, Secondary);
 
+				if (csgo_get_user_zeus(id)) {
+					give_item(id, zeusWeaponName);
+				}
+
 				give_item(id, "weapon_deagle");
 				give_item(id, "ammo_50ae");
 
@@ -435,6 +463,12 @@ public close_vip_menu(id)
 
 				client_print(id, print_center, "%L", id, "CSGO_VIP_AK47");
 			} case 2: {
+				StripWeapons(id, Secondary);
+
+				if (csgo_get_user_zeus(id)) {
+					give_item(id, zeusWeaponName);
+				}
+
 				give_item(id, "weapon_deagle");
 				give_item(id, "ammo_50ae");
 
@@ -497,6 +531,10 @@ public vip_menu_pistol_handle(id, menu, item)
 		case 0: {
 			StripWeapons(id, Secondary);
 
+			if (csgo_get_user_zeus(id)) {
+				give_item(id, zeusWeaponName);
+			}
+
 			give_item(id, "weapon_deagle");
 			give_item(id, "ammo_50ae");
 
@@ -506,6 +544,10 @@ public vip_menu_pistol_handle(id, menu, item)
 		} case 1: {
 			StripWeapons(id, Secondary);
 
+			if (csgo_get_user_zeus(id)) {
+				give_item(id, zeusWeaponName);
+			}
+
 			give_item(id, "weapon_usp");
 			give_item(id, "ammo_45acp");
 
@@ -514,6 +556,10 @@ public vip_menu_pistol_handle(id, menu, item)
 			client_print(id, print_center, "%L", id, "CSGO_VIP_USP");
 		} case 2: {
 			StripWeapons(id, Secondary);
+
+			if (csgo_get_user_zeus(id)) {
+				give_item(id, zeusWeaponName);
+			}
 
 			give_item(id, "weapon_glock18");
 			give_item(id, "ammo_9mm");

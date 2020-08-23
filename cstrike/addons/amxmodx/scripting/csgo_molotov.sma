@@ -71,6 +71,9 @@ public plugin_init()
 	msgDeathMsg = get_user_msgid("DeathMsg");
 }
 
+public plugin_natives()
+	register_native("csgo_get_user_molotov", "_csgo_get_user_molotov", 1);
+
 public plugin_precache()
 {
 	fireSprite = precache_model("sprites/flame.spr");
@@ -374,6 +377,9 @@ public fire_damage(data[])
 
 	radius_damage2(data[2], data[3], newOrigin, molotovFireDamage, molotovRadius, DMG_BURN, false);
 }
+
+public _csgo_get_user_molotov(id)
+	return get_bit(id, molotov);
 
 stock radius_damage2(attacker, team, Float:origin[3], Float:damage, Float:range, damageType, bool:calculation = true)
 {
