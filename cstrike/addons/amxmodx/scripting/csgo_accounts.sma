@@ -19,7 +19,7 @@ new const commandAccount[][] = { "say /haslo", "say_team /haslo", "say /password
 	"say /konto", "say_team /konto", "say /account", "say_team /account", "konto" };
 
 new playerData[MAX_PLAYERS + 1][playerInfo], setinfo[16], Handle:sql, bool:sqlConnected, dataLoaded,
-	autoLogin, loginMaxTime, passwordMaxFails, passwordMinLength, blockMovement, loginForward;
+	autoLogin, accountsEnabled, loginMaxTime, passwordMaxFails, passwordMinLength, blockMovement, loginForward;
 
 public plugin_init()
 {
@@ -27,6 +27,7 @@ public plugin_init()
 
 	for (new i; i < sizeof commandAccount; i++) register_clcmd(commandAccount[i], "account_menu");
 
+	bind_pcvar_num(create_cvar("csgo_accounts_enabled", "1"), accountsEnabled);
 	bind_pcvar_num(create_cvar("csgo_accounts_login_max_time", "60"), loginMaxTime);
 	bind_pcvar_num(create_cvar("csgo_accounts_password_max_fails", "3"), passwordMaxFails);
 	bind_pcvar_num(create_cvar("csgo_accounts_password_min_length", "5"), passwordMinLength);
@@ -65,7 +66,7 @@ public client_connect(id)
 	rem_bit(id, dataLoaded);
 	rem_bit(id, autoLogin);
 
-	if (is_user_bot(id) || is_user_hltv(id)) return;
+	if (is_user_bot(id) || is_user_hltv(id) || !accountsEnabled) return;
 
 	get_user_name(id, playerData[id][NAME], charsmax(playerData[][NAME]));
 
@@ -83,7 +84,7 @@ public client_disconnected(id)
 
 public player_spawn(id)
 {
-	if (!is_user_alive(id) || playerData[id][STATUS] >= LOGGED) return;
+	if (!accountsEnabled || !is_user_alive(id) || playerData[id][STATUS] >= LOGGED) return;
 
 	account_menu(id);
 }
@@ -103,7 +104,7 @@ public kick_player(id)
 
 public block_movement(id)
 {
-	if (!blockMovement || !is_user_alive(id) || playerData[id][STATUS] >= LOGGED) return HAM_IGNORED;
+	if (!accountsEnabled || !blockMovement || !is_user_alive(id) || playerData[id][STATUS] >= LOGGED) return HAM_IGNORED;
 
 	set_user_maxspeed(id, 0.1);
 
@@ -112,7 +113,7 @@ public block_movement(id)
 
 public account_menu(id)
 {
-	if (!is_user_connected(id) || !is_user_valid(id)) return PLUGIN_HANDLED;
+	if (!accountsEnabled || !is_user_connected(id) || !is_user_valid(id)) return PLUGIN_HANDLED;
 
 	if (!get_bit(id, dataLoaded)) {
 		remove_task(id);
@@ -251,7 +252,7 @@ public account_menu_handle(id, menu, item)
 
 public login_account(id)
 {
-	if (playerData[id][STATUS] != NOT_LOGGED || !get_bit(id, dataLoaded)) return PLUGIN_HANDLED;
+	if (!accountsEnabled || playerData[id][STATUS] != NOT_LOGGED || !get_bit(id, dataLoaded)) return PLUGIN_HANDLED;
 
 	new password[32];
 
@@ -304,7 +305,7 @@ public login_account(id)
 
 public register_step_one(id)
 {
-	if ((playerData[id][STATUS] != NOT_REGISTERED && playerData[id][STATUS] != GUEST) || !get_bit(id, dataLoaded)) return PLUGIN_HANDLED;
+	if (!accountsEnabled || (playerData[id][STATUS] != NOT_REGISTERED && playerData[id][STATUS] != GUEST) || !get_bit(id, dataLoaded)) return PLUGIN_HANDLED;
 
 	new password[32];
 
@@ -336,7 +337,7 @@ public register_step_one(id)
 
 public register_step_two(id)
 {
-	if ((playerData[id][STATUS] != NOT_REGISTERED && playerData[id][STATUS] != GUEST) || !get_bit(id, dataLoaded)) return PLUGIN_HANDLED;
+	if (!accountsEnabled || (playerData[id][STATUS] != NOT_REGISTERED && playerData[id][STATUS] != GUEST) || !get_bit(id, dataLoaded)) return PLUGIN_HANDLED;
 
 	new password[32];
 
@@ -429,7 +430,7 @@ public register_confirmation_handle(id, menu, item)
 
 public change_step_one(id)
 {
-	if (playerData[id][STATUS] != LOGGED || !get_bit(id, dataLoaded)) return PLUGIN_HANDLED;
+	if (!accountsEnabled || playerData[id][STATUS] != LOGGED || !get_bit(id, dataLoaded)) return PLUGIN_HANDLED;
 
 	new password[32];
 
@@ -469,7 +470,7 @@ public change_step_one(id)
 
 public change_step_two(id)
 {
-	if (playerData[id][STATUS] != LOGGED || !get_bit(id, dataLoaded)) return PLUGIN_HANDLED;
+	if (!accountsEnabled || playerData[id][STATUS] != LOGGED || !get_bit(id, dataLoaded)) return PLUGIN_HANDLED;
 
 	new password[32];
 
@@ -512,7 +513,7 @@ public change_step_two(id)
 
 public change_step_three(id)
 {
-	if (playerData[id][STATUS] != LOGGED || !get_bit(id, dataLoaded)) return PLUGIN_HANDLED;
+	if (!accountsEnabled || playerData[id][STATUS] != LOGGED || !get_bit(id, dataLoaded)) return PLUGIN_HANDLED;
 
 	new password[32];
 
@@ -548,7 +549,7 @@ public change_step_three(id)
 
 public delete_account(id)
 {
-	if (playerData[id][STATUS] != LOGGED || !get_bit(id, dataLoaded)) return PLUGIN_HANDLED;
+	if (!accountsEnabled || playerData[id][STATUS] != LOGGED || !get_bit(id, dataLoaded)) return PLUGIN_HANDLED;
 
 	new password[32];
 
@@ -744,11 +745,17 @@ public ignore_handle(failState, Handle:query, error[], errorNum, data[], dataSiz
 
 public _csgo_check_account(id)
 {
+	if (!accountsEnabled) {
+		return true;
+	}
+
 	if (sql == Empty_Handle) {
 		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_DATABASE_ERROR");
 
 		return false;
-	} else if (playerData[id][STATUS] < LOGGED) {
+	}
+
+	if (playerData[id][STATUS] < LOGGED) {
 		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_LOGIN_FIRST");
 
 		account_menu(id);
