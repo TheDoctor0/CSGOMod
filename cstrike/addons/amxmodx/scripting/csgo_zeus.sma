@@ -122,7 +122,7 @@ public buy_zeus(id)
 
 	static msgText;
 
-	if (!msgText) get_user_msgid("TextMsg");
+	if (!msgText) msgText = get_user_msgid("TextMsg");
 
 	if (cvarBuyTime != -1.0 && !(get_gametime() < gameTime + (buyTime = cvarBuyTime * 60.0))) {
 		new buyTimeText[8];
