@@ -120,7 +120,7 @@ public show_clan_menu(id)
 {
 	if (!is_user_connected(id) || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
-	new csgoClan[clanInfo], menuData[128], menu, callback = menu_makecallback("show_clan_menu_callback");
+	new csgoClan[clanInfo], menuData[256], menu, callback = menu_makecallback("show_clan_menu_callback");
 
 	if (clan[id]) {
 		ArrayGetArray(csgoClans, get_clan_id(clan[id]), csgoClan);
@@ -696,7 +696,7 @@ public invite_confirm_menu(id, player)
 {
 	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
 
-	new menuData[128], clanName[32], userName[32], userId[6];
+	new menuData[256], clanName[32], userName[32], userId[6];
 
 	get_user_name(id, userName, charsmax(userName));
 
@@ -1059,9 +1059,9 @@ public applications_menu_handle(failState, Handle:query, error[], errorNum, temp
 
 	if (!is_user_connected(id)) return PLUGIN_HANDLED;
 
-	new itemName[128], userName[32], rankName[32], Float:money, rank, usersCount = 0;
+	new itemName[192], userName[32], rankName[32], Float:money, rank, usersCount = 0;
 
-	formatex(itemName, charsmax(itemName), "%L", id, "CSGO_CLANS_APPLICATION_MENU");
+	formatex(itemName, charsmax(itemName), "%L", id, "CSGO_CLANS_APPLICATION_TITLE");
 
 	new menu = menu_create(itemName, "applications_confirm_menu");
 
@@ -1330,7 +1330,7 @@ public show_war_list_menu(failState, Handle:query, error[], errorNum, tempId[], 
 
 	if (!is_user_connected(id)) return PLUGIN_HANDLED;
 
-	new itemName[128], clanName[2][32], progress[2], warsCount = 0, clanId, ownClan, enemyClan, duration, reward;
+	new itemName[192], clanName[2][32], progress[2], warsCount = 0, clanId, ownClan, enemyClan, duration, reward;
 
 	formatex(itemName, charsmax(itemName), "%L", id, "CSGO_CLANS_WARS_LIST_MENU");
 
@@ -1463,7 +1463,7 @@ public declare_war_select(failState, Handle:query, error[], errorNum, tempId[], 
 
 	if (!is_user_connected(id)) return PLUGIN_HANDLED;
 
-	new itemName[128], tempData[64], clanName[32], Float:money, clansCount = 0, members, clanId;
+	new itemName[192], tempData[64], clanName[32], Float:money, clansCount = 0, members, clanId;
 
 	formatex(itemName, charsmax(itemName), "%L", id, "CSGO_CLANS_WARS_SELECT_MENU");
 
@@ -1516,13 +1516,13 @@ public declare_war_confirm(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	new tempData[192], menuData[64], itemData[64], clanName[32], tempClanId[6], itemAccess, menuCallback;
+	new tempData[1024], menuData[64], itemData[64], clanName[32], tempClanId[6], itemAccess, menuCallback;
 
 	menu_item_getinfo(menu, item, itemAccess, itemData, charsmax(itemData), _, _, menuCallback);
 
 	strtok(itemData, clanName, charsmax(clanName), tempClanId, charsmax(tempClanId), '#');
 
-	formatex(tempData, charsmax(tempData), "%L", id, "CSGO_CLANS_WARS_SELECT_MENU", clanName, warFrags[id], warReward[id]);
+	formatex(tempData, charsmax(tempData), "%L", id, "CSGO_CLANS_WARS_SELECT_CONFIRM", clanName, warFrags[id], warReward[id]);
 
 	new menu = menu_create(tempData, "declare_war_confirm_handle");
 
@@ -1600,7 +1600,7 @@ public accept_war_menu_handle(failState, Handle:query, error[], errorNum, tempId
 
 	if (!is_user_connected(id)) return PLUGIN_HANDLED;
 
-	new itemName[128], clanName[2][32], tempData[64], warsCount = 0, ownClan = 0, enemyClan = 1, warId, clanId, duration, reward;
+	new itemName[192], clanName[2][32], tempData[64], warsCount = 0, ownClan = 0, enemyClan = 1, warId, clanId, duration, reward;
 
 	formatex(itemName, charsmax(itemName), "%L", id, "CSGO_CLANS_WARS_ACCEPT_MENU");
 
@@ -1656,7 +1656,7 @@ public accept_war_confirm(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	new dataParts[5][32], tempData[192], itemData[64], itemAccess, menuCallback;
+	new dataParts[5][32], tempData[1024], itemData[64], itemAccess, menuCallback;
 
 	menu_item_getinfo(menu, item, itemAccess, itemData, charsmax(itemData), _, _, menuCallback);
 
@@ -1758,7 +1758,7 @@ public remove_war_menu_handle(failState, Handle:query, error[], errorNum, tempId
 
 	if (!is_user_connected(id)) return PLUGIN_HANDLED;
 
-	new itemName[128], clanName[2][32], tempData[64], warsCount = 0, ownClan = 0, enemyClan = 1, warId, duration, reward;
+	new itemName[192], clanName[2][32], tempData[64], warsCount = 0, ownClan = 0, enemyClan = 1, warId, duration, reward;
 
 	formatex(itemName, charsmax(itemName), "%L", id, "CSGO_CLANS_WARS_REMOVE_MENU");
 
@@ -1813,7 +1813,7 @@ public remove_war_confirm(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	new dataParts[4][32], tempData[192], itemData[64], menuData[64], itemAccess, menuCallback;
+	new dataParts[4][32], tempData[1024], itemData[64], menuData[64], itemAccess, menuCallback;
 
 	menu_item_getinfo(menu, item, itemAccess, itemData, charsmax(itemData), _, _, menuCallback);
 
@@ -2196,7 +2196,7 @@ public application_menu_handle(failState, Handle:query, error[], errorNum, tempI
 
 	if (!is_user_connected(id)) return PLUGIN_HANDLED;
 
-	new itemName[128], itemData[64], clanName[32], Float:money, clansCount = 0, clanId, members;
+	new itemName[192], itemData[64], clanName[32], Float:money, clansCount = 0, clanId, members;
 
 	formatex(itemName, charsmax(itemName), "%L", id, "CSGO_CLANS_APPLY_MENU");
 
@@ -2273,7 +2273,7 @@ public application_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	new menuData[128];
+	new menuData[256];
 
 	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_APPLY_CONFIRM", clanName);
 
@@ -2373,7 +2373,7 @@ stock get_user_status(id)
 
 public sql_init()
 {
-	new host[64], user[64], pass[64], db[64], queryData[512], error[128], errorNum;
+	new host[64], user[64], pass[64], db[64], queryData[512], error[256], errorNum;
 
 	get_cvar_string("csgo_sql_host", host, charsmax(host));
 	get_cvar_string("csgo_sql_user", user, charsmax(user));
