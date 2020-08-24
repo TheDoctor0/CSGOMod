@@ -12,19 +12,19 @@ public plugin_init()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR);
 
-	for (new i; i < sizeof commandTransfer; i++) register_clcmd(commandTransfer[i], "CSGO_TRANSFER");
+	for (new i; i < sizeof commandTransfer; i++) register_clcmd(commandTransfer[i], "transfer_menu");
 
 	register_clcmd("EURO_AMOUNT", "transfer_handle");
 }
 
-public CSGO_TRANSFER(id)
+public transfer_menu(id)
 {
 	if (!csgo_check_account(id)) return PLUGIN_HANDLED;
 
 	new menuData[256], title[64], playerName[32], playerId[3], players, menu;
 
 	formatex(title, charsmax(title), "%L", id, "CSGO_TRANSFER_TITLE");
-	menu = menu_create(title, "CSGO_TRANSFER_handle");
+	menu = menu_create(title, "transfer_menu_handle");
 
 	for (new player = 1; player <= MAX_PLAYERS; player++) {
 		if (!is_user_connected(player) || is_user_hltv(player) || is_user_bot(player) || player == id) continue;
@@ -60,7 +60,7 @@ public CSGO_TRANSFER(id)
 	return PLUGIN_HANDLED;
 }
 
-public CSGO_TRANSFER_handle(id, menu, item)
+public transfer_menu_handle(id, menu, item)
 {
 	if (!is_user_connected(id)) return PLUGIN_HANDLED;
 
