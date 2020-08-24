@@ -196,9 +196,9 @@ public sql_init()
 
 	new queryData[1024], bool:hasError;
 
-	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_ranks` (`name` varchar(32) NOT NULL, `kills` int(10) NOT NULL DEFAULT 0, `rank` int(10) NOT NULL DEFAULT 0, `time` int(10) NOT NULL DEFAULT 0, ");
-	add(queryData, charsmax(queryData), "`firstvisit` int(10) NOT NULL DEFAULT 0, `lastvisit` int(10) NOT NULL DEFAULT 0, `gold` int(10) NOT NULL DEFAULT 0, `silver` int(10) NOT NULL DEFAULT 0, `bronze` int(10) NOT NULL DEFAULT 0, `medals` int(10) NOT NULL DEFAULT 0, ");
-	add(queryData, charsmax(queryData), "`bestkills` int(10) NOT NULL DEFAULT 0, `bestdeaths` int(10) NOT NULL DEFAULT 0, `besths` int(10) NOT NULL DEFAULT 0, `beststats` int(10) NOT NULL DEFAULT 0, `elorank` double NOT NULL DEFAULT 0, PRIMARY KEY (`name`));");
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_ranks` (`name` VARCHAR(64) NOT NULL, `kills` INT NOT NULL DEFAULT 0, `rank` INT NOT NULL DEFAULT 0, `time` INT NOT NULL DEFAULT 0, ");
+	add(queryData, charsmax(queryData), "`firstvisit` INT NOT NULL DEFAULT 0, `lastvisit` INT NOT NULL DEFAULT 0, `gold` INT NOT NULL DEFAULT 0, `silver` INT NOT NULL DEFAULT 0, `bronze` INT NOT NULL DEFAULT 0, `medals` INT NOT NULL DEFAULT 0, ");
+	add(queryData, charsmax(queryData), "`bestkills` INT NOT NULL DEFAULT 0, `bestdeaths` INT NOT NULL DEFAULT 0, `besths` INT NOT NULL DEFAULT 0, `beststats` INT NOT NULL DEFAULT 0, `elorank` double NOT NULL DEFAULT 0, PRIMARY KEY (`name`));");
 
 	new Handle:query = SQL_PrepareQuery(connectHandle, queryData);
 
@@ -210,7 +210,7 @@ public sql_init()
 		hasError = true;
 	}
 
-	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_hud` (`name` varchar(32) NOT NULL, `red` int(10) NOT NULL DEFAULT 0, `green` int(10) NOT NULL DEFAULT 0, `blue` int(10) NOT NULL DEFAULT 0, `x` int(10) NOT NULL DEFAULT 0, `y` int(10) NOT NULL DEFAULT 0, PRIMARY KEY (`name`));");
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_hud` (`name` VARCHAR(64) NOT NULL, `red` INT NOT NULL DEFAULT 0, `green` INT NOT NULL DEFAULT 0, `blue` INT NOT NULL DEFAULT 0, `x` INT NOT NULL DEFAULT 0, `y` INT NOT NULL DEFAULT 0, PRIMARY KEY (`name`));");
 
 	query = SQL_PrepareQuery(connectHandle, queryData);
 

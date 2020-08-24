@@ -171,7 +171,7 @@ public sql_init()
 
 		get_weaponname(weapon, weaponName, charsmax(weaponName));
 
-		formatex(queryTemp, charsmax(queryTemp), "`%s` int(10) NOT NULL DEFAULT(0), ", weaponName);
+		formatex(queryTemp, charsmax(queryTemp), "`%s` INT NOT NULL DEFAULT 0, ", weaponName);
 
 		add(queryData, charsmax(queryData), queryTemp);
 	}
