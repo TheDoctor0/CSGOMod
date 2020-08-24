@@ -271,14 +271,6 @@ public player_spawn(id)
 		}
 
 		give_item(id, "weapon_deagle");
-		give_item(id, "ammo_50ae");
-
-		new weaponID = find_ent_by_owner(-1, "weapon_deagle", id);
-
-		if (weaponID) cs_set_weapon_ammo(weaponID, 7);
-
-		cs_set_user_bpammo(id, CSW_DEAGLE, 35);
-
 		give_item(id, "weapon_hegrenade");
 
 		if (get_bit(id, SVIP)) {
@@ -341,61 +333,49 @@ public vip_menu_handle(id, menu, item)
 		case 0: {
 			StripWeapons(id, Secondary);
 
-			if (csgo_get_user_zeus(id)) {
-				give_item(id, zeusWeaponName);
-			}
-
 			give_item(id, "weapon_deagle");
 			give_item(id, "ammo_50ae");
 
-			cs_set_user_bpammo(id, CSW_DEAGLE, 35);
+			if (csgo_get_user_zeus(id)) {
+				give_item(id, zeusWeaponName);
+			}
 
 			StripWeapons(id, Primary);
 
 			give_item(id, "weapon_m4a1");
 			give_item(id, "ammo_556nato");
 
-			cs_set_user_bpammo(id, CSW_M4A1, 90);
-
 			client_print(id, print_center, "%L", id, "CSGO_VIP_M4A1");
 		} case 1: {
 			StripWeapons(id, Secondary);
 
-			if (csgo_get_user_zeus(id)) {
-				give_item(id, zeusWeaponName);
-			}
-
 			give_item(id, "weapon_deagle");
 			give_item(id, "ammo_50ae");
 
-			cs_set_user_bpammo(id, CSW_DEAGLE, 35);
+			if (csgo_get_user_zeus(id)) {
+				give_item(id, zeusWeaponName);
+			}
 
 			StripWeapons(id, Primary);
 
 			give_item(id, "weapon_ak47");
 			give_item(id, "ammo_762nato");
 
-			cs_set_user_bpammo(id, CSW_AK47, 90);
-
 			client_print(id, print_center, "%L", id, "CSGO_VIP_AK47");
 		} case 2: {
 			StripWeapons(id, Secondary);
+
+			give_item(id, "weapon_deagle");
+			give_item(id, "ammo_50ae");
 
 			if (csgo_get_user_zeus(id)) {
 				give_item(id, zeusWeaponName);
 			}
 
-			give_item(id, "weapon_deagle");
-			give_item(id, "ammo_50ae");
-
-			cs_set_user_bpammo(id, CSW_DEAGLE, 35);
-
 			StripWeapons(id, Primary);
 
 			give_item(id, "weapon_awp");
-			give_item(id,"ammo_338magnum");
-
-			cs_set_user_bpammo(id, CSW_AWP, 30);
+			give_item(id, "ammo_338magnum");
 
 			client_print(id, print_center, "%L", id, "CSGO_VIP_AWP");
 		}
@@ -425,61 +405,49 @@ public close_vip_menu(id)
 			case 0: {
 				StripWeapons(id, Secondary);
 
-				if (csgo_get_user_zeus(id)) {
-					give_item(id, zeusWeaponName);
-				}
-
 				give_item(id, "weapon_deagle");
 				give_item(id, "ammo_50ae");
 
-				cs_set_user_bpammo(id, CSW_DEAGLE, 35);
+				if (csgo_get_user_zeus(id)) {
+					give_item(id, zeusWeaponName);
+				}
 
 				StripWeapons(id, Primary);
 
 				give_item(id, "weapon_m4a1");
 				give_item(id, "ammo_556nato");
 
-				cs_set_user_bpammo(id, CSW_M4A1, 90);
-
 				client_print(id, print_center, "%L", id, "CSGO_VIP_M4A1");
 			} case 1: {
 				StripWeapons(id, Secondary);
 
-				if (csgo_get_user_zeus(id)) {
-					give_item(id, zeusWeaponName);
-				}
-
 				give_item(id, "weapon_deagle");
 				give_item(id, "ammo_50ae");
 
-				cs_set_user_bpammo(id, CSW_DEAGLE, 35);
+				if (csgo_get_user_zeus(id)) {
+					give_item(id, zeusWeaponName);
+				}
 
 				StripWeapons(id, Primary);
 
 				give_item(id, "weapon_ak47");
 				give_item(id, "ammo_762nato");
 
-				cs_set_user_bpammo(id, CSW_AK47, 90);
-
 				client_print(id, print_center, "%L", id, "CSGO_VIP_AK47");
 			} case 2: {
 				StripWeapons(id, Secondary);
+
+				give_item(id, "weapon_deagle");
+				give_item(id, "ammo_50ae");
 
 				if (csgo_get_user_zeus(id)) {
 					give_item(id, zeusWeaponName);
 				}
 
-				give_item(id, "weapon_deagle");
-				give_item(id, "ammo_50ae");
-
-				cs_set_user_bpammo(id, CSW_DEAGLE, 35);
-
 				StripWeapons(id, Primary);
 
 				give_item(id, "weapon_awp");
 				give_item(id, "ammo_338magnum");
-
-				cs_set_user_bpammo(id, CSW_AWP, 30);
 
 				client_print(id, print_center, "%L", id, "CSGO_VIP_AWP");
 			}
@@ -531,40 +499,34 @@ public vip_menu_pistol_handle(id, menu, item)
 		case 0: {
 			StripWeapons(id, Secondary);
 
-			if (csgo_get_user_zeus(id)) {
-				give_item(id, zeusWeaponName);
-			}
-
 			give_item(id, "weapon_deagle");
 			give_item(id, "ammo_50ae");
 
-			cs_set_user_bpammo(id, CSW_DEAGLE, 35);
+			if (csgo_get_user_zeus(id)) {
+				give_item(id, zeusWeaponName);
+			}
 
 			client_print(id, print_center, "%L", id, "CSGO_VIP_DEAGLE");
 		} case 1: {
 			StripWeapons(id, Secondary);
 
-			if (csgo_get_user_zeus(id)) {
-				give_item(id, zeusWeaponName);
-			}
-
 			give_item(id, "weapon_usp");
 			give_item(id, "ammo_45acp");
 
-			cs_set_user_bpammo(id, CSW_USP, 100);
+			if (csgo_get_user_zeus(id)) {
+				give_item(id, zeusWeaponName);
+			}
 
 			client_print(id, print_center, "%L", id, "CSGO_VIP_USP");
 		} case 2: {
 			StripWeapons(id, Secondary);
 
-			if (csgo_get_user_zeus(id)) {
-				give_item(id, zeusWeaponName);
-			}
-
 			give_item(id, "weapon_glock18");
 			give_item(id, "ammo_9mm");
 
-			cs_set_user_bpammo(id, CSW_GLOCK18, 120);
+			if (csgo_get_user_zeus(id)) {
+				give_item(id, zeusWeaponName);
+			}
 
 			client_print(id, print_center, "%L", id, "CSGO_VIP_GLOCK");
 		}
@@ -597,7 +559,9 @@ public close_vip_menu_pistol(id)
 				give_item(id, "weapon_deagle");
 				give_item(id, "ammo_50ae");
 
-				cs_set_user_bpammo(id, CSW_DEAGLE, 35);
+				if (csgo_get_user_zeus(id)) {
+					give_item(id, zeusWeaponName);
+				}
 
 				client_print(id, print_center, "%L", id, "CSGO_VIP_DEAGLE");
 			} case 1: {
@@ -606,7 +570,9 @@ public close_vip_menu_pistol(id)
 				give_item(id, "weapon_usp");
 				give_item(id, "ammo_45acp");
 
-				cs_set_user_bpammo(id, CSW_USP, 100);
+				if (csgo_get_user_zeus(id)) {
+					give_item(id, zeusWeaponName);
+				}
 
 				client_print(id, print_center, "%L", id, "CSGO_VIP_USP");
 			} case 2: {
@@ -615,7 +581,9 @@ public close_vip_menu_pistol(id)
 				give_item(id, "weapon_glock18");
 				give_item(id, "ammo_9mm");
 
-				cs_set_user_bpammo(id, CSW_GLOCK18, 120);
+				if (csgo_get_user_zeus(id)) {
+					give_item(id, zeusWeaponName);
+				}
 
 				client_print(id, print_center, "%L", id, "CSGO_VIP_GLOCK");
 			}
