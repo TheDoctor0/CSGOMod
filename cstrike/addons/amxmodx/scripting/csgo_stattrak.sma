@@ -111,8 +111,8 @@ public load_data_handle(failState, Handle:query, error[], errorNum, tempId[], da
 		new queryData[128];
 
 		switch (saveType) {
-			case SAVE_NAME: formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_stattrak` (`name`) VALUES(^"%s^");", playerName[id]);
-			case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_stattrak` (`steamid`) VALUES(^"%s^");", playerSteamId[id]);
+			case SAVE_NAME: formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_stattrak` (`name`) VALUES (^"%s^");", playerName[id]);
+			case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_stattrak` (`steamid`) VALUES (^"%s^");", playerSteamId[id]);
 		}
 
 		SQL_ThreadQuery(sql, "ignore_handle", queryData);

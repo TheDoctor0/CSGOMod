@@ -2953,8 +2953,8 @@ public load_data_handle(failState, Handle:query, error[], errorNum, playerId[], 
 					playerData[id][SAFE_NAME]);
 			}
 			case SAVE_STEAM_ID: {
-				formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_data` (`name`, `steamid`, `money`, `exchange`, `menu`, `online`) VALUES (^"%s^", ^"%s^", '0', '0', '0', '0');",
-					playerData[id][SAFE_NAME], playerData[id][STEAM_ID]);
+				formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_data` (`steamid`, `money`, `exchange`, `menu`, `online`) VALUES (^"%s^", '0', '0', '0', '0');",
+					playerData[id][STEAM_ID]);
 			}
 		}
 
@@ -2975,11 +2975,11 @@ stock save_data(id, end = 0)
 	switch (saveType) {
 		case SAVE_NAME: {
 			formatex(queryData, charsmax(queryData), "UPDATE `csgo_data` SET `money` = %f, `exchange` = %i, `menu` = %i, `online` = %i WHERE `name` = ^"%s^"",
-				playerData[id][MONEY], playerData[id][EXCHANGE_BLOCKED], playerData[id][MENU_BLOCKED], end ? 0 : 1, playerData[id][STEAM_ID], playerData[id][SAFE_NAME]);
+				playerData[id][MONEY], playerData[id][EXCHANGE_BLOCKED], playerData[id][MENU_BLOCKED], end ? 0 : 1, playerData[id][SAFE_NAME]);
 		}
 		case SAVE_STEAM_ID: {
-			formatex(queryData, charsmax(queryData), "UPDATE `csgo_data` SET `money` = %f, `exchange` = %i, `menu` = %i, `online` = %i, `name` = ^"%s^" WHERE `steamid` = ^"%s^"",
-				playerData[id][MONEY], playerData[id][EXCHANGE_BLOCKED], playerData[id][MENU_BLOCKED], end ? 0 : 1, playerData[id][SAFE_NAME], playerData[id][STEAM_ID]);
+			formatex(queryData, charsmax(queryData), "UPDATE `csgo_data` SET `money` = %f, `exchange` = %i, `menu` = %i, `online` = %i WHERE `steamid` = ^"%s^"",
+				playerData[id][MONEY], playerData[id][EXCHANGE_BLOCKED], playerData[id][MENU_BLOCKED], end ? 0 : 1, playerData[id][STEAM_ID]);
 		}
 	}
 
@@ -3305,7 +3305,7 @@ stock remove_skin(id, skinId, weapon[], skin[])
 {
 	if (!playerData[id][SKINS_LOADED]) return;
 
-	new queryData[192], skinSafeName[64];
+	new queryData[256], skinSafeName[64];
 
 	mysql_escape_string(skin, skinSafeName, charsmax(skinSafeName));
 
@@ -3334,7 +3334,7 @@ stock remove_active_skin(id, weapon[])
 {
 	if (!playerData[id][SKINS_LOADED]) return;
 
-	new queryData[192];
+	new queryData[256];
 
 	switch (saveType) {
 		case SAVE_NAME: formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_skins` WHERE name = ^"%s^" AND weapon = '%s ACTIVE'", playerData[id][SAFE_NAME], weapon);
@@ -3348,7 +3348,7 @@ stock add_skin(id, skinId, weapon[], skin[])
 {
 	if (!playerData[id][SKINS_LOADED] || (!multipleSkins && has_skin(id, skinId))) return;
 
-	new queryData[192], skinSafeName[64];
+	new queryData[256], skinSafeName[64];
 
 	mysql_escape_string(skin, skinSafeName, charsmax(skinSafeName));
 
@@ -3381,7 +3381,7 @@ stock set_skin(id, weapon[], skin[] = "", skinId = NONE, active = 0)
 	}
 
 	if (active && playerData[id][SKINS_LOADED]) {
-		new queryData[192], skinSafeName[64];
+		new queryData[256], skinSafeName[64];
 
 		mysql_escape_string(skin, skinSafeName, charsmax(skinSafeName));
 

@@ -86,13 +86,12 @@ new const commandHud[][] = { "hud", "say /hud", "say_team /hud", "say /zmienhud"
 
 enum _:playerInfo { KILLS, RANK, TIME, FIRST_VISIT, LAST_VISIT, BRONZE, SILVER, GOLD, MEDALS, BEST_STATS, BEST_KILLS,
 	BEST_DEATHS, BEST_HS, CURRENT_STATS, CURRENT_KILLS, CURRENT_DEATHS, CURRENT_HS, PLAYER_HUD_RED, PLAYER_HUD_GREEN,
-	PLAYER_HUD_BLUE, PLAYER_HUD_POSX, PLAYER_HUD_POSY, Float:ELO_RANK, PLAYER_NAME[32], SAFE_NAME[64] };
-
+	PLAYER_HUD_BLUE, PLAYER_HUD_POSX, PLAYER_HUD_POSY, Float:ELO_RANK, NAME[32], SAFE_NAME[64], STEAM_ID[35] };
 enum _:winners { THIRD, SECOND, FIRST };
 
 new playerData[MAX_PLAYERS + 1][playerInfo], sprites[MAX_RANKS + 1], Handle:sql, bool:sqlConnected, bool:mapChange,
 	bool:block, loaded, hudLoaded, visit, hud, aimHUD, defaultInfo, round, hudSite[64], hudAccount, hudClan, hudOperation,
-	iconFlags[8], unrankedKills, minPlayers, Float:winnerReward;
+	iconFlags[8], unrankedKills, minPlayers, saveType, Float:winnerReward;
 
 public plugin_init()
 {
@@ -108,6 +107,7 @@ public plugin_init()
 	bind_pcvar_num(create_cvar("csgo_ranks_hud_operation", "0"), hudOperation);
 
 	bind_pcvar_num(get_cvar_pointer("csgo_min_players"), minPlayers);
+	bind_pcvar_num(get_cvar_pointer("csgo_save_type"), saveType);
 
 	for (new i; i < sizeof commandMenu; i++) register_clcmd(commandMenu[i], "cmd_menu");
 	for (new i; i < sizeof commandRank; i++) register_clcmd(commandRank[i], "cmd_rank");
@@ -196,9 +196,9 @@ public sql_init()
 
 	new queryData[1024], bool:hasError;
 
-	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_ranks` (`name` VARCHAR(64) NOT NULL, `kills` INT NOT NULL DEFAULT 0, `rank` INT NOT NULL DEFAULT 0, `time` INT NOT NULL DEFAULT 0, ");
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_ranks` (`name` VARCHAR(64), `steamid` VARCHAR(35), `kills` INT NOT NULL DEFAULT 0, `rank` INT NOT NULL DEFAULT 0, `time` INT NOT NULL DEFAULT 0, ");
 	add(queryData, charsmax(queryData), "`firstvisit` INT NOT NULL DEFAULT 0, `lastvisit` INT NOT NULL DEFAULT 0, `gold` INT NOT NULL DEFAULT 0, `silver` INT NOT NULL DEFAULT 0, `bronze` INT NOT NULL DEFAULT 0, `medals` INT NOT NULL DEFAULT 0, ");
-	add(queryData, charsmax(queryData), "`bestkills` INT NOT NULL DEFAULT 0, `bestdeaths` INT NOT NULL DEFAULT 0, `besths` INT NOT NULL DEFAULT 0, `beststats` INT NOT NULL DEFAULT 0, `elorank` double NOT NULL DEFAULT 0, PRIMARY KEY (`name`));");
+	add(queryData, charsmax(queryData), "`bestkills` INT NOT NULL DEFAULT 0, `bestdeaths` INT NOT NULL DEFAULT 0, `besths` INT NOT NULL DEFAULT 0, `beststats` INT NOT NULL DEFAULT 0, `elorank` double NOT NULL DEFAULT 0, PRIMARY KEY (name, steamid));");
 
 	new Handle:query = SQL_PrepareQuery(connectHandle, queryData);
 
@@ -210,7 +210,7 @@ public sql_init()
 		hasError = true;
 	}
 
-	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_hud` (`name` VARCHAR(64) NOT NULL, `red` INT NOT NULL DEFAULT 0, `green` INT NOT NULL DEFAULT 0, `blue` INT NOT NULL DEFAULT 0, `x` INT NOT NULL DEFAULT 0, `y` INT NOT NULL DEFAULT 0, PRIMARY KEY (`name`));");
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_hud` (`name` varchar(32) NOT NULL, `red` int(10) NOT NULL DEFAULT 0, `green` int(10) NOT NULL DEFAULT 0, `blue` int(10) NOT NULL DEFAULT 0, `x` int(10) NOT NULL DEFAULT 0, `y` int(10) NOT NULL DEFAULT 0, PRIMARY KEY (`name`));");
 
 	query = SQL_PrepareQuery(connectHandle, queryData);
 
@@ -230,12 +230,6 @@ public sql_init()
 
 public client_putinserver(id)
 {
-	if (is_user_bot(id) || is_user_hltv(id)) return;
-
-	get_user_name(id, playerData[id][PLAYER_NAME], charsmax(playerData[][PLAYER_NAME]));
-
-	mysql_escape_string(playerData[id][PLAYER_NAME], playerData[id][SAFE_NAME], charsmax(playerData[][SAFE_NAME]));
-
 	for (new i = KILLS; i <= CURRENT_HS; i++) playerData[id][i] = 0;
 
 	playerData[id][ELO_RANK] = _:100.0;
@@ -249,6 +243,13 @@ public client_putinserver(id)
 	rem_bit(id, loaded);
 	rem_bit(id, hudLoaded);
 	rem_bit(id, visit);
+
+	if (is_user_bot(id) || is_user_hltv(id)) return;
+
+	get_user_authid(id, playerData[id][STEAM_ID], charsmax(playerData[][STEAM_ID]));
+	get_user_name(id, playerData[id][NAME], charsmax(playerData[][NAME]));
+
+	mysql_escape_string(playerData[id][NAME], playerData[id][SAFE_NAME], charsmax(playerData[][SAFE_NAME]));
 
 	set_task(0.1, "load_data", id);
 }
@@ -274,7 +275,10 @@ public load_data(id)
 
 	playerId[0] = id;
 
-	formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_ranks` WHERE name = ^"%s^";", playerData[id][SAFE_NAME]);
+	switch (saveType) {
+		case SAVE_NAME: formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_ranks` WHERE name = ^"%s^";", playerData[id][SAFE_NAME]);
+		case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_ranks` WHERE `steamid` = ^"%s^";", playerData[id][STEAM_ID]);
+	}
 
 	SQL_ThreadQuery(sql, "load_data_handle", queryData, playerId, sizeof(playerId));
 }
@@ -308,9 +312,16 @@ public load_data_handle(failState, Handle:query, error[], errorNum, playerId[], 
 
 		check_rank(id, 1);
 	} else {
-		new queryData[192], firstVisit = get_systime();
+		new queryData[256], firstVisit = get_systime();
 
-		formatex(queryData, charsmax(queryData), "INSERT IGNORE INTO `csgo_ranks` (`name`, `firstvisit`, `elorank`) VALUES ('%s', '%i', '100');", playerData[id][SAFE_NAME], firstVisit);
+		switch (saveType) {
+			case SAVE_NAME: {
+				formatex(queryData, charsmax(queryData), "INSERT IGNORE INTO `csgo_ranks` (`name`, `firstvisit`, `elorank`) VALUES (^"%s^", '%i', '100');", playerData[id][SAFE_NAME], firstVisit);
+			}
+			case SAVE_STEAM_ID: {
+				formatex(queryData, charsmax(queryData), "INSERT IGNORE INTO `csgo_ranks` (`name`, `steamid`, `firstvisit`, `elorank`) VALUES (^"%s^", ^"%s^", '%i', '100');", playerData[id][SAFE_NAME], playerData[id][STEAM_ID], firstVisit);
+			}
+		}
 
 		SQL_ThreadQuery(sql, "ignore_handle", queryData);
 	}
@@ -321,7 +332,10 @@ public load_data_handle(failState, Handle:query, error[], errorNum, playerId[], 
 
 	playerId[0] = id;
 
-	formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_hud` WHERE name = ^"%s^";", playerData[id][SAFE_NAME]);
+	switch (saveType) {
+		case SAVE_NAME: formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_hud` WHERE name = ^"%s^";", playerData[id][SAFE_NAME]);
+		case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_hud` WHERE `steamid` = ^"%s^";", playerData[id][STEAM_ID]);
+	}
 
 	SQL_ThreadQuery(sql, "load_hud_handle", queryData, playerId, sizeof(playerId));
 }
@@ -343,10 +357,18 @@ public load_hud_handle(failState, Handle:query, error[], errorNum, playerId[], d
 		playerData[id][PLAYER_HUD_POSX] = SQL_ReadResult(query, SQL_FieldNameToNum(query, "x"));
 		playerData[id][PLAYER_HUD_POSY] = SQL_ReadResult(query, SQL_FieldNameToNum(query, "y"));
 	} else {
-		new queryData[192];
+		new queryData[256];
 
-		formatex(queryData, charsmax(queryData), "INSERT IGNORE INTO `csgo_hud` VALUES ('%s', '%i', '%i', '%i', '%i', '%i');",
-			playerData[id][SAFE_NAME], playerData[id][PLAYER_HUD_RED], playerData[id][PLAYER_HUD_GREEN], playerData[id][PLAYER_HUD_BLUE], playerData[id][PLAYER_HUD_POSX], playerData[id][PLAYER_HUD_POSY]);
+		switch (saveType) {
+			case SAVE_NAME: {
+				formatex(queryData, charsmax(queryData), "INSERT IGNORE INTO `csgo_hud` (`name`, `red`, `green`, `blue`, `x`, `y`) VALUES (^"%s^", '%i', '%i', '%i', '%i', '%i');",
+					playerData[id][SAFE_NAME], playerData[id][PLAYER_HUD_RED], playerData[id][PLAYER_HUD_GREEN], playerData[id][PLAYER_HUD_BLUE], playerData[id][PLAYER_HUD_POSX], playerData[id][PLAYER_HUD_POSY]);
+			}
+			case SAVE_STEAM_ID: {
+				formatex(queryData, charsmax(queryData), "INSERT IGNORE INTO `csgo_hud` (`steamid`, `red`, `green`, `blue`, `x`, `y`) VALUES (^"%s^", '%i', '%i', '%i', '%i', '%i');",
+					playerData[id][STEAM_ID], playerData[id][PLAYER_HUD_RED], playerData[id][PLAYER_HUD_GREEN], playerData[id][PLAYER_HUD_BLUE], playerData[id][PLAYER_HUD_POSX], playerData[id][PLAYER_HUD_POSY]);
+			}
+		}
 
 		SQL_ThreadQuery(sql, "ignore_handle", queryData);
 	}
@@ -378,8 +400,16 @@ stock save_data(id, end = 0)
 			playerData[id][GOLD], playerData[id][SILVER], playerData[id][BRONZE], medals);
 	}
 
-	formatex(queryData, charsmax(queryData), "UPDATE `csgo_ranks` SET `kills` = %i, `rank` = %i, `elorank` = %f, `time` = %i, `lastvisit` = %i%s%s WHERE name = ^"%s^" AND `time` <= %i",
-		playerData[id][KILLS], playerData[id][RANK], playerData[id][ELO_RANK], time, get_systime(), queryDataStats, queryDataMedals, playerData[id][SAFE_NAME], time);
+	switch (saveType) {
+		case SAVE_NAME: {
+			formatex(queryData, charsmax(queryData), "UPDATE `csgo_ranks` SET `kills` = %i, `rank` = %i, `elorank` = %f, `time` = %i, `lastvisit` = %i%s%s WHERE name = ^"%s^" AND `time` <= %i",
+				playerData[id][KILLS], playerData[id][RANK], playerData[id][ELO_RANK], time, get_systime(), queryDataStats, queryDataMedals, playerData[id][SAFE_NAME], time);
+		}
+		case SAVE_STEAM_ID: {
+			formatex(queryData, charsmax(queryData), "UPDATE `csgo_ranks` SET `name` name = ^"%s^", `kills` = %i, `rank` = %i, `elorank` = %f, `time` = %i, `lastvisit` = %i%s%s WHERE steamid = ^"%s^" AND `time` <= %i",
+				playerData[id][KILLS], playerData[id][RANK], playerData[id][ELO_RANK], time, get_systime(), queryDataStats, queryDataMedals, playerData[id][STEAM_ID], time);
+		}
+	}
 
 	switch(end) {
 		case 0, 1: SQL_ThreadQuery(sql, "ignore_handle", queryData, playerId, sizeof(playerId));
@@ -595,7 +625,7 @@ public client_death(killer, victim, weapon, hitPlace, TK)
 	check_rank(killer);
 	check_rank(victim);
 
-	client_print_color(victim, killer, "%L", victim, "CSGO_RANKS_KILLED", playerData[killer][PLAYER_NAME], get_user_health(killer));
+	client_print_color(victim, killer, "%L", victim, "CSGO_RANKS_KILLED", playerData[killer][NAME], get_user_health(killer));
 
 	if (block) return;
 
@@ -1021,20 +1051,20 @@ public show_topmedals(failState, Handle:query, error[], errorNum, playerId[], da
 		return PLUGIN_HANDLED;
 	}
 
-	static topData[2048], name[32], nick[16], sum[16], goldTitle[16], silverTitle[16], bronzeTitle[16], topLength, place, gold, silver, bronze, medals;
+	static topData[2048], name[32], nameTitle[16], sumTitle[16], goldTitle[16], silverTitle[16], bronzeTitle[16], topLength, place, gold, silver, bronze, medals;
 
 	topLength = 0, place = 0;
 
 	new id = playerId[0];
 
-	formatex(nick, charsmax(nick), "%L", id, "CSGO_RANKS_TOP_NICK");
-	formatex(sum, charsmax(sum), "%L", id, "CSGO_RANKS_TOP_SUM");
+	formatex(nameTitle, charsmax(nameTitle), "%L", id, "CSGO_RANKS_TOP_NICK");
+	formatex(sumTitle, charsmax(sumTitle), "%L", id, "CSGO_RANKS_TOP_SUM");
 	formatex(goldTitle, charsmax(goldTitle), "%L", id, "CSGO_RANKS_TOP_GOLD");
 	formatex(silverTitle, charsmax(silverTitle), "%L", id, "CSGO_RANKS_TOP_SILVER");
 	formatex(bronzeTitle, charsmax(bronzeTitle), "%L", id, "CSGO_RANKS_TOP_BRONZE");
 
 	topLength = format(topData, charsmax(topData), "<body bgcolor=#000000><font color=#FFB000><pre>");
-	topLength += format(topData[topLength], charsmax(topData) - topLength, "%1s %-22.22s %6s %8s %8s %5s^n", "#", nick, goldTitle, silverTitle, bronzeTitle, sum);
+	topLength += format(topData[topLength], charsmax(topData) - topLength, "%1s %-22.22s %6s %8s %8s %5s^n", "#", nameTitle, goldTitle, silverTitle, bronzeTitle, sumTitle);
 
 	while (SQL_MoreResults(query)) {
 		place++;
@@ -1071,7 +1101,7 @@ public cmd_stats(id)
 	playerData[id][CURRENT_STATS] = playerData[id][CURRENT_KILLS]*2 + playerData[id][CURRENT_HS] - playerData[id][CURRENT_DEATHS]*2;
 
 	formatex(queryData, charsmax(queryData), "SELECT rank, count FROM (SELECT COUNT(*) as count FROM `csgo_ranks`) a CROSS JOIN (SELECT COUNT(*) as rank FROM `csgo_ranks` WHERE `beststats` > '%i' ORDER BY `beststats` DESC) b",
-	playerData[id][CURRENT_STATS] > playerData[id][BEST_STATS] ? playerData[id][CURRENT_STATS] : playerData[id][BEST_STATS]);
+		playerData[id][CURRENT_STATS] > playerData[id][BEST_STATS] ? playerData[id][CURRENT_STATS] : playerData[id][BEST_STATS]);
 
 	SQL_ThreadQuery(sql, "show_stats", queryData, playerId, sizeof(playerId));
 
@@ -1130,8 +1160,7 @@ public show_topstats(failState, Handle:query, error[], errorNum, playerId[], dat
 	topLength = format(topData, charsmax(topData), "<body bgcolor=#000000><font color=#FFB000><pre>");
 	topLength += format(topData[topLength], charsmax(topData) - topLength, "%1s %-22.22s %19s %4s^n", "#", nick, killsTitle, deathsTitle);
 
-	while (SQL_MoreResults(query))
-	{
+	while (SQL_MoreResults(query)) {
 		place++;
 
 		SQL_ReadResult(query, 0, name, charsmax(name));
@@ -1186,11 +1215,11 @@ public show_icon(id)
 			set_hudmessage(color[0], 50, color[1], -1.0, height, 1, 0.01, 3.0, 0.01, 0.01);
 
 			if (flags & TEAM_RANK) {
-				if (flags & STATS) ShowSyncHudMsg(id, aimHUD, "%s : %s^n%d HP | %d AP | %s", playerData[target][PLAYER_NAME], rankName[rank], get_user_health(target), get_user_armor(target), weaponName);
-				else ShowSyncHudMsg(id, aimHUD, "%s : %s", playerData[target][PLAYER_NAME], rankName[rank]);
+				if (flags & STATS) ShowSyncHudMsg(id, aimHUD, "%s : %s^n%d HP | %d AP | %s", playerData[target][NAME], rankName[rank], get_user_health(target), get_user_armor(target), weaponName);
+				else ShowSyncHudMsg(id, aimHUD, "%s : %s", playerData[target][NAME], rankName[rank]);
 			} else {
-				if (flags & STATS) ShowSyncHudMsg(id, aimHUD, "%s^n%d HP | %d AP | %s", playerData[target][PLAYER_NAME], get_user_health(target), get_user_armor(target), weaponName);
-				else ShowSyncHudMsg(id, aimHUD, "%s", playerData[target][PLAYER_NAME]);
+				if (flags & STATS) ShowSyncHudMsg(id, aimHUD, "%s^n%d HP | %d AP | %s", playerData[target][NAME], get_user_health(target), get_user_armor(target), weaponName);
+				else ShowSyncHudMsg(id, aimHUD, "%s", playerData[target][NAME]);
 			}
 		}
 
@@ -1198,8 +1227,8 @@ public show_icon(id)
 	} else if (flags && !defaultHUD) {
 		set_hudmessage(color[0], 50, color[1], -1.0, height, 1, 0.01, 3.0, 0.01, 0.01);
 
-		if (flags & ENEMY_RANK) ShowSyncHudMsg(id, aimHUD, "%s : %s", playerData[target][PLAYER_NAME], rankName[rank]);
-		else ShowSyncHudMsg(id, aimHUD, "%s", playerData[target][PLAYER_NAME]);
+		if (flags & ENEMY_RANK) ShowSyncHudMsg(id, aimHUD, "%s : %s", playerData[target][NAME], rankName[rank]);
+		else ShowSyncHudMsg(id, aimHUD, "%s", playerData[target][NAME]);
 	}
 }
 
@@ -1402,8 +1431,16 @@ public save_hud(id)
 
 	new tempData[256];
 
-	formatex(tempData, charsmax(tempData), "UPDATE `csgo_hud` SET `red` = '%i', `green` = '%i', `blue` = '%i', `x` = '%i', `y` = '%i' WHERE `name` = ^"%s^"",
-			playerData[id][PLAYER_HUD_RED], playerData[id][PLAYER_HUD_GREEN], playerData[id][PLAYER_HUD_BLUE], playerData[id][PLAYER_HUD_POSX], playerData[id][PLAYER_HUD_POSY], playerData[id][PLAYER_NAME]);
+	switch (saveType) {
+		case SAVE_NAME: {
+			formatex(tempData, charsmax(tempData), "UPDATE `csgo_hud` SET `red` = '%i', `green` = '%i', `blue` = '%i', `x` = '%i', `y` = '%i' WHERE `name` = ^"%s^"",
+				playerData[id][PLAYER_HUD_RED], playerData[id][PLAYER_HUD_GREEN], playerData[id][PLAYER_HUD_BLUE], playerData[id][PLAYER_HUD_POSX], playerData[id][PLAYER_HUD_POSY], playerData[id][NAME]);
+		}
+		case SAVE_STEAM_ID: {
+			formatex(tempData, charsmax(tempData), "UPDATE `csgo_hud` SET `red` = '%i', `green` = '%i', `blue` = '%i', `x` = '%i', `y` = '%i' WHERE `steamid` = ^"%s^"",
+				playerData[id][PLAYER_HUD_RED], playerData[id][PLAYER_HUD_GREEN], playerData[id][PLAYER_HUD_BLUE], playerData[id][PLAYER_HUD_POSX], playerData[id][PLAYER_HUD_POSY], playerData[id][STEAM_ID]);
+		}
+	}
 
 	SQL_ThreadQuery(sql, "ignore_handle", tempData);
 }
