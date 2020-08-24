@@ -162,7 +162,7 @@ public sql_init()
 		return;
 	}
 
-	new queryData[2048], queryTemp[128], weaponName[32], bool:hasError;
+	new queryData[2048], queryTemp[64], weaponName[32], bool:hasError;
 
 	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_stattrak` (`name` VARCHAR(64), ");
 
