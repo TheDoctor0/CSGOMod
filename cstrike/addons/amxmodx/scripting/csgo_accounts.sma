@@ -52,7 +52,7 @@ public plugin_natives()
 	register_native("csgo_check_account", "_csgo_check_account", 1);
 
 public plugin_cfg()
-	sql_init();
+	set_task(0.1, "sql_init");
 
 public plugin_end()
 	SQL_FreeHandle(sql);
@@ -627,7 +627,7 @@ public delete_account_handle(id, menu, item)
 
 public sql_init()
 {
-	new host[64], user[64], pass[64], db[64], queryData[128], error[256], errorNum;
+	new host[64], user[64], pass[64], db[64], error[256], errorNum;
 
 	get_cvar_string("csgo_sql_host", host, charsmax(host));
 	get_cvar_string("csgo_sql_user", user, charsmax(user));
@@ -636,28 +636,34 @@ public sql_init()
 
 	sql = SQL_MakeDbTuple(host, user, pass, db);
 
-	new Handle:connectHandle = SQL_Connect(sql, errorNum, error, charsmax(error));
+	new Handle:connection = SQL_Connect(sql, errorNum, error, charsmax(error));
 
 	if (errorNum) {
 		log_to_file("csgo-error.log", "[CS:GO Accounts] Init SQL Error: %s (%i)", error, errorNum);
 
+		SQL_FreeHandle(connection);
+
 		return;
 	}
 
+	new queryData[128], bool:hasError;
+
 	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_accounts` (`name` VARCHAR(64), `pass` VARCHAR(32), PRIMARY KEY(`name`));");
 
-	new Handle:query = SQL_PrepareQuery(connectHandle, queryData);
+	new Handle:query = SQL_PrepareQuery(connection, queryData);
 
 	if (!SQL_Execute(query)) {
 		SQL_QueryError(query, error, charsmax(error));
 
 		log_to_file("csgo-error.log", "[CS:GO Accounts] Init SQL Error: %s", error);
+
+		hasError = true;
 	}
 
 	SQL_FreeHandle(query);
-	SQL_FreeHandle(connectHandle);
+	SQL_FreeHandle(connection);
 
-	sqlConnected = true;
+	if (!hasError) sqlConnected = true;
 }
 
 public load_account(id)

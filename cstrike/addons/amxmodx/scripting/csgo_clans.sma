@@ -67,7 +67,7 @@ public plugin_cfg()
 
 	ArrayPushArray(csgoClans, csgoClan);
 
-	sql_init();
+	set_task(0.1, "sql_init");
 }
 
 public plugin_end()
@@ -2373,7 +2373,7 @@ stock get_user_status(id)
 
 public sql_init()
 {
-	new host[64], user[64], pass[64], db[64], queryData[512], error[256], errorNum;
+	new host[64], user[64], pass[64], db[64], error[256], errorNum;
 
 	get_cvar_string("csgo_sql_host", host, charsmax(host));
 	get_cvar_string("csgo_sql_user", user, charsmax(user));
@@ -2390,7 +2390,7 @@ public sql_init()
 		return;
 	}
 
-	sqlConnected = true;
+	new queryData[512], bool:hasError
 
 	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_clans` (`id` INT NOT NULL AUTO_INCREMENT, `name` VARCHAR(64) NOT NULL, `members` INT NOT NULL DEFAULT 1, ");
 	add(queryData, charsmax(queryData), "`money` DOUBLE(16, 2) NOT NULL DEFAULT 0, `kills` INT NOT NULL DEFAULT 0, `level` INT NOT NULL DEFAULT 0, `wins` INT NOT NULL DEFAULT 0, PRIMARY KEY (`id`));");
@@ -2408,6 +2408,8 @@ public sql_init()
 		SQL_QueryError(query, error, charsmax(error));
 
 		log_to_file("csgo-error.log", "[CS:GO Clans] Init SQL Error: %s", error);
+
+		hasError = true;
 	}
 
 	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_clans_applications` (`name` varchar(64) NOT NULL, `clan` INT NOT NULL, PRIMARY KEY (`name`, `clan`));");
@@ -2418,6 +2420,8 @@ public sql_init()
 		SQL_QueryError(query, error, charsmax(error));
 
 		log_to_file("csgo-error.log", "[CS:GO Clans] Init SQL Error: %s", error);
+
+		hasError = true;
 	}
 
 	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_clans_wars` (`id` INT NOT NULL AUTO_INCREMENT, `clan` INT NOT NULL DEFAULT 0, `clan2` INT NOT NULL DEFAULT 0, ");
@@ -2429,9 +2433,13 @@ public sql_init()
 		SQL_QueryError(query, error, charsmax(error));
 
 		log_to_file("csgo-error.log", "[CS:GO Clans] Init SQL Error: %s", error);
+
+		hasError = true;
 	}
 
 	SQL_FreeHandle(query);
+
+	if (!hasError) sqlConnected = true;
 }
 
 public ignore_handle(failState, Handle:query, error[], errorNum, data[], dataSize)

@@ -140,7 +140,7 @@ public plugin_init()
 }
 
 public plugin_cfg()
-	sql_init();
+	set_task(0.1, "sql_init");
 
 public plugin_end()
 	SQL_FreeHandle(sql);
@@ -194,7 +194,7 @@ public sql_init()
 		return;
 	}
 
-	new queryData[1024];
+	new queryData[1024], bool:hasError;
 
 	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_ranks` (`name` varchar(32) NOT NULL, `kills` int(10) NOT NULL DEFAULT 0, `rank` int(10) NOT NULL DEFAULT 0, `time` int(10) NOT NULL DEFAULT 0, ");
 	add(queryData, charsmax(queryData), "`firstvisit` int(10) NOT NULL DEFAULT 0, `lastvisit` int(10) NOT NULL DEFAULT 0, `gold` int(10) NOT NULL DEFAULT 0, `silver` int(10) NOT NULL DEFAULT 0, `bronze` int(10) NOT NULL DEFAULT 0, `medals` int(10) NOT NULL DEFAULT 0, ");
@@ -206,6 +206,8 @@ public sql_init()
 		SQL_QueryError(query, error, charsmax(error));
 
 		log_to_file("csgo-error.log", "[CS:GO Ranks] Init SQL Error: %s", error);
+
+		hasError = true;
 	}
 
 	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_hud` (`name` varchar(32) NOT NULL, `red` int(10) NOT NULL DEFAULT 0, `green` int(10) NOT NULL DEFAULT 0, `blue` int(10) NOT NULL DEFAULT 0, `x` int(10) NOT NULL DEFAULT 0, `y` int(10) NOT NULL DEFAULT 0, PRIMARY KEY (`name`));");
@@ -216,12 +218,14 @@ public sql_init()
 		SQL_QueryError(query, error, charsmax(error));
 
 		log_to_file("csgo-error.log", "[CS:GO Ranks] Init SQL Error: %s", error);
+
+		hasError = true;
 	}
 
 	SQL_FreeHandle(query);
 	SQL_FreeHandle(connectHandle);
 
-	sqlConnected = true;
+	if (!hasError) sqlConnected = true;
 }
 
 public client_putinserver(id)

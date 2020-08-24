@@ -26,7 +26,7 @@ public plugin_natives()
 }
 
 public plugin_cfg()
-	sql_init();
+	set_task(0.1, "sql_init");
 
 public plugin_end()
 	SQL_FreeHandle(sql);
@@ -145,7 +145,7 @@ public ignore_handle(failState, Handle:query, error[], errorNum, data[], dataSiz
 
 public sql_init()
 {
-	new host[64], user[64], pass[64], db[64], queryData[4096], error[256], queryTemp[128], weaponName[32], errorNum;
+	new host[64], user[64], pass[64], db[64], error[256], errorNum;
 
 	get_cvar_string("csgo_sql_host", host, charsmax(host));
 	get_cvar_string("csgo_sql_user", user, charsmax(user));
@@ -161,6 +161,8 @@ public sql_init()
 
 		return;
 	}
+
+	new queryData[2048], queryTemp[128], weaponName[32], bool:hasError;
 
 	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_stattrak` (`name` VARCHAR(64), ");
 
@@ -182,12 +184,16 @@ public sql_init()
 		SQL_QueryError(query, error, charsmax(error));
 
 		log_to_file("csgo-error.log", "[CS:GO StatTrak] Init SQL Error: %s", error);
+
+		hasError = true;
+
+		return;
 	}
 
 	SQL_FreeHandle(query);
 	SQL_FreeHandle(connectHandle);
 
-	sqlConnected = true;
+	if (!hasError) sqlConnected = true;
 }
 
 public _csgo_get_weapon_stattrak(id, weapon)
