@@ -14,11 +14,10 @@ new const commandClan[][] = { "say /clan", "say_team /clan", "say /clans", "say_
 enum _:clanInfo { CLAN_ID, CLAN_LEVEL, Float:CLAN_MONEY, CLAN_KILLS, CLAN_MEMBERS, CLAN_WINS, Trie:CLAN_STATUS, CLAN_NAME[32] };
 enum _:warInfo { WAR_ID, WAR_CLAN, WAR_CLAN2, WAR_PROGRESS, WAR_PROGRESS2, WAR_DURATION, WAR_REWARD };
 enum _:statusInfo { STATUS_NONE, STATUS_MEMBER, STATUS_DEPUTY, STATUS_LEADER };
+enum _:playerInfo { NAME[32], SAFE_NAME[64], STEAM_ID[35], CLAN, CHOSEN_NAME[32], CHOSEN_ID, WAR_FRAGS, WAR_REWARD };
 
-new Float:cvarCreateFee, Float:cvarJoinFee, cvarMembersStart, cvarLevelMax, cvarChatPrefix, Float:cvarLevelCost, Float:cvarNextLevelCost, cvarMembersPerLevel;
-
-new playerName[MAX_PLAYERS + 1][64], chosenName[MAX_PLAYERS + 1][64], clan[MAX_PLAYERS + 1], chosenId[MAX_PLAYERS + 1], warFrags[MAX_PLAYERS + 1],
-	warReward[MAX_PLAYERS + 1], Handle:sql, bool:sqlConnected, Array:csgoClans, Array:csgoWars, Handle:connection, bool:end, info, loaded;
+new playerData[MAX_PLAYERS + 1][playerInfo], Handle:sql, bool:sqlConnected, Array:csgoClans, Array:csgoWars, Handle:connection, bool:end, info, loaded,
+	Float:createFee, Float:joinFee, membersStart, levelMax, chatPrefix, Float:levelCost, Float:nextLevelCost, membersPerLevel, saveType;
 
 public plugin_init()
 {
@@ -36,14 +35,16 @@ public plugin_init()
 	register_clcmd("ENTER_KILLS_AMOUNT", "set_war_frags_handle");
 	register_clcmd("ENTER_PRIZE_EURO_AMOUNT", "set_war_reward_handle");
 
-	bind_pcvar_float(create_cvar("csgo_clans_create_fee", "250"), cvarCreateFee);
-	bind_pcvar_float(create_cvar("csgo_clans_join_fee", "50"), cvarJoinFee);
-	bind_pcvar_num(create_cvar("csgo_clans_members_start", "3"), cvarMembersStart);
-	bind_pcvar_num(create_cvar("csgo_clans_members_per_level", "1"), cvarMembersPerLevel);
-	bind_pcvar_num(create_cvar("csgo_clans_level_max", "7"), cvarLevelMax);
-	bind_pcvar_num(create_cvar("csgo_clans_chat_prefix", "1"), cvarChatPrefix);
-	bind_pcvar_float(create_cvar("csgo_clans_level_cost", "250"), cvarLevelCost);
-	bind_pcvar_float(create_cvar("csgo_clans_next_level_cost", "125"), cvarNextLevelCost);
+	bind_pcvar_float(create_cvar("csgo_clans_create_fee", "250"), createFee);
+	bind_pcvar_float(create_cvar("csgo_clans_join_fee", "50"), joinFee);
+	bind_pcvar_num(create_cvar("csgo_clans_members_start", "3"), membersStart);
+	bind_pcvar_num(create_cvar("csgo_clans_members_per_level", "1"), membersPerLevel);
+	bind_pcvar_num(create_cvar("csgo_clans_level_max", "7"), levelMax);
+	bind_pcvar_num(create_cvar("csgo_clans_chat_prefix", "1"), chatPrefix);
+	bind_pcvar_float(create_cvar("csgo_clans_level_cost", "250"), levelCost);
+	bind_pcvar_float(create_cvar("csgo_clans_next_level_cost", "125"), nextLevelCost);
+
+	bind_pcvar_num(get_cvar_pointer("csgo_save_type"), saveType);
 
 	RegisterHam(Ham_Spawn, "player", "player_spawn", 1);
 
@@ -82,14 +83,14 @@ public client_putinserver(id)
 {
 	if (is_user_bot(id) || is_user_hltv(id)) return;
 
-	clan[id] = 0;
+	playerData[id][CLAN] = 0;
+	playerData[id][WAR_FRAGS] = 25;
+	playerData[id][WAR_REWARD] = 100;
 
-	warFrags[id] = 25;
-	warReward[id] = 100;
+	get_user_authid(id, playerData[id][STEAM_ID], charsmax(playerData[][STEAM_ID]));
+	get_user_name(id, playerData[id][NAME], charsmax(playerData[][NAME]));
 
-	get_user_name(id, playerName[id], charsmax(playerName));
-
-	mysql_escape_string(playerName[id], playerName[id], charsmax(playerName));
+	mysql_escape_string(playerData[id][NAME], playerData[id][SAFE_NAME], charsmax(playerData[][SAFE_NAME]));
 
 	set_task(0.1, "load_clan_data", id);
 }
@@ -102,16 +103,16 @@ public client_disconnected(id)
 	rem_bit(id, loaded);
 	rem_bit(id, info);
 
-	clan[id] = 0;
+	playerData[id][CLAN] = 0;
 }
 
 public client_death(killer, victim, weaponId, hitPlace, teamKill)
 {
-	if (!clan[killer] || !is_user_connected(killer) || !is_user_connected(victim) || !is_user_alive(killer) || get_user_team(victim) == get_user_team(killer)) return PLUGIN_CONTINUE;
+	if (!playerData[killer][CLAN] || !is_user_connected(killer) || !is_user_connected(victim) || !is_user_alive(killer) || get_user_team(victim) == get_user_team(killer)) return PLUGIN_CONTINUE;
 
-	set_clan_info(clan[killer], CLAN_KILLS, 1);
+	set_clan_info(playerData[killer][CLAN], CLAN_KILLS, 1);
 
-	if (clan[victim]) check_war(killer, victim);
+	if (playerData[victim][CLAN]) check_war(killer, victim);
 
 	return PLUGIN_CONTINUE;
 }
@@ -122,10 +123,10 @@ public show_clan_menu(id)
 
 	new csgoClan[clanInfo], menuData[256], menu, callback = menu_makecallback("show_clan_menu_callback");
 
-	if (clan[id]) {
-		ArrayGetArray(csgoClans, get_clan_id(clan[id]), csgoClan);
+	if (playerData[id][CLAN]) {
+		ArrayGetArray(csgoClans, get_clan_id(playerData[id][CLAN]), csgoClan);
 
-		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MAIN_MENU_TITLE", csgoClan[CLAN_NAME], csgoClan[CLAN_MEMBERS], csgoClan[CLAN_LEVEL] * cvarMembersPerLevel + cvarMembersStart, csgoClan[CLAN_MONEY]);
+		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MAIN_MENU_TITLE", csgoClan[CLAN_NAME], csgoClan[CLAN_MEMBERS], csgoClan[CLAN_LEVEL] * membersPerLevel + membersStart, csgoClan[CLAN_MONEY]);
 
 		menu = menu_create(menuData, "show_clan_menu_handle");
 
@@ -145,7 +146,7 @@ public show_clan_menu(id)
 
 		menu = menu_create(menuData, "show_clan_menu_handle");
 
-		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MAIN_MENU_CREATE", floatround(cvarCreateFee));
+		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MAIN_MENU_CREATE", floatround(createFee));
 		menu_additem(menu, menuData, "0", _, callback);
 
 		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MAIN_MENU_REQUEST");
@@ -170,9 +171,9 @@ public show_clan_menu_callback(id, menu, item)
 	menu_item_getinfo(menu, item, itemAccess, itemData, charsmax(itemData), _, _, menuCallback);
 
 	switch (str_to_num(itemData)) {
-		case 0: return csgo_get_money(id) >= cvarCreateFee ? ITEM_ENABLED : ITEM_DISABLED;
+		case 0: return csgo_get_money(id) >= createFee ? ITEM_ENABLED : ITEM_DISABLED;
 		case 1: return get_user_status(id) > STATUS_MEMBER ? ITEM_ENABLED : ITEM_DISABLED;
-		case 2, 3, 4, 5: return clan[id] ? ITEM_ENABLED : ITEM_DISABLED;
+		case 2, 3, 4, 5: return playerData[id][CLAN] ? ITEM_ENABLED : ITEM_DISABLED;
 	}
 
 	return ITEM_ENABLED;
@@ -196,14 +197,14 @@ public show_clan_menu_handle(id, menu, item)
 
 	switch (str_to_num(itemData)) {
 		case 0: {
-			if (clan[id]) {
+			if (playerData[id][CLAN]) {
 				client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_CREATE_ALREADY_IN_CLAN");
 
 				return PLUGIN_HANDLED;
 			}
 
-			if (csgo_get_money(id) < cvarCreateFee) {
-				client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_CREATE_NO_MONEY", floatround(cvarCreateFee));
+			if (csgo_get_money(id) < createFee) {
+				client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_CREATE_NO_MONEY", floatround(createFee));
 
 				return PLUGIN_HANDLED;
 			}
@@ -231,14 +232,14 @@ public create_clan_handle(id)
 {
 	if (!is_user_connected(id) || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
-	if (clan[id]) {
+	if (playerData[id][CLAN]) {
 		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_CREATE_ALREADY_IN_CLAN");
 
 		return PLUGIN_HANDLED;
 	}
 
-	if (csgo_get_money(id) < cvarCreateFee) {
-		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_CREATE_NO_MONEY", floatround(cvarCreateFee));
+	if (csgo_get_money(id) < createFee) {
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_CREATE_NO_MONEY", floatround(createFee));
 
 		return PLUGIN_HANDLED;
 	}
@@ -273,7 +274,7 @@ public create_clan_handle(id)
 		return PLUGIN_HANDLED;
 	}
 
-	csgo_add_money(id, -cvarCreateFee);
+	csgo_add_money(id, -createFee);
 
 	create_clan(id, clanName);
 
@@ -284,7 +285,7 @@ public create_clan_handle(id)
 
 public leave_confim_menu(id)
 {
-	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !playerData[id][CLAN] || end) return PLUGIN_HANDLED;
 
 	new menuData[64];
 
@@ -308,7 +309,7 @@ public leave_confim_menu(id)
 
 public leave_confim_menu_handle(id, menu, item)
 {
-	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !playerData[id][CLAN] || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -340,7 +341,7 @@ public leave_confim_menu_handle(id, menu, item)
 
 public members_online_menu(id)
 {
-	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !playerData[id][CLAN] || end) return PLUGIN_HANDLED;
 
 	new menuData[64], playersAvailable = 0;
 
@@ -349,7 +350,7 @@ public members_online_menu(id)
 	new menu = menu_create(menuData, "members_online_menu_handle");
 
 	for (new player = 1; player <= MAX_PLAYERS; player++) {
-		if (!is_user_connected(player) || clan[id] != clan[player]) continue;
+		if (!is_user_connected(player) || playerData[id][CLAN] != playerData[player][CLAN]) continue;
 
 		playersAvailable++;
 
@@ -381,7 +382,7 @@ public members_online_menu(id)
 
 public members_online_menu_handle(id, menu, item)
 {
-	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !playerData[id][CLAN] || end) return PLUGIN_HANDLED;
 
 	menu_destroy(menu);
 
@@ -393,11 +394,11 @@ public members_online_menu_handle(id, menu, item)
 
 public bank_menu(id)
 {
-	if (!is_user_connected(id) || !csgo_check_account(id) || !clan[id] || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !csgo_check_account(id) || !playerData[id][CLAN] || end) return PLUGIN_HANDLED;
 
 	new menuData[128], callback = menu_makecallback("bank_menu_callback");
 
-	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_BANK_MENU", get_clan_info(clan[id], CLAN_MONEY));
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_BANK_MENU", get_clan_info(playerData[id][CLAN], CLAN_MONEY));
 
 	new menu = menu_create(menuData, "bank_menu_handle");
 
@@ -457,18 +458,18 @@ public bank_menu_handle(id, menu, item)
 
 public leader_menu(id)
 {
-	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !playerData[id][CLAN] || end) return PLUGIN_HANDLED;
 
 	new csgoClan[clanInfo], menuData[128];
 
-	ArrayGetArray(csgoClans, get_clan_id(clan[id]), csgoClan);
+	ArrayGetArray(csgoClans, get_clan_id(playerData[id][CLAN]), csgoClan);
 
-	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_LEADER_MENU", csgoClan[CLAN_MEMBERS], csgoClan[CLAN_LEVEL] * cvarMembersPerLevel + cvarMembersStart, csgoClan[CLAN_MONEY]);
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_LEADER_MENU", csgoClan[CLAN_MEMBERS], csgoClan[CLAN_LEVEL] * membersPerLevel + membersStart, csgoClan[CLAN_MONEY]);
 
 	new menu = menu_create(menuData, "leader_menu_handle"), callback = menu_makecallback("leader_menu_callback");
 
-	if (csgoClan[CLAN_LEVEL] != cvarLevelMax) formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_LEADER_UPGRADE", csgoClan[CLAN_LEVEL], cvarLevelMax, floatround(cvarLevelCost + cvarNextLevelCost * csgoClan[CLAN_LEVEL]));
-	else formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_LEADER_UPGRADE_MAX", csgoClan[CLAN_LEVEL], cvarLevelMax);
+	if (csgoClan[CLAN_LEVEL] != levelMax) formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_LEADER_UPGRADE", csgoClan[CLAN_LEVEL], levelMax, floatround(levelCost + nextLevelCost * csgoClan[CLAN_LEVEL]));
+	else formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_LEADER_UPGRADE_MAX", csgoClan[CLAN_LEVEL], levelMax);
 
 	menu_additem(menu, menuData, _, _, callback);
 
@@ -502,8 +503,8 @@ public leader_menu_callback(id, menu, item)
 {
 	switch (item) {
 		case 0: if (get_user_status(id) != STATUS_LEADER) return ITEM_DISABLED;
-		case 2: if (((get_clan_info(clan[id], CLAN_LEVEL) * cvarMembersPerLevel) + cvarMembersStart) <= get_clan_info(clan[id], CLAN_MEMBERS)) return ITEM_DISABLED;
-		case 4: if (((get_clan_info(clan[id], CLAN_LEVEL) * cvarMembersPerLevel) + cvarMembersStart) <= get_clan_info(clan[id], CLAN_MEMBERS) || !get_applications_count(clan[id])) return ITEM_DISABLED;
+		case 2: if (((get_clan_info(playerData[id][CLAN], CLAN_LEVEL) * membersPerLevel) + membersStart) <= get_clan_info(playerData[id][CLAN], CLAN_MEMBERS)) return ITEM_DISABLED;
+		case 4: if (((get_clan_info(playerData[id][CLAN], CLAN_LEVEL) * membersPerLevel) + membersStart) <= get_clan_info(playerData[id][CLAN], CLAN_MEMBERS) || !get_applications_count(playerData[id][CLAN])) return ITEM_DISABLED;
 	}
 
 	return ITEM_ENABLED;
@@ -511,7 +512,7 @@ public leader_menu_callback(id, menu, item)
 
 public leader_menu_handle(id, menu, item)
 {
-	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !playerData[id][CLAN] || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -525,9 +526,9 @@ public leader_menu_handle(id, menu, item)
 		case 0: {
 			new csgoClan[clanInfo];
 
-			ArrayGetArray(csgoClans, get_clan_id(clan[id]), csgoClan);
+			ArrayGetArray(csgoClans, get_clan_id(playerData[id][CLAN]), csgoClan);
 
-			if (csgoClan[CLAN_LEVEL] == cvarLevelMax) {
+			if (csgoClan[CLAN_LEVEL] == levelMax) {
 				client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_LEADER_MAX_LEVEL");
 
 				leader_menu(id);
@@ -535,7 +536,7 @@ public leader_menu_handle(id, menu, item)
 				return PLUGIN_HANDLED;
 			}
 
-			new Float:remainingEuro = csgoClan[CLAN_MONEY] - (cvarLevelCost + cvarNextLevelCost * csgoClan[CLAN_LEVEL]);
+			new Float:remainingEuro = csgoClan[CLAN_MONEY] - (levelCost + nextLevelCost * csgoClan[CLAN_LEVEL]);
 
 			if (remainingEuro < 0.0) {
 				client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_LEADER_NO_MONEY");
@@ -553,16 +554,16 @@ public leader_menu_handle(id, menu, item)
 			get_user_name(id, name, charsmax(name));
 
 			for (new player = 1; player <= MAX_PLAYERS; player++) {
-				if (!is_user_connected(player) || player == id || clan[player] != clan[id]) continue;
+				if (!is_user_connected(player) || player == id || playerData[player][CLAN] != playerData[id][CLAN]) continue;
 
 				client_print_color(player, player, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_LEADER_UPGRADED", name, csgoClan[CLAN_LEVEL]);
 			}
 
 			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_LEADER_UPGRADED2", csgoClan[CLAN_LEVEL]);
 
-			ArraySetArray(csgoClans, get_clan_id(clan[id]), csgoClan);
+			ArraySetArray(csgoClans, get_clan_id(playerData[id][CLAN]), csgoClan);
 
-			save_clan(clan[id]);
+			save_clan(playerData[id][CLAN]);
 
 			leader_menu(id);
 		} case 1: disband_menu(id);
@@ -578,7 +579,7 @@ public leader_menu_handle(id, menu, item)
 
 public disband_menu(id)
 {
-	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !playerData[id][CLAN] || end) return PLUGIN_HANDLED;
 
 	new menuData[64];
 
@@ -602,7 +603,7 @@ public disband_menu(id)
 
 public disband_menu_handle(id, menu, item)
 {
-	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !playerData[id][CLAN] || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -627,7 +628,7 @@ public disband_menu_handle(id, menu, item)
 
 public invite_menu(id)
 {
-	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !playerData[id][CLAN] || end) return PLUGIN_HANDLED;
 
 	new menuData[64], userName[32], userId[6], playersAvailable = 0;
 
@@ -636,7 +637,7 @@ public invite_menu(id)
 	new menu = menu_create(menuData, "invite_menu_handle");
 
 	for (new player = 1; player <= MAX_PLAYERS; player++) {
-		if (!is_user_connected(player) || is_user_hltv(player) || is_user_bot(player) || player == id || clan[player]) continue;
+		if (!is_user_connected(player) || is_user_hltv(player) || is_user_bot(player) || player == id || playerData[player][CLAN]) continue;
 
 		playersAvailable++;
 
@@ -655,7 +656,7 @@ public invite_menu(id)
 
 public invite_menu_handle(id, menu, item)
 {
-	if (!is_user_connected(id)  || !clan[id] || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id)  || !playerData[id][CLAN] || end) return PLUGIN_HANDLED;
 
 	if (item == MENU_EXIT) {
 		menu_destroy(menu);
@@ -677,8 +678,8 @@ public invite_menu_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	if (get_clan_money(clan[id]) < cvarJoinFee) {
-		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_INVITE_NO_MONEY", floatround(cvarJoinFee));
+	if (get_clan_money(playerData[id][CLAN]) < joinFee) {
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_INVITE_NO_MONEY", floatround(joinFee));
 
 		return PLUGIN_HANDLED;
 	}
@@ -694,13 +695,13 @@ public invite_menu_handle(id, menu, item)
 
 public invite_confirm_menu(id, player)
 {
-	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !playerData[id][CLAN] || end) return PLUGIN_HANDLED;
 
 	new menuData[256], clanName[32], userName[32], userId[6];
 
 	get_user_name(id, userName, charsmax(userName));
 
-	get_clan_info(clan[id], CLAN_NAME, clanName, charsmax(clanName));
+	get_clan_info(playerData[id][CLAN], CLAN_NAME, clanName, charsmax(clanName));
 
 	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_INVITE_INVITATION", userName, clanName);
 
@@ -741,31 +742,31 @@ public invite_confirm_menu_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	if (clan[id]) {
+	if (playerData[id][CLAN]) {
 		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_INVITE_ALREADY_IN");
 
 		return PLUGIN_HANDLED;
 	}
 
-	if (((get_clan_info(clan[player], CLAN_LEVEL) * cvarMembersPerLevel) + cvarMembersStart) <= get_clan_info(clan[player], CLAN_MEMBERS)) {
+	if (((get_clan_info(playerData[player][CLAN], CLAN_LEVEL) * membersPerLevel) + membersStart) <= get_clan_info(playerData[player][CLAN], CLAN_MEMBERS)) {
 		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_INVITE_FULL");
 
 		return PLUGIN_HANDLED;
 	}
 
-	if (get_clan_money(clan[player]) < cvarJoinFee) {
-		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_INVITE_NO_MONEY", floatround(cvarJoinFee));
+	if (get_clan_money(playerData[player][CLAN]) < joinFee) {
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_INVITE_NO_MONEY", floatround(joinFee));
 
 		return PLUGIN_HANDLED;
 	}
 
 	new clanName[32];
 
-	get_clan_info(clan[player], CLAN_NAME, clanName, charsmax(clanName));
+	get_clan_info(playerData[player][CLAN], CLAN_NAME, clanName, charsmax(clanName));
 
-	set_user_clan(id, clan[player]);
+	set_user_clan(id, playerData[player][CLAN]);
 
-	set_clan_info(clan[id], CLAN_MONEY, _, -cvarJoinFee);
+	set_clan_info(playerData[id][CLAN], CLAN_MONEY, _, -joinFee);
 
 	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_INVITE_SUCCESS", clanName);
 
@@ -806,7 +807,7 @@ public change_name_handle(id)
 		return PLUGIN_HANDLED;
 	}
 
-	set_clan_info(clan[id], CLAN_NAME, _, _, clanName, charsmax(clanName));
+	set_clan_info(playerData[id][CLAN], CLAN_NAME, _, _, clanName, charsmax(clanName));
 
 	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_NAME_CHANGED", clanName);
 
@@ -815,13 +816,13 @@ public change_name_handle(id)
 
 public members_menu(id)
 {
-	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !playerData[id][CLAN] || end) return PLUGIN_HANDLED;
 
 	new queryData[128], tempId[1];
 
 	tempId[0] = id;
 
-	formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_clans_members` WHERE clan = '%i' ORDER BY flag DESC", clan[id]);
+	formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_clans_members` WHERE clan = '%i' ORDER BY flag DESC", playerData[id][CLAN]);
 
 	SQL_ThreadQuery(sql, "members_menu_handle", queryData, tempId, sizeof(tempId));
 
@@ -840,7 +841,7 @@ public members_menu_handle(failState, Handle:query, error[], errorNum, tempId[],
 
 	if (!is_user_connected(id)) return PLUGIN_HANDLED;
 
-	new itemData[64], userName[64], status, menu;
+	new itemData[64], userName[32], status, menu;
 
 	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CLANS_MANAGE_MENU");
 
@@ -906,7 +907,7 @@ public member_menu_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	if (clan[userId]) chosenId[id] = get_user_userid(userId);
+	if (playerData[userId][CLAN]) playerData[id][CHOSEN_ID] = get_user_userid(userId);
 
 	if (flag == STATUS_LEADER) {
 		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_MANAGE_NO_LEADER");
@@ -916,7 +917,7 @@ public member_menu_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	formatex(chosenName[id], charsmax(chosenName), userName);
+	formatex(playerData[id][CHOSEN_NAME], charsmax(playerData[][CHOSEN_NAME]), userName);
 	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CLANS_MANAGE_SELECT");
 
 	new menu = menu_create(itemData, "member_options_menu_handle");
@@ -980,9 +981,9 @@ public update_member(id, status)
 	new bool:playerOnline;
 
 	for (new player = 1; player <= MAX_PLAYERS; player++) {
-		if (!is_user_connected(player) || clan[player] != clan[id]) continue;
+		if (!is_user_connected(player) || playerData[player][CLAN] != playerData[id][CLAN]) continue;
 
-		if (get_user_userid(player) == chosenId[id]) {
+		if (get_user_userid(player) == playerData[id][CHOSEN_ID]) {
 			switch (status) {
 				case STATUS_LEADER: {
 					set_user_status(id, STATUS_DEPUTY);
@@ -1013,17 +1014,17 @@ public update_member(id, status)
 		}
 
 		switch (status) {
-			case STATUS_LEADER: client_print_color(player, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_MANAGE_UPDATE_LEADER2", chosenName[id]);
-			case STATUS_DEPUTY: client_print_color(player, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_MANAGE_UPDATE_DEPUTY2", chosenName[id]);
-			case STATUS_MEMBER: client_print_color(player, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_MANAGE_UPDATE_MEMBER2", chosenName[id]);
-			case STATUS_NONE: client_print_color(player, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_MANAGE_UPDATE_NONE2", chosenName[id]);
+			case STATUS_LEADER: client_print_color(player, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_MANAGE_UPDATE_LEADER2", playerData[id][CHOSEN_NAME]);
+			case STATUS_DEPUTY: client_print_color(player, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_MANAGE_UPDATE_DEPUTY2", playerData[id][CHOSEN_NAME]);
+			case STATUS_MEMBER: client_print_color(player, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_MANAGE_UPDATE_MEMBER2", playerData[id][CHOSEN_NAME]);
+			case STATUS_NONE: client_print_color(player, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_MANAGE_UPDATE_NONE2", playerData[id][CHOSEN_NAME]);
 		}
 	}
 
 	if (!playerOnline) {
-		save_member(id, status, _, chosenName[id]);
+		save_member(id, status, _, playerData[id][CHOSEN_NAME]);
 
-		if (status == STATUS_NONE) set_clan_info(clan[id], CLAN_MEMBERS, -1);
+		if (status == STATUS_NONE) set_clan_info(playerData[id][CLAN], CLAN_MEMBERS, -1);
 		if (status == STATUS_LEADER) set_user_status(id, STATUS_DEPUTY);
 	}
 
@@ -1034,13 +1035,13 @@ public update_member(id, status)
 
 public applications_menu(id)
 {
-	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !playerData[id][CLAN] || end) return PLUGIN_HANDLED;
 
 	new queryData[256], tempId[1];
 
 	tempId[0] = id;
 
-	formatex(queryData, charsmax(queryData), "SELECT a.name, (SELECT money FROM `csgo_data` WHERE name = a.name) as money, (SELECT rank FROM `csgo_ranks` WHERE name = a.name) as rank FROM `csgo_clans_applications` a WHERE clan = '%i' ORDER BY rank DESC, money DESC", clan[id]);
+	formatex(queryData, charsmax(queryData), "SELECT a.name, (SELECT money FROM `csgo_data` WHERE name = a.name) as money, (SELECT rank FROM `csgo_ranks` WHERE name = a.name) as rank FROM `csgo_clans_applications` a WHERE clan = '%i' ORDER BY rank DESC, money DESC", playerData[id][CLAN]);
 
 	SQL_ThreadQuery(sql, "applications_menu_handle", queryData, tempId, sizeof(tempId));
 
@@ -1059,7 +1060,7 @@ public applications_menu_handle(failState, Handle:query, error[], errorNum, temp
 
 	if (!is_user_connected(id)) return PLUGIN_HANDLED;
 
-	new itemName[192], userName[32], rankName[32], Float:money, rank, usersCount = 0;
+	new itemName[192], itemData[128], userName[32], userSteamId[35], rankName[32], Float:money, rank, usersCount = 0;
 
 	formatex(itemName, charsmax(itemName), "%L", id, "CSGO_CLANS_APPLICATION_TITLE");
 
@@ -1067,13 +1068,15 @@ public applications_menu_handle(failState, Handle:query, error[], errorNum, temp
 
 	while (SQL_MoreResults(query)) {
 		SQL_ReadResult(query, SQL_FieldNameToNum(query, "name"), userName, charsmax(userName));
+		SQL_ReadResult(query, SQL_FieldNameToNum(query, "steamid"), userSteamId, charsmax(userSteamId));
 		SQL_ReadResult(query, SQL_FieldNameToNum(query, "money"), money);
 
 		rank = SQL_ReadResult(query, SQL_FieldNameToNum(query, "rank"));
 
-		csgo_get_rank_name(rank, rankName, charsmax(rankName))
+		csgo_get_rank_name(rank, rankName, charsmax(rankName));
 
 		formatex(itemName, charsmax(itemName), "%L", id, "CSGO_CLANS_APPLICATION_ITEM", userName, rankName, money);
+		formatex(itemData, charsmax(itemData), "%s#%s", userName, userSteamId);
 
 		menu_additem(menu, itemName, userName);
 
@@ -1112,9 +1115,11 @@ public applications_confirm_menu(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	new menuData[128], userName[64], itemAccess, itemCallback;
+	new menuData[128], itemData[128], userName[32], userSteamId[35], itemAccess, itemCallback;
 
-	menu_item_getinfo(menu, item, itemAccess, userName, charsmax(userName), _, _, itemCallback);
+	menu_item_getinfo(menu, item, itemAccess, itemData, charsmax(itemData), _, _, itemCallback);
+
+	strtok(itemData, userName, charsmax(userName), userSteamId, charsmax(userSteamId), '#');
 
 	menu_destroy(menu);
 
@@ -1123,13 +1128,13 @@ public applications_confirm_menu(id, menu, item)
 	new menu = menu_create(menuData, "applications_confirm_handle");
 
 	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_APPLICATION_ACCEPT_BANK", userName);
-	menu_additem(menu, menuData, userName);
+	menu_additem(menu, menuData, itemData);
 
 	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_APPLICATION_ACCEPT_PLAYER", userName);
-	menu_additem(menu, menuData, userName);
+	menu_additem(menu, menuData, itemData);
 
 	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_APPLICATION_DECLINE", userName);
-	menu_additem(menu, menuData, userName);
+	menu_additem(menu, menuData, itemData);
 
 	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
 	menu_setprop(menu, MPROP_EXITNAME, menuData);
@@ -1149,21 +1154,23 @@ public applications_confirm_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	new userName[64], itemAccess, itemCallback;
+	new itemData[128], userName[32], userSteamId[35], itemAccess, itemCallback;
 
-	menu_item_getinfo(menu, item, itemAccess, userName, charsmax(userName), _, _, itemCallback);
+	menu_item_getinfo(menu, item, itemAccess, itemData, charsmax(itemData), _, _, itemCallback);
+
+	strtok(itemData, userName, charsmax(userName), userSteamId, charsmax(userSteamId), '#');
 
 	menu_destroy(menu);
 
 	if (item == 2) {
-		remove_application(id, userName);
+		remove_application(id, userName, userSteamId);
 
 		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_APPLICATION_DECLINED", userName);
 
 		return PLUGIN_HANDLED;
 	}
 
-	if (check_user_clan(userName)) {
+	if (check_user_clan(userName, userSteamId)) {
 		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_APPLICATION_CLAN");
 
 		show_clan_menu(id);
@@ -1171,37 +1178,59 @@ public applications_confirm_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	if (((get_clan_info(clan[id], CLAN_LEVEL) * cvarMembersPerLevel) + cvarMembersStart) <= get_clan_info(clan[id], CLAN_MEMBERS)) {
+	if (((get_clan_info(playerData[id][CLAN], CLAN_LEVEL) * membersPerLevel) + membersStart) <= get_clan_info(playerData[id][CLAN], CLAN_MEMBERS)) {
 		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_APPLICATION_FULL");
 
 		return PLUGIN_HANDLED;
 	}
 
 	if (!item) {
-		if (get_clan_money(clan[id]) < cvarJoinFee) {
-			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_APPLICATION_FEE_BANK", floatround(cvarJoinFee));
+		if (get_clan_money(playerData[id][CLAN]) < joinFee) {
+			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_APPLICATION_FEE_BANK", floatround(joinFee));
 
 			return PLUGIN_HANDLED;
 		}
 
-		set_clan_info(clan[id], CLAN_MONEY, _, -cvarJoinFee);
+		set_clan_info(playerData[id][CLAN], CLAN_MONEY, _, -joinFee);
 	} else {
-		new userId = get_user_index(userName);
+		new player = 0;
 
-		if (is_user_connected(userId)) {
-			if (csgo_get_money(id) < cvarJoinFee) {
-				client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_APPLICATION_FEE_PLAYER", floatround(cvarJoinFee));
+		switch (saveType) {
+			case SAVE_NAME: player = get_user_index(userName);
+			case SAVE_STEAM_ID: {
+				for (new i = 1; i <= MAX_PLAYERS; i++) {
+					if (!is_user_connected(i) || is_user_bot(i) || is_user_hltv(i)) continue;
+
+					if (equal(playerData[i][STEAM_ID], userSteamId)) {
+						player = i;
+
+						break;
+					}
+				}
+			}
+		}
+
+		if (is_user_connected(player)) {
+			if (csgo_get_money(id) < joinFee) {
+				client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_APPLICATION_FEE_PLAYER", floatround(joinFee));
 
 				return PLUGIN_HANDLED;
 			}
 
-			csgo_add_money(id, -cvarJoinFee);
+			csgo_add_money(id, -joinFee);
 		} else {
-			new queryData[128], error[128], safeName[64], Handle:query, Float:money, errorNum;
+			new queryData[128], error[128], Handle:query, Float:money, errorNum;
 
-			mysql_escape_string(userName, safeName, charsmax(safeName));
+			switch (saveType) {
+				case SAVE_NAME: {
+					new safeName[64];
 
-			formatex(queryData, charsmax(queryData), "SELECT money FROM `csgo_data` WHERE `name` = ^"%s^"", safeName);
+					mysql_escape_string(userName, safeName, charsmax(safeName));
+
+					formatex(queryData, charsmax(queryData), "SELECT money FROM `csgo_data` WHERE `name` = ^"%s^"", safeName);
+				}
+				case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "SELECT money FROM `csgo_data` WHERE `name` = ^"%s^"", userSteamId);
+			}
 
 			query = SQL_PrepareQuery(connection, queryData);
 
@@ -1215,13 +1244,22 @@ public applications_confirm_handle(id, menu, item)
 
 			SQL_FreeHandle(query);
 
-			if (money < cvarJoinFee) {
-				client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_APPLICATION_FEE_PLAYER", floatround(cvarJoinFee));
+			if (money < joinFee) {
+				client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_APPLICATION_FEE_PLAYER", floatround(joinFee));
 
 				return PLUGIN_HANDLED;
 			}
 
-			formatex(queryData, charsmax(queryData), "UPDATE `csgo_data` SET money = money - %.2f WHERE `name` = ^"%s^"", cvarJoinFee, safeName);
+			switch (saveType) {
+				case SAVE_NAME: {
+					new safeName[64];
+
+					mysql_escape_string(userName, safeName, charsmax(safeName));
+
+					formatex(queryData, charsmax(queryData), "UPDATE `csgo_data` SET money = money - %.2f WHERE `name` = ^"%s^"", joinFee, safeName);
+				}
+				case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "UPDATE `csgo_data` SET money = money - %.2f WHERE `steamid` = ^"%s^"", joinFee, userSteamId);
+			}
 
 			query = SQL_PrepareQuery(connection, queryData);
 
@@ -1235,7 +1273,7 @@ public applications_confirm_handle(id, menu, item)
 		}
 	}
 
-	accept_application(id, userName);
+	accept_application(id, userName, userSteamId);
 
 	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_APPLICATION_ACCEPTED", userName);
 
@@ -1244,7 +1282,7 @@ public applications_confirm_handle(id, menu, item)
 
 public wars_menu(id)
 {
-	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !playerData[id][CLAN] || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	new menuData[64], callback = menu_makecallback("wars_menu_callback");
 
@@ -1275,9 +1313,9 @@ public wars_menu(id)
 public wars_menu_callback(id, menu, item)
 {
 	switch (item) {
-		case 0: return get_wars_count(clan[id], 1) ? ITEM_ENABLED : ITEM_DISABLED;
-		case 2: return get_wars_count(clan[id], 0) ? ITEM_ENABLED : ITEM_DISABLED;
-		case 3: return get_wars_count(clan[id], 0, 1) ? ITEM_ENABLED : ITEM_DISABLED;
+		case 0: return get_wars_count(playerData[id][CLAN], 1) ? ITEM_ENABLED : ITEM_DISABLED;
+		case 2: return get_wars_count(playerData[id][CLAN], 0) ? ITEM_ENABLED : ITEM_DISABLED;
+		case 3: return get_wars_count(playerData[id][CLAN], 0, 1) ? ITEM_ENABLED : ITEM_DISABLED;
 	}
 
 	return ITEM_ENABLED;
@@ -1305,13 +1343,13 @@ public wars_menu_handle(id, menu, item)
 
 public war_list_menu(id)
 {
-	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !playerData[id][CLAN] || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	new queryData[256], tempId[1];
 
 	tempId[0] = id;
 
-	formatex(queryData, charsmax(queryData), "SELECT a.*, (SELECT name FROM `csgo_clans` WHERE id = a.clan) as name, (SELECT name FROM `csgo_clans` WHERE id = a.clan2) as name2 FROM `csgo_clans_wars` a WHERE (clan = '%i' OR clan2 = '%i') AND started = '1'", clan[id], clan[id]);
+	formatex(queryData, charsmax(queryData), "SELECT a.*, (SELECT name FROM `csgo_clans` WHERE id = a.clan) as name, (SELECT name FROM `csgo_clans` WHERE id = a.clan2) as name2 FROM `csgo_clans_wars` a WHERE (clan = '%i' OR clan2 = '%i') AND started = '1'", playerData[id][CLAN], playerData[id][CLAN]);
 
 	SQL_ThreadQuery(sql, "show_war_list_menu", queryData, tempId, sizeof(tempId));
 
@@ -1339,7 +1377,7 @@ public show_war_list_menu(failState, Handle:query, error[], errorNum, tempId[], 
 	while (SQL_MoreResults(query)) {
 		clanId = SQL_ReadResult(query, SQL_FieldNameToNum(query, "clan"));
 
-		if (clanId == clan[id]) {
+		if (clanId == playerData[id][CLAN]) {
 			ownClan = 0;
 			enemyClan = 1;
 		} else {
@@ -1398,7 +1436,7 @@ public show_war_list_menu_handle(id, menu, item)
 
 public declare_war_menu(id)
 {
-	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !playerData[id][CLAN] || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	new itemData[512];
 
@@ -1406,10 +1444,10 @@ public declare_war_menu(id)
 
 	new menu = menu_create(itemData, "declare_war_menu_handle");
 
-	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CLANS_WARS_DECLARE_KILLS", warFrags[id]);
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CLANS_WARS_DECLARE_KILLS", playerData[id][WAR_FRAGS]);
 	menu_additem(menu, itemData);
 
-	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CLANS_WARS_DECLARE_PRIZE", warReward[id]);
+	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CLANS_WARS_DECLARE_PRIZE", playerData[id][WAR_REWARD]);
 	menu_additem(menu, itemData);
 
 	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CLANS_WARS_DECLARE_INFO");
@@ -1442,7 +1480,7 @@ public declare_war_menu_handle(id, menu, item)
 
 			tempId[0] = id;
 
-			formatex(queryData, charsmax(queryData), "SELECT id, name, money, members FROM `csgo_clans` a WHERE id != '%i' AND NOT EXISTS (SELECT id FROM `csgo_clans_wars` WHERE (clan = '%i' AND clan2 = a.id) OR (clan2 = '%i' AND clan = a.id)) ORDER BY a.members DESC, a.kills DESC", clan[id], clan[id], clan[id]);
+			formatex(queryData, charsmax(queryData), "SELECT id, name, money, members FROM `csgo_clans` a WHERE id != '%i' AND NOT EXISTS (SELECT id FROM `csgo_clans_wars` WHERE (clan = '%i' AND clan2 = a.id) OR (clan2 = '%i' AND clan = a.id)) ORDER BY a.members DESC, a.kills DESC", playerData[id][CLAN], playerData[id][CLAN], playerData[id][CLAN]);
 
 			SQL_ThreadQuery(sql, "declare_war_select", queryData, tempId, sizeof(tempId));
 		}
@@ -1522,7 +1560,7 @@ public declare_war_confirm(id, menu, item)
 
 	strtok(itemData, clanName, charsmax(clanName), tempClanId, charsmax(tempClanId), '#');
 
-	formatex(tempData, charsmax(tempData), "%L", id, "CSGO_CLANS_WARS_SELECT_CONFIRM", clanName, warFrags[id], warReward[id]);
+	formatex(tempData, charsmax(tempData), "%L", id, "CSGO_CLANS_WARS_SELECT_CONFIRM", clanName, playerData[id][WAR_FRAGS], playerData[id][WAR_REWARD]);
 
 	new menu = menu_create(tempData, "declare_war_confirm_handle");
 
@@ -1575,13 +1613,13 @@ public declare_war_confirm_handle(id, menu, item)
 
 public accept_war_menu(id)
 {
-	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !playerData[id][CLAN] || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	new queryData[256], tempId[1];
 
 	tempId[0] = id;
 
-	formatex(queryData, charsmax(queryData), "SELECT id, clan, duration, reward, (SELECT name FROM `csgo_clans` WHERE id = a.clan2) as name, (SELECT name FROM `csgo_clans` WHERE id = a.clan) as name2 FROM `csgo_clans_wars` a WHERE clan2 = '%i' AND started = '0'", clan[id]);
+	formatex(queryData, charsmax(queryData), "SELECT id, clan, duration, reward, (SELECT name FROM `csgo_clans` WHERE id = a.clan2) as name, (SELECT name FROM `csgo_clans` WHERE id = a.clan) as name2 FROM `csgo_clans_wars` a WHERE clan2 = '%i' AND started = '0'", playerData[id][CLAN]);
 
 	SQL_ThreadQuery(sql, "accept_war_menu_handle", queryData, tempId, sizeof(tempId));
 
@@ -1710,7 +1748,7 @@ public accept_war_confirm_handle(id, menu, item)
 
 	new clanId = str_to_num(dataParts[1]), Float:halfReward = str_to_float(dataParts[4]) / 2.0;
 
-	if (get_clan_money(clan[id]) < halfReward) {
+	if (get_clan_money(playerData[id][CLAN]) < halfReward) {
 		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_WARS_ACCEPT_CONFIRM_MONEY");
 
 		wars_menu(id);
@@ -1733,13 +1771,13 @@ public accept_war_confirm_handle(id, menu, item)
 
 public remove_war_menu(id)
 {
-	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !playerData[id][CLAN] || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	new queryData[256], tempId[1];
 
 	tempId[0] = id;
 
-	formatex(queryData, charsmax(queryData), "SELECT id, duration, reward, (SELECT name FROM `csgo_clans` WHERE id = a.clan) as name, (SELECT name FROM `csgo_clans` WHERE id = a.clan2) as name2 FROM `csgo_clans_wars` a WHERE clan = '%i' AND started = '0'", clan[id]);
+	formatex(queryData, charsmax(queryData), "SELECT id, duration, reward, (SELECT name FROM `csgo_clans` WHERE id = a.clan) as name, (SELECT name FROM `csgo_clans` WHERE id = a.clan2) as name2 FROM `csgo_clans_wars` a WHERE clan = '%i' AND started = '0'", playerData[id][CLAN]);
 
 	SQL_ThreadQuery(sql, "remove_war_menu_handle", queryData, tempId, sizeof(tempId));
 
@@ -1871,7 +1909,7 @@ public remove_war_confirm_handle(id, menu, item)
 
 public deposit_money_handle(id)
 {
-	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !playerData[id][CLAN] || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	new moneyData[32], Float:moneyAmount;
 
@@ -1892,21 +1930,21 @@ public deposit_money_handle(id)
 		return PLUGIN_HANDLED;
 	}
 
-	set_clan_info(clan[id], CLAN_MONEY, _, moneyAmount);
+	set_clan_info(playerData[id][CLAN], CLAN_MONEY, _, moneyAmount);
 
 	csgo_add_money(id, -moneyAmount);
 
 	add_payment(id, moneyAmount);
 
 	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_DEPOSIT_SUCCESS", moneyAmount);
-	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_DEPOSIT_BANK", get_clan_info(clan[id], CLAN_MONEY));
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_DEPOSIT_BANK", get_clan_info(playerData[id][CLAN], CLAN_MONEY));
 
 	return PLUGIN_HANDLED;
 }
 
 public withdraw_money_handle(id)
 {
-	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id) || get_user_status(id) <= STATUS_MEMBER || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !playerData[id][CLAN] || !csgo_check_account(id) || get_user_status(id) <= STATUS_MEMBER || end) return PLUGIN_HANDLED;
 
 	new moneyData[32], Float:moneyAmount;
 
@@ -1921,27 +1959,27 @@ public withdraw_money_handle(id)
 		return PLUGIN_HANDLED;
 	}
 
-	if (moneyAmount > get_clan_money(clan[id])) {
+	if (moneyAmount > get_clan_money(playerData[id][CLAN])) {
 		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_WITHDRAW_NO_MONEY");
 
 		return PLUGIN_HANDLED;
 	}
 
-	set_clan_info(clan[id], CLAN_MONEY, _, -moneyAmount);
+	set_clan_info(playerData[id][CLAN], CLAN_MONEY, _, -moneyAmount);
 
 	csgo_add_money(id, moneyAmount);
 
 	add_payment(id, moneyAmount, true);
 
 	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_WITHDRAW_SUCCESS", moneyAmount);
-	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_WITHDRAW_BANK", get_clan_info(clan[id], CLAN_MONEY));
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_WITHDRAW_BANK", get_clan_info(playerData[id][CLAN], CLAN_MONEY));
 
 	return PLUGIN_HANDLED;
 }
 
 public set_war_frags_handle(id)
 {
-	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id) || get_user_status(id) <= STATUS_MEMBER || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !playerData[id][CLAN] || !csgo_check_account(id) || get_user_status(id) <= STATUS_MEMBER || end) return PLUGIN_HANDLED;
 
 	new fragsData[16], frags;
 
@@ -1956,7 +1994,7 @@ public set_war_frags_handle(id)
 		return PLUGIN_HANDLED;
 	}
 
-	warFrags[id] = frags;
+	playerData[id][WAR_FRAGS] = frags;
 
 	declare_war_menu(id);
 
@@ -1965,7 +2003,7 @@ public set_war_frags_handle(id)
 
 public set_war_reward_handle(id)
 {
-	if (!is_user_connected(id) || !clan[id] || !csgo_check_account(id) || get_user_status(id) <= STATUS_MEMBER || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !playerData[id][CLAN] || !csgo_check_account(id) || get_user_status(id) <= STATUS_MEMBER || end) return PLUGIN_HANDLED;
 
 	new rewardData[16], reward;
 
@@ -1980,7 +2018,7 @@ public set_war_reward_handle(id)
 		return PLUGIN_HANDLED;
 	}
 
-	warReward[id] = reward;
+	playerData[id][WAR_REWARD] = reward;
 
 	declare_war_menu(id);
 
@@ -1989,13 +2027,13 @@ public set_war_reward_handle(id)
 
 public payments_list(id)
 {
-	if (!is_user_connected(id) || !clan[id] || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !playerData[id][CLAN] || end) return PLUGIN_HANDLED;
 
 	new queryData[192], tempId[1];
 
 	tempId[0] = id;
 
-	formatex(queryData, charsmax(queryData), "SELECT name, deposit, withdraw FROM `csgo_clans_members` WHERE clan = '%i' AND (deposit > 0 OR withdraw > 0) ORDER BY deposit DESC", clan[id]);
+	formatex(queryData, charsmax(queryData), "SELECT name, deposit, withdraw FROM `csgo_clans_members` WHERE clan = '%i' AND (deposit > 0 OR withdraw > 0) ORDER BY deposit DESC", playerData[id][CLAN]);
 
 	SQL_ThreadQuery(sql, "show_payments_list", queryData, tempId, sizeof(tempId));
 
@@ -2119,33 +2157,30 @@ public show_clans_top15(failState, Handle:query, error[], errorNum, tempId[], da
 
 public say_text(msgId, msgDest, msgEnt)
 {
-	if (!cvarChatPrefix) return PLUGIN_CONTINUE;
+	if (!chatPrefix) return PLUGIN_CONTINUE;
 
 	new id = get_msg_arg_int(1);
 
-	if (is_user_connected(id) && clan[id]) {
-		new tempMessage[192], message[192], chatPrefix[32], steamId[33], playerName[32];
+	if (is_user_connected(id) && playerData[id][CLAN]) {
+		new tempMessage[192], message[192], prefix[32];
 
 		get_msg_arg_string(2, tempMessage, charsmax(tempMessage));
-		get_user_authid(id, steamId, charsmax(steamId));
 
-		get_clan_info(clan[id], CLAN_NAME, chatPrefix, charsmax(chatPrefix));
+		get_clan_info(playerData[id][CLAN], CLAN_NAME, prefix, charsmax(prefix));
 
-		format(chatPrefix, charsmax(chatPrefix), "^4[%s]", chatPrefix);
+		format(prefix, charsmax(prefix), "^4[%s]", prefix);
 
 		if (!equal(tempMessage, "#Cstrike_Chat_All")) {
-			add(message, charsmax(message), chatPrefix);
+			add(message, charsmax(message), prefix);
 			add(message, charsmax(message), " ");
 			add(message, charsmax(message), tempMessage);
 		} else {
-	        get_user_name(id, playerName, charsmax(playerName));
-
 	        get_msg_arg_string(4, tempMessage, charsmax(tempMessage));
 	        set_msg_arg_string(4, "");
 
-	        add(message, charsmax(message), chatPrefix);
+	        add(message, charsmax(message), prefix);
 	        add(message, charsmax(message), "^3 ");
-	        add(message, charsmax(message), playerName);
+	        add(message, charsmax(message), playerData[id][NAME]);
 	        add(message, charsmax(message), "^1 :  ");
 	        add(message, charsmax(message), tempMessage);
 		}
@@ -2161,7 +2196,7 @@ public message_intermission()
 
 public add_to_full_pack(esHandle, e, ent, host, hostFlags, player, pSet)
 {
-	if (!is_user_alive(host) || !is_user_alive(ent) || !clan[host] || !clan[ent] || !check_war_enemy(host, ent)) return;
+	if (!is_user_alive(host) || !is_user_alive(ent) || !playerData[host][CLAN] || !playerData[ent][CLAN] || !check_war_enemy(host, ent)) return;
 
 	set_es(esHandle, ES_RenderFx, kRenderFxGlowShell);
 	set_es(esHandle, ES_RenderColor, 255, 0, 0);
@@ -2171,13 +2206,16 @@ public add_to_full_pack(esHandle, e, ent, host, hostFlags, player, pSet)
 
 public application_menu(id)
 {
-	if (!is_user_connected(id) || clan[id] || end) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || playerData[id][CLAN] || end) return PLUGIN_HANDLED;
 
 	new queryData[512], tempId[1];
 
 	tempId[0] = id;
 
-	formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_clans` a WHERE NOT EXISTS (SELECT * FROM `csgo_clans_applications` WHERE clan = a.id AND name = ^"%s^") ORDER BY a.members DESC, a.kills DESC", playerName[id]);
+	switch (saveType) {
+		case SAVE_NAME: formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_clans` a WHERE NOT EXISTS (SELECT * FROM `csgo_clans_applications` WHERE clan = a.id AND name = ^"%s^") ORDER BY a.members DESC, a.kills DESC", playerData[id][SAFE_NAME]);
+		case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_clans` a WHERE NOT EXISTS (SELECT * FROM `csgo_clans_applications` WHERE clan = a.id AND steamid = ^"%s^") ORDER BY a.members DESC, a.kills DESC", playerData[id][STEAM_ID]);
+	}
 
 	SQL_ThreadQuery(sql, "application_menu_handle", queryData, tempId, sizeof(tempId));
 
@@ -2249,7 +2287,7 @@ public application_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	if (clan[id]) {
+	if (playerData[id][CLAN]) {
 		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_APPLY_CLAN");
 
 		show_clan_menu(id);
@@ -2313,7 +2351,7 @@ public application_confirm_handle(id, menu, item)
 
 	new clanId = str_to_num(tempClanId);
 
-	if (clan[id]) {
+	if (playerData[id][CLAN]) {
 		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_APPLY_CONFIRM_CLAN");
 
 		show_clan_menu(id);
@@ -2333,19 +2371,26 @@ stock set_user_clan(id, playerClan = 0, owner = 0)
 	if (!is_user_connected(id) || end) return;
 
 	if (playerClan == 0) {
-		set_clan_info(clan[id], CLAN_MEMBERS, -1);
+		set_clan_info(playerData[id][CLAN], CLAN_MEMBERS, -1);
 
-		TrieDeleteKey(Trie:get_clan_info(clan[id], CLAN_STATUS), playerName[id]);
+		TrieDeleteKey(Trie:get_clan_info(playerData[id][CLAN], CLAN_STATUS), playerData[id][NAME]);
 
 		save_member(id, STATUS_NONE);
 
-		clan[id] = 0;
+		playerData[id][CLAN] = 0;
 	} else {
-		clan[id] = playerClan;
+		playerData[id][CLAN] = playerClan;
 
-		set_clan_info(clan[id], CLAN_MEMBERS, 1);
+		set_clan_info(playerData[id][CLAN], CLAN_MEMBERS, 1);
 
-		TrieSetCell(Trie:get_clan_info(clan[id], CLAN_STATUS), playerName[id], owner ? STATUS_LEADER : STATUS_MEMBER);
+		switch (saveType) {
+			case SAVE_NAME: {
+				TrieSetCell(Trie:get_clan_info(playerData[id][CLAN], CLAN_STATUS), playerData[id][NAME], owner ? STATUS_LEADER : STATUS_MEMBER);
+			}
+			case SAVE_STEAM_ID: {
+				TrieSetCell(Trie:get_clan_info(playerData[id][CLAN], CLAN_STATUS), playerData[id][STEAM_ID], owner ? STATUS_LEADER : STATUS_MEMBER);
+			}
+		}
 
 		save_member(id, owner ? STATUS_LEADER : STATUS_MEMBER, 1);
 	}
@@ -2353,20 +2398,34 @@ stock set_user_clan(id, playerClan = 0, owner = 0)
 
 stock set_user_status(id, status)
 {
-	if (!is_user_connected(id) || !clan[id] || end) return;
+	if (!is_user_connected(id) || !playerData[id][CLAN] || end) return;
 
-	TrieSetCell(Trie:get_clan_info(clan[id], CLAN_STATUS), playerName[id], status);
+	switch (saveType) {
+		case SAVE_NAME: {
+			TrieSetCell(Trie:get_clan_info(playerData[id][CLAN], CLAN_STATUS), playerData[id][NAME], status);
+		}
+		case SAVE_STEAM_ID: {
+			TrieSetCell(Trie:get_clan_info(playerData[id][CLAN], CLAN_STATUS), playerData[id][STEAM_ID], status);
+		}
+	}
 
 	save_member(id, status);
 }
 
 stock get_user_status(id)
 {
-	if (!is_user_connected(id) || !clan[id] || end) return STATUS_NONE;
+	if (!is_user_connected(id) || !playerData[id][CLAN] || end) return STATUS_NONE;
 
 	new status;
 
-	TrieGetCell(Trie:get_clan_info(clan[id], CLAN_STATUS), playerName[id], status);
+	switch (saveType) {
+		case SAVE_NAME: {
+			TrieGetCell(Trie:get_clan_info(playerData[id][CLAN], CLAN_STATUS), playerData[id][NAME], status);
+		}
+		case SAVE_STEAM_ID: {
+			TrieGetCell(Trie:get_clan_info(playerData[id][CLAN], CLAN_STATUS), playerData[id][STEAM_ID], status);
+		}
+	}
 
 	return status;
 }
@@ -2399,8 +2458,8 @@ public sql_init()
 
 	SQL_Execute(query);
 
-	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_clans_members` (`name` varchar(64) NOT NULL, `clan` INT NOT NULL, ");
-	add(queryData, charsmax(queryData), "`flag` INT NOT NULL DEFAULT 0, `deposit` DOUBLE(16, 2) NOT NULL DEFAULT 0, `withdraw` DOUBLE(16, 2) NOT NULL DEFAULT 0, PRIMARY KEY (`name`));");
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_clans_members` (`name` varchar(64), `steamid` VARCHAR(35), `clan` INT NOT NULL, ");
+	add(queryData, charsmax(queryData), "`flag` INT NOT NULL DEFAULT 0, `deposit` DOUBLE(16, 2) NOT NULL DEFAULT 0, `withdraw` DOUBLE(16, 2) NOT NULL DEFAULT 0, PRIMARY KEY (name, steamid));");
 
 	query = SQL_PrepareQuery(connection, queryData);
 
@@ -2412,7 +2471,7 @@ public sql_init()
 		hasError = true;
 	}
 
-	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_clans_applications` (`name` varchar(64) NOT NULL, `clan` INT NOT NULL, PRIMARY KEY (`name`, `clan`));");
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_clans_applications` (`name` varchar(64), `steamid` VARCHAR(35), `clan` INT NOT NULL, PRIMARY KEY (name, steamid, clan));");
 
 	query = SQL_PrepareQuery(connection, queryData);
 
@@ -2461,7 +2520,7 @@ public save_clan(clanId)
 	mysql_escape_string(csgoClan[CLAN_NAME], safeClanName, charsmax(safeClanName));
 
 	formatex(queryData, charsmax(queryData), "UPDATE `csgo_clans` SET name = ^"%s^", level = '%i', money = '%.2f', kills = '%i', members = '%i', wins = '%i' WHERE id = '%i'",
-	safeClanName, csgoClan[CLAN_LEVEL], csgoClan[CLAN_MONEY], csgoClan[CLAN_KILLS], csgoClan[CLAN_MEMBERS], csgoClan[CLAN_WINS], clanId);
+		safeClanName, csgoClan[CLAN_LEVEL], csgoClan[CLAN_MONEY], csgoClan[CLAN_KILLS], csgoClan[CLAN_MEMBERS], csgoClan[CLAN_WINS], clanId);
 
 	SQL_ThreadQuery(sql, "ignore_handle", queryData);
 }
@@ -2478,7 +2537,10 @@ public load_clan_data(id)
 
 	tempId[0] = id;
 
-	formatex(queryData, charsmax(queryData), "SELECT a.flag, b.* FROM `csgo_clans_members` a JOIN `csgo_clans` b ON a.clan = b.id WHERE a.name = ^"%s^"", playerName[id]);
+	switch (saveType) {
+		case SAVE_NAME: formatex(queryData, charsmax(queryData), "SELECT a.flag, b.* FROM `csgo_clans_members` a JOIN `csgo_clans` b ON a.clan = b.id WHERE a.name = ^"%s^"", playerData[id][SAFE_NAME]);
+		case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "SELECT a.flag, a.name as nick, b.* FROM `csgo_clans_members` a JOIN `csgo_clans` b ON a.clan = b.id WHERE a.steamid = ^"%s^"", playerData[id][STEAM_ID]);
+	}
 
 	SQL_ThreadQuery(sql, "load_clan_data_handle", queryData, tempId, sizeof(tempId));
 }
@@ -2519,15 +2581,39 @@ public load_clan_data_handle(failState, Handle:query, error[], errorNum, tempId[
 			SQL_ThreadQuery(sql, "load_wars_data_handle", queryData);
 		}
 
-		clan[id] = csgoClan[CLAN_ID];
+		playerData[id][CLAN] = csgoClan[CLAN_ID];
 
 		new status = SQL_ReadResult(query, SQL_FieldNameToNum(query, "flag"));
 
-		TrieSetCell(Trie:get_clan_info(clan[id], CLAN_STATUS), playerName[id], status);
-	} else {
-		new queryData[128];
+		switch (saveType) {
+			case SAVE_NAME: TrieSetCell(Trie:get_clan_info(playerData[id][CLAN], CLAN_STATUS), playerData[id][NAME], status);
+			case SAVE_STEAM_ID: {
+				TrieSetCell(Trie:get_clan_info(playerData[id][CLAN], CLAN_STATUS), playerData[id][STEAM_ID], status);
 
-		formatex(queryData, charsmax(queryData), "INSERT IGNORE INTO `csgo_clans_members` (`name`) VALUES (^"%s^")", playerName[id]);
+				new playerName[32];
+
+				SQL_ReadResult(query, SQL_FieldNameToNum(query, "nick"), playerName, charsmax(playerName));
+
+				if (!equal(playerData[id][NAME], playerName)) {
+					new queryData[256];
+
+					formatex(queryData, charsmax(queryData), "UPDATE `csgo_clans_members` SET `name` = ^"%s^" WHERE `steamid` = ^"%s^"", playerData[id][SAFE_NAME], playerData[id][STEAM_ID]);
+
+					SQL_ThreadQuery(sql, "ignore_handle", queryData);
+
+					formatex(queryData, charsmax(queryData), "UPDATE `csgo_clans_applications` SET `name` = ^"%s^" WHERE `steamid` = ^"%s^"", playerData[id][SAFE_NAME], playerData[id][STEAM_ID]);
+
+					SQL_ThreadQuery(sql, "ignore_handle", queryData);
+				}
+			}
+		}
+	} else {
+		new queryData[256];
+
+		switch (saveType) {
+			case SAVE_NAME: formatex(queryData, charsmax(queryData), "INSERT IGNORE INTO `csgo_clans_members` (`name`) VALUES (^"%s^")", playerData[id][SAFE_NAME]);
+			case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "INSERT IGNORE INTO `csgo_clans_members` (`name`, `steamid`) VALUES (^"%s^", ^"%s^")", playerData[id][SAFE_NAME], playerData[id][STEAM_ID]);
+		}
 
 		SQL_ThreadQuery(sql, "ignore_handle", queryData);
 	}
@@ -2553,7 +2639,7 @@ public show_clan_info(id)
 	set_bit(id, info);
 
 	if (get_user_status(id) > STATUS_MEMBER) {
-		new applications = get_applications_count(clan[id]), wars = get_wars_count(clan[id], 0);
+		new applications = get_applications_count(playerData[id][CLAN]), wars = get_wars_count(playerData[id][CLAN], 0);
 
 		if (applications > 0 && wars > 0) client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_INFO_APPLICATIONS_WARS", applications, wars);
 		else if(applications > 0) client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_INFO_APPLICATIONS", applications);
@@ -2587,7 +2673,7 @@ public load_wars_data_handle(failState, Handle:query, error[], errorNum)
 }
 
 public _csgo_get_user_clan(id)
-	return clan[id];
+	return playerData[id][CLAN];
 
 public _csgo_get_clan_name(clanId, dataReturn[], dataLength)
 {
@@ -2600,7 +2686,7 @@ public _csgo_get_user_clan_name(id, dataReturn[], dataLength)
 {
 	param_convert(2);
 
-	if (!clan[id]) {
+	if (!playerData[id][CLAN]) {
 		static clanName[16];
 
 		formatex(clanName, charsmax(clanName), "%L", id, "CSGO_CLANS_NONE");
@@ -2610,28 +2696,44 @@ public _csgo_get_user_clan_name(id, dataReturn[], dataLength)
 		return;
 	}
 
-	get_clan_info(clan[id], CLAN_NAME, dataReturn, dataLength);
+	get_clan_info(playerData[id][CLAN], CLAN_NAME, dataReturn, dataLength);
 }
 
 public _csgo_get_clan_members(clanId)
 	return get_clan_info(clanId, CLAN_MEMBERS);
 
-stock save_member(id, status = 0, change = 0, const name[] = "")
+stock save_member(id, status = 0, change = 0, const userName[] = "", const userSteamId[] = "")
 {
-	new queryData[256], safeName[64];
+	new queryData[256], safeName[64], setWhereClause[128], whereClause[64];
 
-	if (strlen(name)) mysql_escape_string(name, safeName, charsmax(safeName));
-	else copy(safeName, charsmax(safeName), playerName[id]);
+	if (strlen(userName)) mysql_escape_string(userName, safeName, charsmax(safeName));
+	else copy(safeName, charsmax(safeName), playerData[id][SAFE_NAME]);
+
+	switch (saveType) {
+		case SAVE_NAME: {
+			formatex(whereClause, charsmax(whereClause), " WHERE name = ^"%s^"", safeName);
+			formatex(setWhereClause, charsmax(setWhereClause), " WHERE name = ^"%s^"", safeName);
+		}
+		case SAVE_STEAM_ID: {
+			new playerSteamId[35];
+
+			if (strlen(userSteamId)) copy(playerSteamId, charsmax(playerSteamId), userSteamId);
+			else copy(playerSteamId, charsmax(playerSteamId), playerData[id][STEAM_ID]);
+
+			formatex(whereClause, charsmax(whereClause), " WHERE steamid = ^"%s^"", playerSteamId);
+			formatex(setWhereClause, charsmax(setWhereClause), ", name = ^"%s^" WHERE steamid = ^"%s^"", safeName, playerSteamId);
+		}
+	}
 
 	if (status) {
-		if (change) formatex(queryData, charsmax(queryData), "UPDATE `csgo_clans_members` SET clan = '%i', flag = '%i' WHERE name = ^"%s^"", clan[id], status, safeName);
-		else formatex(queryData, charsmax(queryData), "UPDATE `csgo_clans_members` SET flag = '%i' WHERE name = ^"%s^"", status, safeName);
-	} else formatex(queryData, charsmax(queryData), "UPDATE `csgo_clans_members` SET clan = '0', flag = '0', deposit = '0', withdraw = '0' WHERE name = ^"%s^"", safeName);
+		if (change) formatex(queryData, charsmax(queryData), "UPDATE `csgo_clans_members` SET clan = '%i', flag = '%i'%s", playerData[id][CLAN], status, setWhereClause);
+		else formatex(queryData, charsmax(queryData), "UPDATE `csgo_clans_members` SET flag = '%i'%s", status, setWhereClause);
+	} else formatex(queryData, charsmax(queryData), "UPDATE `csgo_clans_members` SET clan = '0', flag = '0', deposit = '0', withdraw = '0'%s", setWhereClause);
 
 	SQL_ThreadQuery(sql, "ignore_handle", queryData);
 
 	if (change) {
-		formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_clans_applications` WHERE name = ^"%s^"", safeName);
+		formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_clans_applications`%s", whereClause);
 
 		SQL_ThreadQuery(sql, "ignore_handle", queryData);
 	}
@@ -2641,14 +2743,14 @@ stock declare_war(id, clanId)
 {
 	new queryData[192], clanName[32];
 
-	formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_clans_wars` (`clan`, `clan2`, `duration`, `reward`) VALUES ('%i', '%i', '%i', '%i')", clan[id], clanId, warFrags[id], warReward[id]);
+	formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_clans_wars` (`clan`, `clan2`, `duration`, `reward`) VALUES ('%i', '%i', '%i', '%i')", playerData[id][CLAN], clanId, playerData[id][WAR_FRAGS], playerData[id][WAR_REWARD]);
 
 	SQL_ThreadQuery(sql, "ignore_handle", queryData);
 
-	get_clan_info(clan[id], CLAN_NAME, clanName, charsmax(clanName));
+	get_clan_info(playerData[id][CLAN], CLAN_NAME, clanName, charsmax(clanName));
 
 	for (new i = 1; i <= MAX_PLAYERS; i++) {
-		if (!is_user_connected(i) || is_user_bot(i) || is_user_hltv(i) || clan[i] != clanId || get_user_status(i) <= STATUS_MEMBER) continue;
+		if (!is_user_connected(i) || is_user_bot(i) || is_user_hltv(i) || playerData[i][CLAN] != clanId || get_user_status(i) <= STATUS_MEMBER) continue;
 
 		client_print_color(i, i, "%s %L", CHAT_PREFIX, i, "CSGO_CLANS_WARS_DECLARED", clanName);
 	}
@@ -2668,21 +2770,21 @@ stock accept_war(id, warId, clanId, duration, Float:money, const enemyClanName[]
 		SQL_ThreadQuery(sql, "ignore_handle", queryData);
 	} else set_clan_info(clanId, CLAN_MONEY, _, -money);
 
-	set_clan_info(clan[id], CLAN_MONEY, _, -money);
-	get_clan_info(clan[id], CLAN_NAME, clanName, charsmax(clanName));
+	set_clan_info(playerData[id][CLAN], CLAN_MONEY, _, -money);
+	get_clan_info(playerData[id][CLAN], CLAN_NAME, clanName, charsmax(clanName));
 
 	csgoWar[WAR_ID] = warId;
 	csgoWar[WAR_CLAN] = clanId;
-	csgoWar[WAR_CLAN2] = clan[id];
+	csgoWar[WAR_CLAN2] = playerData[id][CLAN];
 	csgoWar[WAR_DURATION] = duration;
 	csgoWar[WAR_REWARD] = floatround(money * 2);
 
 	ArrayPushArray(csgoWars, csgoWar);
 
 	for (new i = 1; i <= MAX_PLAYERS; i++) {
-		if (!is_user_connected(i) || is_user_bot(i) || is_user_hltv(i) || !clan[i] || (clan[i] != clan[id] && clan[i] != clanId)) continue;
+		if (!is_user_connected(i) || is_user_bot(i) || is_user_hltv(i) || !playerData[i][CLAN] || (playerData[i][CLAN] != playerData[id][CLAN] && playerData[i][CLAN] != clanId)) continue;
 
-		client_print_color(i, i, "%s %L", CHAT_PREFIX, i, "CSGO_CLANS_WARS_STARTED", clan[i] == clan[id] ? clanName : enemyClanName, csgoWar[WAR_DURATION], csgoWar[WAR_REWARD]);
+		client_print_color(i, i, "%s %L", CHAT_PREFIX, i, "CSGO_CLANS_WARS_STARTED", playerData[i][CLAN] == playerData[id][CLAN] ? clanName : enemyClanName, csgoWar[WAR_DURATION], csgoWar[WAR_REWARD]);
 	}
 }
 
@@ -2731,7 +2833,7 @@ public remove_clan_wars(failState, Handle:query, error[], errorNum, tempId[], da
 			set_clan_info(enemyClan, CLAN_MONEY, _, reward);
 
 			for (new i = 1; i <= MAX_PLAYERS; i++) {
-				if (!is_user_connected(i) || is_user_bot(i) || is_user_hltv(i) || clan[i] != enemyClan) continue;
+				if (!is_user_connected(i) || is_user_bot(i) || is_user_hltv(i) || playerData[i][CLAN] != enemyClan) continue;
 
 				client_print_color(i, i, "%s %L", CHAT_PREFIX, i, "CSGO_CLANS_WARS_DISBANDED", clanName);
 			}
@@ -2767,30 +2869,30 @@ stock check_war(killer, victim)
 	for (new i = 0; i < ArraySize(csgoWars); i++) {
 		ArrayGetArray(csgoWars, i, csgoWar);
 
-		if ((clan[killer] == csgoWar[WAR_CLAN] && clan[victim] == csgoWar[WAR_CLAN2]) || (clan[killer] == csgoWar[WAR_CLAN2] && clan[victim] == csgoWar[WAR_CLAN])) {
-			new progress = clan[killer] == csgoWar[WAR_CLAN] ? WAR_PROGRESS : WAR_PROGRESS2;
+		if ((playerData[killer][CLAN] == csgoWar[WAR_CLAN] && playerData[victim][CLAN] == csgoWar[WAR_CLAN2]) || (playerData[killer][CLAN] == csgoWar[WAR_CLAN2] && playerData[victim][CLAN] == csgoWar[WAR_CLAN])) {
+			new progress = playerData[killer][CLAN] == csgoWar[WAR_CLAN] ? WAR_PROGRESS : WAR_PROGRESS2;
 
 			csgoWar[progress]++;
 
-			get_clan_info(clan[victim], CLAN_NAME, victimClan, charsmax(victimClan));
+			get_clan_info(playerData[victim][CLAN], CLAN_NAME, victimClan, charsmax(victimClan));
 			get_user_name(victim, victimName, charsmax(victimName));
 
 			if (csgoWar[progress] == csgoWar[WAR_DURATION]) {
-				get_clan_info(clan[killer], CLAN_NAME, killerClan, charsmax(killerClan));
+				get_clan_info(playerData[killer][CLAN], CLAN_NAME, killerClan, charsmax(killerClan));
 				get_user_name(killer, killerName, charsmax(killerName));
 
 				client_print_color(killer, killer, "%s %L", CHAT_PREFIX, killer, "CSGO_CLANS_WARS_WIN", victimName, victimClan);
 				client_print_color(victim, victim, "%s %L", CHAT_PREFIX, victim, "CSGO_CLANS_WARS_LOSS", killerName, killerClan);
 
 				for (new i = 1; i <= MAX_PLAYERS; i++) {
-					if (!is_user_connected(i) || is_user_bot(i) || is_user_hltv(i) || !clan[i] || i == killer || i == victim) continue;
+					if (!is_user_connected(i) || is_user_bot(i) || is_user_hltv(i) || !playerData[i][CLAN] || i == killer || i == victim) continue;
 
-					if (clan[i] == clan[killer]) client_print_color(i, killer, "%L", killer, "CSGO_CLANS_WARS_WIN2", killerName, victimName, victimClan);
-					if (clan[i] == clan[victim]) client_print_color(i, victim, "%L", victim, "CSGO_CLANS_WARS_LOSS2", victimName, killerName, killerClan);
+					if (playerData[i][CLAN] == playerData[killer][CLAN]) client_print_color(i, killer, "%L", killer, "CSGO_CLANS_WARS_WIN2", killerName, victimName, victimClan);
+					if (playerData[i][CLAN] == playerData[victim][CLAN]) client_print_color(i, victim, "%L", victim, "CSGO_CLANS_WARS_LOSS2", victimName, killerName, killerClan);
 				}
 
-				set_clan_info(clan[killer], CLAN_MONEY, _, float(csgoWar[WAR_REWARD]));
-				set_clan_info(clan[killer], CLAN_WINS, 1);
+				set_clan_info(playerData[killer][CLAN], CLAN_MONEY, _, float(csgoWar[WAR_REWARD]));
+				set_clan_info(playerData[killer][CLAN], CLAN_WINS, 1);
 
 				remove_war(csgoWar[WAR_ID], 1);
 
@@ -2816,7 +2918,7 @@ stock check_war_enemy(id, enemy)
 	for (new i = 0; i < ArraySize(csgoWars); i++) {
 		ArrayGetArray(csgoWars, i, csgoWar);
 
-		if ((clan[id] == csgoWar[WAR_CLAN] && clan[enemy] == csgoWar[WAR_CLAN2]) || (clan[id] == csgoWar[WAR_CLAN2] && clan[enemy] == csgoWar[WAR_CLAN])) return true;
+		if ((playerData[id][CLAN] == csgoWar[WAR_CLAN] && playerData[enemy][CLAN] == csgoWar[WAR_CLAN2]) || (playerData[id][CLAN] == csgoWar[WAR_CLAN2] && playerData[enemy][CLAN] == csgoWar[WAR_CLAN])) return true;
 	}
 
 	return false;
@@ -2824,28 +2926,33 @@ stock check_war_enemy(id, enemy)
 
 stock add_payment(id, Float:money, withdraw = false)
 {
-	new queryData[192], type[16];
+	new queryData[256], type[16];
 
 	formatex(type, charsmax(type), "%s", withdraw ? "withdraw" : "deposit");
-	formatex(queryData, charsmax(queryData), "UPDATE `csgo_clans_members` SET %s = %s + %.2f WHERE name = ^"%s^"", type, type, money, playerName[id]);
+
+	switch (saveType) {
+		case SAVE_NAME: formatex(queryData, charsmax(queryData), "UPDATE `csgo_clans_members` SET %s = %s + %.2f WHERE name = ^"%s^"", type, type, money, playerData[id][SAFE_NAME]);
+		case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "UPDATE `csgo_clans_members` SET %s = %s + %.2f, name = ^"%s^" WHERE steamid = ^"%s^"", type, type, money, playerData[id][SAFE_NAME], playerData[id][STEAM_ID]);
+	}
 
 	SQL_ThreadQuery(sql, "ignore_handle", queryData);
 }
 
 stock add_application(id, clanId)
 {
-	new queryData[192], userName[32];
+	new queryData[256];
 
-	formatex(queryData, charsmax(queryData), "INSERT IGNORE INTO `csgo_clans_applications` (`name`, `clan`) VALUES (^"%s^", '%i');", playerName[id], clanId);
+	switch (saveType) {
+		case SAVE_NAME: formatex(queryData, charsmax(queryData), "INSERT IGNORE INTO `csgo_clans_applications` (`name`, `clan`) VALUES (^"%s^", '%i');", playerData[id][SAFE_NAME], clanId);
+		case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "INSERT IGNORE INTO `csgo_clans_applications` (`name`, `steamid`, `clan`) VALUES (^"%s^", ^"%s^", '%i');", playerData[id][SAFE_NAME], playerData[id][STEAM_ID], clanId);
+	}
 
 	SQL_ThreadQuery(sql, "ignore_handle", queryData);
 
-	get_user_name(id, userName, charsmax(userName));
-
 	for (new i = 1; i <= MAX_PLAYERS; i++) {
-		if (!is_user_connected(i) || is_user_bot(i) || is_user_hltv(i) || clan[i] != clanId || get_user_status(i) <= STATUS_MEMBER) continue;
+		if (!is_user_connected(i) || is_user_bot(i) || is_user_hltv(i) || playerData[i][CLAN] != clanId || get_user_status(i) <= STATUS_MEMBER) continue;
 
-		client_print_color(i, i, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_INVITE_SENT", userName);
+		client_print_color(i, i, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_INVITE_SENT", playerData[id][NAME]);
 	}
 }
 
@@ -2853,7 +2960,10 @@ stock check_applications(id, clanId)
 {
 	new queryData[192], error[128], Handle:query, bool:foundApplication, errorNum;
 
-	formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_clans_applications` WHERE `name` = ^"%s^" AND clan = '%i'", playerName[id], clanId);
+	switch (saveType) {
+		case SAVE_NAME: formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_clans_applications` WHERE `name` = ^"%s^" AND clan = '%i'", playerData[id][SAFE_NAME], clanId);
+		case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_clans_applications` WHERE `steamid` = ^"%s^" AND clan = '%i'", playerData[id][STEAM_ID], clanId);
+	}
 
 	query = SQL_PrepareQuery(connection, queryData);
 
@@ -2870,44 +2980,83 @@ stock check_applications(id, clanId)
 	return foundApplication;
 }
 
-stock accept_application(id, const userName[])
+stock accept_application(id, const userName[] = "", const userSteamId[] = "")
 {
-	new player = get_user_index(userName);
+	new player = 0;
+
+	switch (saveType) {
+		case SAVE_NAME: player = get_user_index(userName);
+		case SAVE_STEAM_ID: {
+			for (new i = 1; i <= MAX_PLAYERS; i++) {
+				if (!is_user_connected(i) || is_user_bot(i) || is_user_hltv(i)) continue;
+
+				if (equal(playerData[i][STEAM_ID], userSteamId)) {
+					player = i;
+
+					break;
+				}
+			}
+		}
+	}
 
 	if (is_user_connected(player)) {
 		new clanName[32];
 
-		get_clan_info(clan[id], CLAN_NAME, clanName, charsmax(clanName));
+		get_clan_info(playerData[id][CLAN], CLAN_NAME, clanName, charsmax(clanName));
 
-		set_user_clan(player, clan[id]);
+		set_user_clan(player, playerData[id][CLAN]);
 
 		client_print_color(player, player, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_INVITE_ACCEPTED", clanName);
 	} else {
-		set_clan_info(clan[id], CLAN_MEMBERS, 1);
+		set_clan_info(playerData[id][CLAN], CLAN_MEMBERS, 1);
 
-		save_member(id, STATUS_MEMBER, 1, userName);
+		save_member(id, STATUS_MEMBER, 1, userName, userSteamId);
 	}
 }
 
-stock remove_application(id, const name[] = "")
+stock remove_application(id, const userName[] = "", const userSteamId[] = "")
 {
-	new player = get_user_index(name);
+	new player = 0;
 
-	if (is_user_connected(player)) {
-		new clanName[32], userName[32];
+	switch (saveType) {
+		case SAVE_NAME: player = get_user_index(userName);
+		case SAVE_STEAM_ID: {
+			for (new i = 1; i <= MAX_PLAYERS; i++) {
+				if (!is_user_connected(i) || is_user_bot(i) || is_user_hltv(i)) continue;
 
-		get_clan_info(clan[id], CLAN_NAME, clanName, charsmax(clanName));
-		get_user_name(id, userName, charsmax(userName));
+				if (equal(playerData[i][STEAM_ID], userSteamId)) {
+					player = i;
 
-		client_print_color(player, player, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_INVITE_DECLINED", userName, clanName);
+					break;
+				}
+			}
+		}
 	}
 
-	new queryData[192], safeName[64];
+	if (is_user_connected(player)) {
+		new clanName[32], playerName[32];
 
-	if (strlen(name)) mysql_escape_string(name, safeName, charsmax(safeName));
-	else copy(safeName, charsmax(safeName), playerName[id]);
+		get_clan_info(playerData[id][CLAN], CLAN_NAME, clanName, charsmax(clanName));
+		get_user_name(id, playerName, charsmax(playerName));
 
-	formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_clans_applications` WHERE name = ^"%s^" AND clan = '%i'", safeName, clan[id]);
+		client_print_color(player, player, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_INVITE_DECLINED", playerName, clanName);
+	}
+
+	new queryData[192];
+
+	switch (saveType) {
+		case SAVE_NAME: {
+			new safeName[64];
+
+			if (strlen(userName)) mysql_escape_string(userName, safeName, charsmax(safeName));
+			else copy(safeName, charsmax(safeName), playerData[id][SAFE_NAME]);
+
+			formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_clans_applications` WHERE name = ^"%s^" AND clan = '%i'", safeName, playerData[id][CLAN]);
+		}
+		case SAVE_STEAM_ID: {
+			formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_clans_applications` WHERE steamid = ^"%s^" AND clan = '%i'", userSteamId, playerData[id][CLAN]);
+		}
+	}
 
 	SQL_ThreadQuery(sql, "ignore_handle", queryData);
 }
@@ -2935,13 +3084,22 @@ stock check_clan_name(const clanName[])
 	return foundClan;
 }
 
-stock check_user_clan(const userName[])
+stock check_user_clan(const userName[] = "", const userSteamId[] = "")
 {
-	new queryData[192], error[128], safeUserName[64], Handle:query, bool:foundClan, errorNum;
+	new queryData[192], error[128], Handle:query, bool:foundClan, errorNum;
 
-	mysql_escape_string(userName, safeUserName, charsmax(safeUserName));
+	switch (saveType) {
+		case SAVE_NAME: {
+			new safeName[64];
 
-	formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_clans_members` WHERE `name` = ^"%s^" AND clan > 0", safeUserName);
+			mysql_escape_string(userName, safeName, charsmax(safeName));
+
+			formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_clans_members` WHERE `name` = ^"%s^" AND clan > 0", safeName);
+		}
+		case SAVE_STEAM_ID: {
+			formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_clans_members` WHERE `steamid` = ^"%s^" AND clan > 0", userSteamId);
+		}
+	}
 
 	query = SQL_PrepareQuery(connection, queryData);
 
@@ -2980,15 +3138,15 @@ stock create_clan(id, const clanName[])
 
 	if (SQL_Execute(query)) {
 		if (SQL_NumResults(query)) {
-			clan[id] = SQL_ReadResult(query, 0);
+			playerData[id][CLAN] = SQL_ReadResult(query, 0);
 
 			copy(csgoClan[CLAN_NAME], charsmax(csgoClan[CLAN_NAME]), clanName);
 			csgoClan[CLAN_STATUS] = _:TrieCreate();
-			csgoClan[CLAN_ID] = clan[id];
+			csgoClan[CLAN_ID] = playerData[id][CLAN];
 
 			ArrayPushArray(csgoClans, csgoClan);
 
-			set_user_clan(id, clan[id], 1);
+			set_user_clan(id, playerData[id][CLAN], 1);
 			set_user_status(id, STATUS_LEADER);
 		}
 	} else {
@@ -3005,8 +3163,8 @@ stock remove_clan(id)
 	for (new player = 1; player <= MAX_PLAYERS; player++) {
 		if (!is_user_connected(player) || is_user_hltv(player) || is_user_bot(player) || player == id) continue;
 
-		if (clan[player] == clan[id]) {
-			clan[player] = 0;
+		if (playerData[player][CLAN] == playerData[id][CLAN]) {
+			playerData[player][CLAN] = 0;
 
 			client_print_color(player, player, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_DISBAND_INFO");
 		}
@@ -3014,23 +3172,23 @@ stock remove_clan(id)
 
 	new queryData[192], tempId[1];
 
-	tempId[0] = clan[id];
+	tempId[0] = playerData[id][CLAN];
 
-	formatex(queryData, charsmax(queryData), "SELECT a.*, (SELECT name FROM `csgo_clans` WHERE id = '%i') as name FROM `csgo_clans_wars` a WHERE (clan = '%i' OR clan2 = '%i') AND started = '1'", clan[id], clan[id], clan[id]);
+	formatex(queryData, charsmax(queryData), "SELECT a.*, (SELECT name FROM `csgo_clans` WHERE id = '%i') as name FROM `csgo_clans_wars` a WHERE (clan = '%i' OR clan2 = '%i') AND started = '1'", playerData[id][CLAN], playerData[id][CLAN], playerData[id][CLAN]);
 	SQL_ThreadQuery(sql, "remove_clan_wars", queryData, tempId, sizeof(tempId));
 
-	formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_clans` WHERE id = '%i'", clan[id]);
+	formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_clans` WHERE id = '%i'", playerData[id][CLAN]);
 	SQL_ThreadQuery(sql, "ignore_handle", queryData);
 
-	formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_clans_applications` WHERE clan = '%i'", clan[id]);
+	formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_clans_applications` WHERE clan = '%i'", playerData[id][CLAN]);
 	SQL_ThreadQuery(sql, "ignore_handle", queryData);
 
-	formatex(queryData, charsmax(queryData), "UPDATE `csgo_clans_members` SET flag = '0', clan = '0', deposit = '0', withdraw = '0' WHERE clan = '%i'", clan[id]);
+	formatex(queryData, charsmax(queryData), "UPDATE `csgo_clans_members` SET flag = '0', clan = '0', deposit = '0', withdraw = '0' WHERE clan = '%i'", playerData[id][CLAN]);
 	SQL_ThreadQuery(sql, "ignore_handle", queryData);
 
-	ArrayDeleteItem(csgoClans, get_clan_id(clan[id]));
+	ArrayDeleteItem(csgoClans, get_clan_id(playerData[id][CLAN]));
 
-	clan[id] = 0;
+	playerData[id][CLAN] = 0;
 }
 
 stock check_clan_loaded(clanId)
