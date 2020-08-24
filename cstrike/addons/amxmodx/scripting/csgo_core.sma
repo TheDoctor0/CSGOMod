@@ -165,6 +165,8 @@ public plugin_init()
 	for (new i = 0; i < sizeof traceBullets; i++) {
 		RegisterHam(Ham_TraceAttack, traceBullets[i], "trace_attack_post", 1);
 	}
+
+	RegisterHam(Ham_Weapon_SecondaryAttack, "weapon_m4a1", "m4a1_secondary_attack", 0);
 }
 
 public plugin_precache()
@@ -2257,7 +2259,7 @@ public weapon_deploy_post(ent)
 
 	if (!is_user_alive(id)) return HAM_IGNORED;
 
-	weapon = cs_get_weapon_id(ent);
+	weapon = weapon_entity(ent);
 	playerData[id][TEMP][WEAPON] = weapon;
 
 	if (weapon == CSW_P228 && csgo_get_user_zeus(id)) return HAM_IGNORED;
@@ -2309,6 +2311,31 @@ public weapon_primary_attack(ent)
 	return HAM_IGNORED;
 }
 
+public m4a1_secondary_attack(ent)
+{
+	static skin, id; id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
+
+	if (!is_user_alive(id)) return HAM_IGNORED;
+
+	skin = get_weapon_skin(id, weapon_entity(ent));
+
+	if (skin > NONE) {
+		static skinName[64];
+
+		get_weapon_skin_name(id, ent, skinName, charsmax(skinName));
+
+		if (containi(skinName, "M4A4") != -1) {
+			cs_set_weapon_silen(ent, 0, 0);
+
+			set_pdata_float(ent, OFFSET_SECONDARY_ATTACK, 9999.0, OFFSET_ITEM_LINUX);
+
+			return HAM_SUPERCEDE;
+		}
+	}
+
+	return HAM_IGNORED;
+}
+
 public trace_attack_post(ent, attacker, Float:damage, Float:direction[3], ptr, damageType)
 {
 	static weapon, Float:vectorEnd[3];
@@ -2353,8 +2380,28 @@ public add_player_item(id, ent)
 	new owner = entity_get_int(ent, EV_INT_iuser1);
 
 	if (!is_user_connected(owner)) {
+		new weapon = weapon_entity(ent), skin = get_weapon_skin(id, weapon);
+
 		entity_set_int(ent, EV_INT_iuser1, id);
-		entity_set_int(ent, EV_INT_iuser2, get_weapon_skin(id, cs_get_weapon_id(ent)));
+		entity_set_int(ent, EV_INT_iuser2, skin);
+
+		if (skin > NONE) {
+			new skinName[64];
+
+			get_weapon_skin_name(id, ent, skinName, charsmax(skinName));
+
+			if (containi(skinName, "M4A4") != -1) {
+				cs_set_weapon_silen(ent, 0, 0);
+
+				set_pdata_float(ent, OFFSET_SECONDARY_ATTACK, 9999.0, OFFSET_ITEM_LINUX);
+
+				return HAM_IGNORED;
+			}
+		}
+
+		if (weapon == CSW_USP || weapon == CSW_M4A1) {
+			cs_set_weapon_silen(ent, 1, 0);
+		}
 	}
 
 	return HAM_IGNORED;
@@ -2513,17 +2560,17 @@ public check_aim_weapon(id)
 		return FMRES_IGNORED;
 	}
 
-	new playerWeapon[32], weapon = fm_get_weaponbox_type(ent);
+	new skinName[64], weapon = fm_get_weaponbox_type(ent);
 
 	if ((weapon == CSW_C4 && get_user_team(id) != 1) || !weapon) return FMRES_IGNORED;
 
 	canPickup[id] = true;
 
-	get_weapon_skin_name(id, ent, playerWeapon, charsmax(playerWeapon), weapon);
+	get_weapon_skin_name(id, ent, skinName, charsmax(skinName), weapon);
 
 	set_hudmessage(0, 120, 250, -1.0, 0.7, 0, 1.0, 1.0, 0.1, 0.1, 3);
 
-	ShowSyncHudMsg(id, weaponHud, "%L", id, "CSGO_CORE_PICKUP", playerWeapon);
+	ShowSyncHudMsg(id, weaponHud, "%L", id, "CSGO_CORE_PICKUP", skinName);
 
 	if (get_user_button(id) & IN_USE) {
 		static weaponName[32], data[2];
@@ -2590,12 +2637,21 @@ stock change_skin(id, weapon, ent = 0)
 
 				get_weaponname(weapon, weaponName, charsmax(weaponName));
 
-				playerData[id][SKIN] = weaponSkin;
-				playerData[id][SUBMODEL] = skin[SKIN_SUBMODEL];
-
 				if (weapon != get_weapon_id(skin[SKIN_WEAPON])) {
 					entity_set_int(ent, EV_INT_iuser1, 0);
 					entity_set_int(ent, EV_INT_iuser2, NONE);
+
+					playerData[id][SKIN] = NONE;
+					playerData[id][SUBMODEL] = 0;
+				} else {
+					playerData[id][SKIN] = weaponSkin;
+					playerData[id][SUBMODEL] = skin[SKIN_SUBMODEL];
+
+					if (containi(skin[SKIN_NAME], "M4A4") != -1) {
+						cs_set_weapon_silen(ent, 0, 0);
+
+						set_pdata_float(ent, OFFSET_SECONDARY_ATTACK, 9999.0, OFFSET_ITEM_LINUX);
+					}
 				}
 			}
 
@@ -2610,6 +2666,12 @@ stock change_skin(id, weapon, ent = 0)
 
 		playerData[id][SKIN] = playerData[id][ACTIVE][weapon];
 		playerData[id][SUBMODEL] = skin[SKIN_SUBMODEL];
+
+		if (containi(skin[SKIN_NAME], "M4A4") != -1) {
+			cs_set_weapon_silen(ent, 0, 0);
+
+			set_pdata_float(ent, OFFSET_SECONDARY_ATTACK, 9999.0, OFFSET_ITEM_LINUX);
+		}
 	}
 
 	set_task(0.1, "deploy_weapon_switch", id + TASK_DEPLOY);
@@ -2642,7 +2704,7 @@ public deploy_weapon_switch(id)
 
 	set_pdata_float(weapon, OFFSET_LAST_EVENT_CHECK, get_gametime() + 0.001, OFFSET_ITEM_LINUX);
 
-	send_weapon_animation(id, skin[SKIN_SUBMODEL]);
+	send_weapon_animation(id, get_bit(id, force) ? playerData[id][TEMP][BUY_SUBMODEL] : playerData[id][SUBMODEL]);
 }
 
 stock send_weapon_animation(id, submodel, animation = 0)
@@ -2806,7 +2868,7 @@ stock play_weapon_state(id, const soundFire[], animation)
 
 	emit_sound(id, CHAN_WEAPON, soundFire, VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
 
-	send_weapon_animation(id, playerData[id][SUBMODEL], animation);
+	send_weapon_animation(id, get_bit(id, force) ? playerData[id][TEMP][BUY_SUBMODEL] : playerData[id][SUBMODEL], animation);
 }
 
 stock eject_brass(id, ent)
@@ -3097,7 +3159,7 @@ stock get_weapon_skin_name(id, ent, dataReturn[], dataLength, weapon = 0, check 
 
 			if (equal(dataReturn, defaultName) || !dataReturn[0]) {
 				formatex(dataReturn, dataLength, weaponName[7]);
-			} else {
+			} else if (containi(dataReturn, "M4A4") == -1) {
 				format(dataReturn, dataLength, "%s | %s", weaponName[7], dataReturn);
 			}
 		}
