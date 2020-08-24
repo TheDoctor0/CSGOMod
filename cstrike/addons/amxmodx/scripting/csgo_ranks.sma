@@ -690,15 +690,15 @@ public check_time(id)
 
 	UnixToTime(time, visitYear, visitMonth, visitDay, visitHour, visitMinutes, visitSeconds, UT_TIMEZONE_SERVER);
 
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_VISIT_HOUR", visitHour, visitMinutes, visitSeconds, visitDay, visitMonth, visitYear);
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_RANKS_VISIT_HOUR", visitHour, visitMinutes, visitSeconds, visitDay, visitMonth, visitYear);
 
-	if (playerData[id][FIRST_VISIT] == playerData[id][LAST_VISIT]) client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_VISIT_FIRST");
+	if (playerData[id][FIRST_VISIT] == playerData[id][LAST_VISIT]) client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_RANKS_VISIT_FIRST");
 	else {
 		UnixToTime(playerData[id][LAST_VISIT], Year, Month, Day, visitHour, visitMinutes, visitSeconds, UT_TIMEZONE_SERVER);
 
-		if (visitYear == Year && visitMonth == Month && visitDay == Day) client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_VISIT_TODAY", visitHour, visitMinutes, visitSeconds);
-		else if (visitYear == Year && visitMonth == Month && (visitDay - 1) == Day) client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_VISIT_YESTERDAY", visitHour, visitMinutes, visitSeconds);
-		else client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_VISIT_BEFORE", visitHour, visitMinutes, visitSeconds, Day, Month, Year);
+		if (visitYear == Year && visitMonth == Month && visitDay == Day) client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_RANKS_VISIT_TODAY", visitHour, visitMinutes, visitSeconds);
+		else if (visitYear == Year && visitMonth == Month && (visitDay - 1) == Day) client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_RANKS_VISIT_YESTERDAY", visitHour, visitMinutes, visitSeconds);
+		else client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_RANKS_VISIT_BEFORE", visitHour, visitMinutes, visitSeconds, Day, Month, Year);
 	}
 }
 
@@ -792,10 +792,10 @@ public cmd_ranks(id)
 
 public cmd_rank(id)
 {
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_CURRENT_RANK", rankName[playerData[id][RANK]]);
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_RANKS_CURRENT_RANK", rankName[playerData[id][RANK]]);
 
 	if (playerData[id][RANK] < MAX_RANKS && playerData[id][RANK] > 0) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_NEXT_RANK", rankName[playerData[id][RANK] + 1], rankElo[playerData[id][RANK] + 1] - playerData[id][ELO_RANK]);
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_RANKS_NEXT_RANK", rankName[playerData[id][RANK] + 1], rankElo[playerData[id][RANK] + 1] - playerData[id][ELO_RANK]);
 	}
 
 	return PLUGIN_HANDLED;
@@ -895,8 +895,8 @@ public show_time(failState, Handle:query, error[], errorNum, playerId[], dataSiz
 		hours++;
 	}
 
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_TIME_INFO", hours, minutes, seconds);
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_TIME_TOP", rank, players);
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_RANKS_TIME_INFO", hours, minutes, seconds);
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_RANKS_TIME_TOP", rank, players);
 
 	return PLUGIN_HANDLED;
 }
@@ -990,8 +990,8 @@ public show_medals(failState, Handle:query, error[], errorNum, playerId[], dataS
 
 	new id = playerId[0], rank = SQL_ReadResult(query, 0) + 1, players = SQL_ReadResult(query, 1);
 
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_MEDALS_INFO", playerData[id][GOLD], playerData[id][SILVER], playerData[id][BRONZE]);
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_MEDALS_TOP", rank, players);
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_RANKS_MEDALS_INFO", playerData[id][GOLD], playerData[id][SILVER], playerData[id][BRONZE]);
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_RANKS_MEDALS_TOP", rank, players);
 
 	return PLUGIN_HANDLED;
 }
@@ -1084,10 +1084,10 @@ public show_stats(failState, Handle:query, error[], errorNum, playerId[], dataSi
 
 	new id = playerId[0], rank = SQL_ReadResult(query, 0) + 1, players = SQL_ReadResult(query, 1);
 
-	if (playerData[id][CURRENT_STATS] > playerData[id][BEST_STATS]) client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_STATS_INFO", playerData[id][CURRENT_KILLS], playerData[id][CURRENT_HS], playerData[id][CURRENT_DEATHS]);
-	else client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_STATS_INFO", playerData[id][BEST_KILLS], playerData[id][BEST_HS], playerData[id][BEST_DEATHS]);
+	if (playerData[id][CURRENT_STATS] > playerData[id][BEST_STATS]) client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_RANKS_STATS_INFO", playerData[id][CURRENT_KILLS], playerData[id][CURRENT_HS], playerData[id][CURRENT_DEATHS]);
+	else client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_RANKS_STATS_INFO", playerData[id][BEST_KILLS], playerData[id][BEST_HS], playerData[id][BEST_DEATHS]);
 
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_STATS_TOP", rank, players);
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_RANKS_STATS_TOP", rank, players);
 
 	return PLUGIN_HANDLED;
 }
@@ -1255,7 +1255,7 @@ public message_intermission()
 	for (new id = 1; id <= MAX_PLAYERS; id++) {
 		if (!is_user_connected(id) || is_user_hltv(id) || is_user_bot(id)) continue;
 
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_RANKS_MEDALS_BEST");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_RANKS_MEDALS_BEST");
 
 		for (new i = 2; i >= 0; i--) {
 			switch (i) {
@@ -1265,9 +1265,9 @@ public message_intermission()
 			}
 
 			if (i == FIRST) {
-				client_print_color(id, id, "^4[CS:GO]^3 %L", id, "CSGO_RANKS_MEDALS_BEST_MVP", playerName, winnersFrags[i], medal);
+				client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_RANKS_MEDALS_BEST_MVP", playerName, winnersFrags[i], medal);
 			} else {
-				client_print_color(id, id, "^4[CS:GO]^3 %L", id, "CSGO_RANKS_MEDALS_BEST_EVP", playerName, winnersFrags[i], medal);
+				client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_RANKS_MEDALS_BEST_EVP", playerName, winnersFrags[i], medal);
 			}
 		}
 	}

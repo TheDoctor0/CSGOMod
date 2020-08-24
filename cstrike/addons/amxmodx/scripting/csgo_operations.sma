@@ -169,7 +169,7 @@ public select_operation(id)
 	if (!is_user_connected(id)) return PLUGIN_HANDLED;
 
 	if (playerData[id][PLAYER_TYPE]) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_OPERATIONS_ALREADY_IN_PROGRESS");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_OPERATIONS_ALREADY_IN_PROGRESS");
 
 		return PLUGIN_HANDLED;
 	}
@@ -230,7 +230,7 @@ public select_operation_handle(id, menu, item)
 
 	save_operation(id);
 
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_OPERATIONS_STARTED");
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_OPERATIONS_STARTED");
 
 	menu_destroy(menu);
 
@@ -285,14 +285,14 @@ public give_reward(id)
 
 	reset_operation(id, 0, 1);
 
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_OPERATIONS_COMPLETED", reward);
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_OPERATIONS_COMPLETED", reward);
 
 	return PLUGIN_HANDLED;
 }
 
 public check_operation(id)
 {
-	if (!playerData[id][PLAYER_TYPE]) client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_OPERATIONS_NONE");
+	if (!playerData[id][PLAYER_TYPE]) client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_OPERATIONS_NONE");
 	else {
 		new message[128];
 
@@ -304,7 +304,7 @@ public check_operation(id)
 			case TYPE_NONE: formatex(message, charsmax(message), "%L", id, "CSGO_OPERATIONS_TYPE_NONE_INFO");
 		}
 
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_OPERATIONS_PROGRESS", message);
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_OPERATIONS_PROGRESS", message);
 	}
 
 	return PLUGIN_HANDLED;
@@ -356,7 +356,7 @@ public reset_operation(id, data, silent)
 
 	if (!data) save_operation(id);
 
-	if (!silent) client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_OPERATIONS_CANCELLED");
+	if (!silent) client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_OPERATIONS_CANCELLED");
 
 	return PLUGIN_HANDLED;
 }

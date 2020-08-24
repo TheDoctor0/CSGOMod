@@ -8,6 +8,8 @@
 #endif
 
 #define VERSION	"2.0.0"
+#define CHAT_PREFIX "^4[CS:GO]^1"
+#define CONSOLE_PREFIX "[CS:GO]"
 
 #define get_bit(%2,%1) (%1 & (1<<(%2&31)))
 #define set_bit(%2,%1) (%1 |= (1<<(%2&31)))

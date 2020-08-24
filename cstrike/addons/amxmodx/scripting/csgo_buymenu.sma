@@ -112,7 +112,7 @@ public clcmd_buy_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	switch(item) {
+	switch (item) {
 		case 0: clcmd_handgun(id);
 		case 1: clcmd_shotgun(id);
 		case 2: clcmd_submachinegun(id);

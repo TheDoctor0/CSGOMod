@@ -400,8 +400,8 @@ public show_advertisement(id)
 {
 	id -= TASK_AD;
 
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_INFO_CREATED", PLUGIN, VERSION, AUTHOR);
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_INFO_HELP");
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_INFO_CREATED", PLUGIN, VERSION, AUTHOR);
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_INFO_HELP");
 }
 
 public skins_menu(id)
@@ -409,7 +409,7 @@ public skins_menu(id)
 	if (!csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	if (!playerData[id][SKINS_LOADED]) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_INFO_LOADING");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_INFO_LOADING");
 
 		return PLUGIN_HANDLED;
 	}
@@ -480,7 +480,7 @@ public skins_menu_handle(id, menu, item)
 		case 7: {
 			playerData[id][MENU_BLOCKED] = !playerData[id][MENU_BLOCKED];
 
-			client_print_color(id, id, "^4[CS:GO]^1 %L", id, playerData[id][MENU_BLOCKED] ? "CSGO_CORE_SKINS_MENU_STANDARD" : "CSGO_CORE_SKINS_MENU_NEW");
+			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, playerData[id][MENU_BLOCKED] ? "CSGO_CORE_SKINS_MENU_STANDARD" : "CSGO_CORE_SKINS_MENU_NEW");
 
 			save_data(id);
 
@@ -488,7 +488,7 @@ public skins_menu_handle(id, menu, item)
 		} case 8: {
 			playerData[id][EXCHANGE_BLOCKED] = !playerData[id][EXCHANGE_BLOCKED];
 
-			client_print_color(id, id, "^4[CS:GO]^1 %L", id, playerData[id][EXCHANGE_BLOCKED] ? "CSGO_CORE_SKINS_EXCHANGE_DISABLED" : "CSGO_CORE_SKINS_EXCHANGE_ENABLED");
+			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, playerData[id][EXCHANGE_BLOCKED] ? "CSGO_CORE_SKINS_EXCHANGE_DISABLED" : "CSGO_CORE_SKINS_EXCHANGE_ENABLED");
 
 			save_data(id);
 
@@ -520,7 +520,7 @@ public set_skin_menu(id)
 	if (!csgo_check_account(id)) return PLUGIN_HANDLED;
 
 	if (!playerData[id][SKINS_LOADED]) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_INFO_LOADING");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_INFO_LOADING");
 
 		return PLUGIN_HANDLED;
 	}
@@ -535,7 +535,7 @@ public buy_skin_menu(id)
 	if (!csgo_check_account(id)) return PLUGIN_HANDLED;
 
 	if (!playerData[id][SKINS_LOADED]) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_INFO_LOADING");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_INFO_LOADING");
 
 		return PLUGIN_HANDLED;
 	}
@@ -550,7 +550,7 @@ public random_skin_menu(id)
 	if (!csgo_check_account(id)) return PLUGIN_HANDLED;
 
 	if (!playerData[id][SKINS_LOADED]) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_INFO_LOADING");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_INFO_LOADING");
 
 		return PLUGIN_HANDLED;
 	}
@@ -606,7 +606,7 @@ public choose_weapon_menu(id, type)
 	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	if (!count) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_CHOOSE_WEAPON_NONE");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_CHOOSE_WEAPON_NONE");
 
 		menu_destroy(menu);
 	} else {
@@ -716,10 +716,10 @@ public set_weapon_skin_handle(id, menu, item)
 
 		set_skin(id, skin[SKIN_WEAPON], skin[SKIN_NAME], skinId, 1);
 
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_SET_NEW", skin[SKIN_WEAPON], skin[SKIN_NAME]);
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_SET_NEW", skin[SKIN_WEAPON], skin[SKIN_NAME]);
 
 		if (!equal(skin[SKIN_WEAPON], "KNIFE")) {
-			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_SET_INFO");
+			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_SET_INFO");
 		}
 	} else {
 		new itemData[16], itemAccess, itemCallback;
@@ -730,10 +730,10 @@ public set_weapon_skin_handle(id, menu, item)
 
 		set_skin(id, itemData);
 
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_SET_DEFAULT", itemData);
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_SET_DEFAULT", itemData);
 
 		if (!equal(itemData, "KNIFE")) {
-			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_SET_INFO");
+			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_SET_INFO");
 		}
 	}
 
@@ -776,7 +776,7 @@ public buy_weapon_skin(id, weapon[])
 	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	if (!count) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_BUY_NONE");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_BUY_NONE");
 
 		menu_destroy(menu);
 	} else {
@@ -803,7 +803,7 @@ public buy_weapon_skin_handle(id, menu, item)
 	menu_destroy(menu);
 
 	if (!multipleSkins && has_skin(id, skinId)) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_ALREADY_HAVE");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_ALREADY_HAVE");
 
 		return PLUGIN_HANDLED;
 	}
@@ -813,7 +813,7 @@ public buy_weapon_skin_handle(id, menu, item)
 	ArrayGetArray(skins, skinId, skin);
 
 	if (playerData[id][MONEY] < skin[SKIN_PRICE]) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_NO_MONEY");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_NO_MONEY");
 
 		return PLUGIN_HANDLED;
 	}
@@ -865,7 +865,7 @@ public buy_weapon_skin_confirm_handle(id, menu, item)
 	}
 
 	if (!multipleSkins && has_skin(id, playerData[id][TEMP][BUY])) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_ALREADY_HAVE");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_ALREADY_HAVE");
 
 		return PLUGIN_HANDLED;
 	}
@@ -891,7 +891,7 @@ public buy_weapon_skin_confirm_handle(id, menu, item)
 			ArrayGetArray(skins, playerData[id][TEMP][BUY], skin);
 
 			if (playerData[id][MONEY] < skin[SKIN_PRICE]) {
-				client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_NO_MONEY");
+				client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_NO_MONEY");
 
 				return PLUGIN_HANDLED;
 			}
@@ -902,7 +902,7 @@ public buy_weapon_skin_confirm_handle(id, menu, item)
 
 			add_skin(id, playerData[id][TEMP][BUY], skin[SKIN_WEAPON], skin[SKIN_NAME]);
 
-			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_BUY_SUCCESS", skin[SKIN_NAME], skin[SKIN_WEAPON]);
+			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_BUY_SUCCESS", skin[SKIN_NAME], skin[SKIN_WEAPON]);
 
 			log_to_file("csgo-buy.log", "Player %s bought skin %s (%s)", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON]);
 
@@ -974,9 +974,9 @@ public random_weapon_skin_handle(id, menu, item)
 
 	if (!multipleSkins && !get_missing_weapon_skins_count(id, weapon)) {
 		if (equal(weapon, allName)) {
-			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_ALREADY_HAVE_ALL", weapon);
+			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_ALREADY_HAVE_ALL", weapon);
 		} else {
-			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_ALREADY_HAVE_ALL_WEAPON", weapon);
+			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_ALREADY_HAVE_ALL_WEAPON", weapon);
 		}
 
 		return PLUGIN_HANDLED;
@@ -985,7 +985,7 @@ public random_weapon_skin_handle(id, menu, item)
 	new Float:price = randomSkinPrice[equal(weapon, allName) ? WEAPON_ALL : get_weapon_id(weapon)];
 
 	if (playerData[id][MONEY] < price) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_NO_MONEY");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_NO_MONEY");
 
 		return PLUGIN_HANDLED;
 	} else playerData[id][MONEY] -= price;
@@ -1016,12 +1016,12 @@ public random_weapon_skin_handle(id, menu, item)
 		add_skin(id, skinId, skin[SKIN_WEAPON], skin[SKIN_NAME]);
 
 		for (new i = 1; i <= MAX_PLAYERS; i++) {
-			client_print_color(i, id, "^4[CS:GO]^3 %L", i, "CSGO_CORE_DRAW_SUCCESS", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON]);
+			client_print_color(i, id, "%s %L", CHAT_PREFIX, i, "CSGO_CORE_DRAW_SUCCESS", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON]);
 		}
 
 		log_to_file("csgo-random.log", "Player %s has drawn a skin %s (%s)", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON]);
 	} else {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_DRAW_NEXT_TIME");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_DRAW_NEXT_TIME");
 	}
 
 	save_data(id);
@@ -1036,7 +1036,7 @@ public exchange_skin_menu(id)
 	if (!is_user_connected(id) || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	if (!playerData[id][SKINS_LOADED]) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_INFO_LOADING");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_INFO_LOADING");
 
 		return PLUGIN_HANDLED;
 	}
@@ -1073,7 +1073,7 @@ public exchange_skin_menu(id)
 	if (!players) {
 		menu_destroy(menu);
 
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_EXCHANGE_NONE");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_EXCHANGE_NONE");
 	} else menu_display(id, menu);
 
 	return PLUGIN_HANDLED;
@@ -1098,19 +1098,19 @@ public exchange_skin_menu_handle(id, menu, item)
 	menu_destroy(menu);
 
 	if (!is_user_connected(player)) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_PLAYER_DISCONNECTED");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_PLAYER_DISCONNECTED");
 
 		return PLUGIN_HANDLED;
 	}
 
 	if (!ArraySize(playerSkins[player])) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_NO_SKINS_PLAYER");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_NO_SKINS_PLAYER");
 
 		return PLUGIN_HANDLED;
 	}
 
 	if (!ArraySize(playerSkins[id])) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_NO_SKINS");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_NO_SKINS");
 
 		return PLUGIN_HANDLED;
 	}
@@ -1168,13 +1168,13 @@ public exchange_skin_handle(id, menu, item)
 	new player = playerData[id][TEMP][EXCHANGE_PLAYER];
 
 	if (!is_user_connected(player)) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_PLAYER_DISCONNECTED");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_PLAYER_DISCONNECTED");
 
 		return PLUGIN_HANDLED;
 	}
 
 	if (!ArraySize(playerSkins[player])) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_NO_SKINS_PLAYER");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_NO_SKINS_PLAYER");
 
 		return PLUGIN_HANDLED;
 	}
@@ -1188,7 +1188,7 @@ public exchange_skin_handle(id, menu, item)
 	menu_destroy(menu);
 
 	if (has_skin(id, playerData[id][TEMP][EXCHANGE], 1) == NONE) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_EXCHANGE_OWN_NONE");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_EXCHANGE_OWN_NONE");
 
 		return PLUGIN_HANDLED;
 	}
@@ -1227,7 +1227,7 @@ public exchange_skin_handle(id, menu, item)
 	if (!skinsCount) {
 		menu_destroy(menu);
 
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_ALREADY_HAVE_ALL_PLAYER");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_ALREADY_HAVE_ALL_PLAYER");
 	} else menu_display(id, menu);
 
 	return PLUGIN_HANDLED;
@@ -1246,13 +1246,13 @@ public exchange_for_skin_handle(id, menu, item)
 	new player = playerData[id][TEMP][EXCHANGE_PLAYER];
 
 	if (!is_user_connected(player)) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_PLAYER_DISCONNECTED");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_PLAYER_DISCONNECTED");
 
 		return PLUGIN_HANDLED;
 	}
 
 	if (!ArraySize(playerSkins[player])) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_NO_SKINS_PLAYER");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_NO_SKINS_PLAYER");
 
 		return PLUGIN_HANDLED;
 	}
@@ -1266,13 +1266,13 @@ public exchange_for_skin_handle(id, menu, item)
 	playerData[id][TEMP][EXCHANGE_FOR_SKIN] = str_to_num(itemData);
 
 	if (playerData[id][TEMP][EXCHANGE_FOR_SKIN] == playerData[id][TEMP][EXCHANGE]) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_EXCHANGE_SAME_SKIN");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_EXCHANGE_SAME_SKIN");
 
 		return PLUGIN_HANDLED;
 	}
 
 	if (has_skin(player, playerData[id][TEMP][EXCHANGE_FOR_SKIN], 1) == NONE) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_EXCHANGE_NO_SKIN");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_EXCHANGE_NO_SKIN");
 
 		return PLUGIN_HANDLED;
 	}
@@ -1297,19 +1297,19 @@ public exchange_question_handle(id, key)
 	new player = playerData[id][TEMP][EXCHANGE_PLAYER], exchangeSkin = playerData[player][TEMP][EXCHANGE], exchangeForSkin = playerData[player][TEMP][EXCHANGE_FOR_SKIN];
 
 	if (!is_user_connected(player)) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_EXCHANGE_NO_PLAYER");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_EXCHANGE_NO_PLAYER");
 
 		return PLUGIN_HANDLED;
 	}
 
 	if (has_skin(player, exchangeSkin, 1) == NONE) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_EXCHANGE_NO_SKIN2");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_EXCHANGE_NO_SKIN2");
 
 		return PLUGIN_HANDLED;
 	}
 
 	if (has_skin(id, exchangeForSkin, 1) == NONE) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_EXCHANGE_NO_SKIN3");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_EXCHANGE_NO_SKIN3");
 
 		return PLUGIN_HANDLED;
 	}
@@ -1327,12 +1327,12 @@ public exchange_question_handle(id, key)
 			add_skin(player, exchangeForSkin, skin[SKIN_WEAPON], skin[SKIN_NAME]);
 			add_skin(id, exchangeSkin, playerSkin[SKIN_WEAPON], playerSkin[SKIN_NAME]);
 
-			client_print_color(player, player, "^4[CS:GO]^1 %L", id, "CSGO_CORE_EXCHANGE_SUCCESS", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON]);
-			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_EXCHANGE_SUCCESS", playerData[player][NAME], playerSkin[SKIN_NAME], playerSkin[SKIN_WEAPON]);
+			client_print_color(player, player, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_EXCHANGE_SUCCESS", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON]);
+			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_EXCHANGE_SUCCESS", playerData[player][NAME], playerSkin[SKIN_NAME], playerSkin[SKIN_WEAPON]);
 
 			log_to_file("csgo-exchange.log", "Player %s has exchanged skin %s (%s) z graczem %s with player %s (%s)", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON], playerData[player][NAME], playerSkin[SKIN_NAME], playerSkin[SKIN_WEAPON]);
 		} default: {
-			client_print_color(player, player, "^4[CS:GO]^1 %L", id, "CSGO_CORE_EXCHANGE_DECLINED");
+			client_print_color(player, player, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_EXCHANGE_DECLINED");
 		}
 	}
 
@@ -1344,7 +1344,7 @@ public give_skin_menu(id)
 	if (!is_user_connected(id) || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	if (!playerData[id][SKINS_LOADED]) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_INFO_LOADING");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_INFO_LOADING");
 
 		return PLUGIN_HANDLED;
 	}
@@ -1381,7 +1381,7 @@ public give_skin_menu(id)
 	if (!players) {
 		menu_destroy(menu);
 
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_GIVE_NONE");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_GIVE_NONE");
 	} else menu_display(id, menu);
 
 	return PLUGIN_HANDLED;
@@ -1406,13 +1406,13 @@ public give_skin_menu_handle(id, menu, item)
 	menu_destroy(menu);
 
 	if (!is_user_connected(player)) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_PLAYER_DISCONNECTED");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_PLAYER_DISCONNECTED");
 
 		return PLUGIN_HANDLED;
 	}
 
 	if (!ArraySize(playerSkins[id])) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_NO_SKINS");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_NO_SKINS");
 
 		return PLUGIN_HANDLED;
 	}
@@ -1454,7 +1454,7 @@ public give_skin_menu_handle(id, menu, item)
 	if (!skinsCount) {
 		menu_destroy(menu);
 
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_GIVE_SELECT_ALREADY");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_GIVE_SELECT_ALREADY");
 	} else menu_display(id, menu);
 
 	return PLUGIN_HANDLED;
@@ -1473,7 +1473,7 @@ public give_skin_handle(id, menu, item)
 	new player = playerData[id][TEMP][GIVE_PLAYER];
 
 	if (!is_user_connected(player)) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_PLAYER_DISCONNECTED");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_PLAYER_DISCONNECTED");
 
 		return PLUGIN_HANDLED;
 	}
@@ -1487,13 +1487,13 @@ public give_skin_handle(id, menu, item)
 	menu_destroy(menu);
 
 	if (has_skin(id, skinId, 1) == NONE) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_GIVE_NO_SKIN");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_GIVE_NO_SKIN");
 
 		return PLUGIN_HANDLED;
 	}
 
 	if (!multipleSkins && has_skin(player, skinId)) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_GIVE_ALREADY");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_GIVE_ALREADY");
 
 		return PLUGIN_HANDLED;
 	}
@@ -1506,8 +1506,8 @@ public give_skin_handle(id, menu, item)
 
 	add_skin(player, skinId, skin[SKIN_WEAPON], skin[SKIN_NAME]);
 
-	client_print_color(player, player, "^4[CS:GO]^1 %L", id, "CSGO_CORE_GIVE_SUCCESS", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON]);
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_GIVE_SUCCESS2", skin[SKIN_NAME], skin[SKIN_WEAPON], playerData[player][NAME]);
+	client_print_color(player, player, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_GIVE_SUCCESS", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON]);
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_GIVE_SUCCESS2", skin[SKIN_NAME], skin[SKIN_WEAPON], playerData[player][NAME]);
 
 	log_to_file("csgo-give.log", "Player %s gave skin %s (%s) to player %s", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON], playerData[player][NAME]);
 
@@ -1519,7 +1519,7 @@ public market_menu(id)
 	if (!csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	if (!playerData[id][SKINS_LOADED]) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_INFO_LOADING");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_INFO_LOADING");
 
 		return PLUGIN_HANDLED;
 	}
@@ -1582,19 +1582,19 @@ public market_sell_skin(id)
 	if (!is_user_connected(id) || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	if (!playerData[id][SKINS_LOADED]) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_INFO_LOADING");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_INFO_LOADING");
 
 		return PLUGIN_HANDLED;
 	}
 
 	if (!ArraySize(playerSkins[id])) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_NO_SKINS");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_NO_SKINS");
 
 		return PLUGIN_HANDLED;
 	}
 
 	if (get_market_skins(id) >= maxMarketSkins) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_SELL_MAX", maxMarketSkins);
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_SELL_MAX", maxMarketSkins);
 
 		return PLUGIN_HANDLED;
 	}
@@ -1658,14 +1658,14 @@ public market_sell_skin_handle(id, menu, item)
 	menu_destroy(menu);
 
 	if (has_skin(id, playerData[id][SALE_SKIN], 1) == NONE) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_SELL_NO_SKIN");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_SELL_NO_SKIN");
 
 		return PLUGIN_HANDLED;
 	}
 
 	client_cmd(id, "messagemode SKIN_PRICE");
 
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_SELL_PRICE");
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_SELL_PRICE");
 
 	client_print(id, print_center, "%L", id, "CSGO_CORE_SELL_PRICE2");
 
@@ -1677,13 +1677,13 @@ public set_skin_price(id)
 	if (!csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	if (has_skin(id, playerData[id][SALE_SKIN], 1) == NONE) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_SELL_NO_SKIN");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_SELL_NO_SKIN");
 
 		return PLUGIN_HANDLED;
 	}
 
 	if (get_market_skins(id) >= maxMarketSkins) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_SELL_MAX", maxMarketSkins);
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_SELL_MAX", maxMarketSkins);
 
 		return PLUGIN_HANDLED;
 	}
@@ -1696,7 +1696,7 @@ public set_skin_price(id)
 	price = str_to_float(priceData);
 
 	if (price < 1.0 || price > 99999.0) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_SELL_WRONG_PRICE");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_SELL_WRONG_PRICE");
 
 		return PLUGIN_HANDLED;
 	}
@@ -1715,7 +1715,7 @@ public set_skin_price(id)
 	change_local_skin(id, playerData[id][SALE_SKIN]);
 
 	for (new i = 1; i <= MAX_PLAYERS; i++) {
-		client_print_color(i, id, "^4[CS:GO]^3 %L", i, "CSGO_CORE_SELL_ISSUED", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON], price);
+		client_print_color(i, id, "%s %L", CHAT_PREFIX, i, "CSGO_CORE_SELL_ISSUED", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON], price);
 	}
 
 	return PLUGIN_HANDLED;
@@ -1726,7 +1726,7 @@ public market_buy_skin(id)
 	if (!is_user_connected(id) || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	if (!playerData[id][SKINS_LOADED]) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_INFO_LOADING");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_INFO_LOADING");
 
 		return PLUGIN_HANDLED;
 	}
@@ -1765,7 +1765,7 @@ public market_buy_skin(id)
 	if (!skinsCounts) {
 		menu_destroy(menu);
 
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_PURCHASE_NONE");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_PURCHASE_NONE");
 	} else menu_display(id, menu);
 
 	return PLUGIN_HANDLED;
@@ -1792,7 +1792,7 @@ public market_buy_skin_handle(id, menu, item)
 	if (skinId < 0) {
 		market_menu(id);
 
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_PURCHASE_NO_SKIN");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_PURCHASE_NO_SKIN");
 
 		return PLUGIN_HANDLED;
 	}
@@ -1842,7 +1842,7 @@ public market_buy_confirm_handle(id, menu, item)
 	if (skinId < 0) {
 		market_menu(id);
 
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_PURCHASE_NO_SKIN");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_PURCHASE_NO_SKIN");
 
 		return PLUGIN_HANDLED;
 	}
@@ -1852,7 +1852,7 @@ public market_buy_confirm_handle(id, menu, item)
 	ArrayGetArray(market, skinId, marketSkin);
 
 	if (playerData[id][MONEY] < marketSkin[MARKET_PRICE]) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_NO_MONEY");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_NO_MONEY");
 
 		return PLUGIN_HANDLED;
 	}
@@ -1871,10 +1871,10 @@ public market_buy_confirm_handle(id, menu, item)
 	add_skin(id, marketSkin[MARKET_SKIN], skin[SKIN_WEAPON], skin[SKIN_NAME]);
 	remove_skin(marketSkin[MARKET_OWNER], marketSkin[MARKET_SKIN], skin[SKIN_WEAPON], skin[SKIN_NAME]);
 
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_PURCHASE_BOUGHT", skin[SKIN_NAME], skin[SKIN_WEAPON]);
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_PURCHASE_BOUGHT", skin[SKIN_NAME], skin[SKIN_WEAPON]);
 
-	client_print_color(marketSkin[MARKET_OWNER], marketSkin[MARKET_OWNER], "^4[CS:GO]^1 %L", id, "CSGO_CORE_PURCHASE_BOUGHT2", skin[SKIN_NAME], skin[SKIN_WEAPON], playerData[id][NAME]);
-	client_print_color(marketSkin[MARKET_OWNER], marketSkin[MARKET_OWNER], "^4[CS:GO]^1 %L", id, "CSGO_CORE_PURCHASE_BOUGHT3", priceAfterCommision);
+	client_print_color(marketSkin[MARKET_OWNER], marketSkin[MARKET_OWNER], "%s %L", CHAT_PREFIX, id, "CSGO_CORE_PURCHASE_BOUGHT2", skin[SKIN_NAME], skin[SKIN_WEAPON], playerData[id][NAME]);
+	client_print_color(marketSkin[MARKET_OWNER], marketSkin[MARKET_OWNER], "%s %L", CHAT_PREFIX, id, "CSGO_CORE_PURCHASE_BOUGHT3", priceAfterCommision);
 
 	log_to_file("csgo-sell.log", "Player %s sold skin %s (%s) to player %s for %.2f Euro", playerData[marketSkin[MARKET_OWNER]][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON], playerData[id][NAME], marketSkin[MARKET_PRICE]);
 
@@ -1886,7 +1886,7 @@ public market_withdraw_skin(id)
 	if (!is_user_connected(id) || !csgo_check_account(id) || end) return PLUGIN_HANDLED;
 
 	if (!playerData[id][SKINS_LOADED]) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_INFO_LOADING");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_INFO_LOADING");
 
 		return PLUGIN_HANDLED;
 	}
@@ -1925,7 +1925,7 @@ public market_withdraw_skin(id)
 	if (!skinsCounts) {
 		menu_destroy(menu);
 
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_WITHDRAW_NONE");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_WITHDRAW_NONE");
 	} else menu_display(id, menu);
 
 	return PLUGIN_HANDLED;
@@ -1952,7 +1952,7 @@ public market_withdraw_skin_handle(id, menu, item)
 	if (skinId < 0) {
 		market_menu(id);
 
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_WITHDRAW_NO_SKIN");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_WITHDRAW_NO_SKIN");
 
 		return PLUGIN_HANDLED;
 	}
@@ -2002,7 +2002,7 @@ public market_withdraw_confirm_handle(id, menu, item)
 	if (skinId < 0) {
 		market_menu(id);
 
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_WITHDRAW_NO_SKIN");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_WITHDRAW_NO_SKIN");
 
 		return PLUGIN_HANDLED;
 	}
@@ -2016,7 +2016,7 @@ public market_withdraw_confirm_handle(id, menu, item)
 
 	ArrayDeleteItem(market, skinId);
 
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_PURCHASE_SUCCESS", skin[SKIN_NAME], skin[SKIN_WEAPON]);
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_PURCHASE_SUCCESS", skin[SKIN_NAME], skin[SKIN_WEAPON]);
 
 	return PLUGIN_CONTINUE;
 }
@@ -2033,13 +2033,13 @@ public cmd_add_money(id)
 	new Float:addedMoney = str_to_float(tempMoney), player = cmd_target(id, playerName, 0);
 
 	if (!player) {
-		console_print(id, "[CS:GO] %L", id, "CSGO_CORE_ADD_MONEY_NO_PLAYER");
+		console_print(id, "%s %L", CONSOLE_PREFIX, id, "CSGO_CORE_ADD_MONEY_NO_PLAYER");
 
 		return PLUGIN_HANDLED;
 	}
 
 	if (addedMoney < 0.1) {
-		console_print(id, "[CS:GO] %L", id, "CSGO_CORE_ADD_MONEY_TOO_LOW");
+		console_print(id, "%s %L", CONSOLE_PREFIX, id, "CSGO_CORE_ADD_MONEY_TOO_LOW");
 
 		return PLUGIN_HANDLED;
 	}
@@ -2048,8 +2048,8 @@ public cmd_add_money(id)
 
 	save_data(player);
 
-	client_print_color(player, player, "^4[CS:GO]^3 %L", id, "CSGO_CORE_ADD_MONEY_GIVE", playerData[id][NAME], addedMoney);
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_ADD_MONEY_GIVE2", addedMoney, playerData[player][NAME]);
+	client_print_color(player, player, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_ADD_MONEY_GIVE", playerData[id][NAME], addedMoney);
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_ADD_MONEY_GIVE2", addedMoney, playerData[player][NAME]);
 
 	log_to_file("csgo-admin.log", "%s gave %.2f Euro to player %s.", playerData[id][NAME], addedMoney, playerData[player][NAME]);
 
@@ -2088,7 +2088,7 @@ public log_event_operation()
 
 		playerData[id][MONEY] += money;
 
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_BOMB_PLANTED", money);
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_BOMB_PLANTED", money);
 
 		save_data(id);
 	}
@@ -2098,7 +2098,7 @@ public log_event_operation()
 
 		playerData[id][MONEY] += money;
 
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_BOMB_DEFUSED", money);
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_BOMB_DEFUSED", money);
 
 		save_data(id);
 	}
@@ -2123,7 +2123,7 @@ public round_winner(team)
 
 		playerData[id][MONEY] += money;
 
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_ROUND_WIN", money);
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_ROUND_WIN", money);
 
 		save_data(id);
 	}
@@ -2137,7 +2137,7 @@ public hostages_rescued()
 
 	playerData[id][MONEY] += money;
 
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_HOSTAGES_RESCUED", money);
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_HOSTAGES_RESCUED", money);
 
 	save_data(id);
 }
@@ -2163,7 +2163,7 @@ public message_intermission()
 
 		playerData[id][MONEY] += (money = random_float(1.0, 3.0));
 
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_CORE_MAP_REWARD", money);
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_MAP_REWARD", money);
 
 		save_data(id, 1);
 	}

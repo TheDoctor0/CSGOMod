@@ -196,14 +196,14 @@ public account_menu_handle(id, menu, item)
 
 	switch (item) {
 		case 0: {
-			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_LOGIN_PASSWORD");
+			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_ACCOUNTS_LOGIN_PASSWORD");
 
 			set_hudmessage(255, 128, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
 			show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_LOGIN_PASSWORD");
 
 			client_cmd(id, "messagemode ENTER_YOUR_PASSWORD");
 		} case 1: {
-			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_SELECT_PASSWORD");
+			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_ACCOUNTS_SELECT_PASSWORD");
 
 			set_hudmessage(255, 128, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
 			show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_LOGIN_PASSWORD");
@@ -212,21 +212,21 @@ public account_menu_handle(id, menu, item)
 
 			remove_task(id + TASK_PASSWORD);
 		} case 2: {
-			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_ENTER_CURRENT_PASSWORD");
+			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_ACCOUNTS_ENTER_CURRENT_PASSWORD");
 
 			set_hudmessage(255, 128, 0, 0.22, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
 			show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_ENTER_CURRENT_PASSWORD");
 
 			client_cmd(id, "messagemode ENTER_CURRENT_PASSWORD");
 		} case 3: {
-			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_ENTER_CURRENT_PASSWORD");
+			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_ACCOUNTS_ENTER_CURRENT_PASSWORD");
 
 			set_hudmessage(255, 128, 0, 0.22, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
 			show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_ENTER_CURRENT_PASSWORD");
 
 			client_cmd(id, "messagemode ENTER_YOUR_CURRENT_PASSWORD");
 		} case 4: {
-			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_REGISTER_TO");
+			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_ACCOUNTS_REGISTER_TO");
 
 			set_hudmessage(0, 255, 0, -1.0, 0.9, 0, 0.0, 3.5, 0.0, 0.0);
 			show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_REGISTER_TO");
@@ -271,7 +271,7 @@ public login_account(id)
 			return PLUGIN_HANDLED;
 		}
 
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_WRONG_PASSWORD", playerData[id][FAILS], passwordMaxFails);
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_ACCOUNTS_WRONG_PASSWORD", playerData[id][FAILS], passwordMaxFails);
 
 		set_hudmessage(255, 0, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
 
@@ -295,7 +295,7 @@ public login_account(id)
 
 	ExecuteForward(loginForward, ret, id);
 
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_LOGIN_SUCCESS");
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_ACCOUNTS_LOGIN_SUCCESS");
 
 	set_hudmessage(0, 255, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
 	show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_LOGIN_SUCCESS");
@@ -313,7 +313,7 @@ public register_step_one(id)
 	remove_quotes(password);
 
 	if (strlen(password) < passwordMinLength) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_MIN_LENGTH", passwordMinLength);
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_ACCOUNTS_MIN_LENGTH", passwordMinLength);
 
 		set_hudmessage(255, 0, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
 		show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_MIN_LENGTH", passwordMinLength);
@@ -325,7 +325,7 @@ public register_step_one(id)
 
 	copy(playerData[id][TEMP_PASSWORD], charsmax(playerData[][TEMP_PASSWORD]), password);
 
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_REPEAT_PASSWORD");
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_ACCOUNTS_REPEAT_PASSWORD");
 
 	set_hudmessage(255, 128, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
 	show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_REPEAT_PASSWORD");
@@ -345,7 +345,7 @@ public register_step_two(id)
 	remove_quotes(password);
 
 	if (!equal(password, playerData[id][TEMP_PASSWORD])) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_PASSWORD_DIFFER");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_ACCOUNTS_PASSWORD_DIFFER");
 
 		set_hudmessage(255, 0, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
 		show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_PASSWORD_DIFFER");
@@ -408,13 +408,13 @@ public register_confirmation_handle(id, menu, item)
 			set_hudmessage(0, 255, 0, -1.0, 0.9, 0, 0.0, 3.5, 0.0, 0.0);
 			show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_REGISTER_SUCCESS");
 
-			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_REGISTER_SUCCESS");
-			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_SETINFO_HELP", setinfo, playerData[id][PASSWORD]);
+			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_ACCOUNTS_REGISTER_SUCCESS");
+			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_ACCOUNTS_SETINFO_HELP", setinfo, playerData[id][PASSWORD]);
 
 			cmd_execute(id, "setinfo _%s %s", setinfo, playerData[id][PASSWORD]);
 			cmd_execute(id, "writecfg %s", setinfo);
 		} case 1: {
-			client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_REGISTER_STARTED");
+			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_ACCOUNTS_REGISTER_STARTED");
 
 			set_hudmessage(255, 128, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
 			show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_REGISTER_STARTED");
@@ -448,7 +448,7 @@ public change_step_one(id)
 			return PLUGIN_HANDLED;
 		}
 
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_WRONG_PASSWORD", playerData[id][FAILS], passwordMaxFails);
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_ACCOUNTS_WRONG_PASSWORD", playerData[id][FAILS], passwordMaxFails);
 
 		set_hudmessage(255, 0, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
 		show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_WRONG_PASSWORD");
@@ -458,7 +458,7 @@ public change_step_one(id)
 		return PLUGIN_HANDLED;
 	}
 
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_ENTER_NEW_PASSWORD");
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_ACCOUNTS_ENTER_NEW_PASSWORD");
 
 	set_hudmessage(255, 128, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
 	show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_ENTER_NEW_PASSWORD");
@@ -478,7 +478,7 @@ public change_step_two(id)
 	remove_quotes(password);
 
 	if (equal(playerData[id][PASSWORD], password)) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_NEW_MATCHES_OLD");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_ACCOUNTS_NEW_MATCHES_OLD");
 
 		set_hudmessage(255, 0, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
 		show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_NEW_MATCHES_OLD");
@@ -489,7 +489,7 @@ public change_step_two(id)
 	}
 
 	if (strlen(password) < passwordMinLength) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_NEW_MIN_LENGTH", passwordMinLength);
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_ACCOUNTS_NEW_MIN_LENGTH", passwordMinLength);
 
 		set_hudmessage(255, 0, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
 		show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_NEW_MIN_LENGTH", passwordMinLength);
@@ -501,7 +501,7 @@ public change_step_two(id)
 
 	copy(playerData[id][TEMP_PASSWORD], charsmax(playerData[][TEMP_PASSWORD]), password);
 
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_REPEAT_NEW_PASSWORD");
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_ACCOUNTS_REPEAT_NEW_PASSWORD");
 
 	set_hudmessage(255, 128, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
 	show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_REPEAT_NEW_PASSWORD");
@@ -521,7 +521,7 @@ public change_step_three(id)
 	remove_quotes(password);
 
 	if (!equal(password, playerData[id][TEMP_PASSWORD])) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_PASSWORD_DIFFER");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_ACCOUNTS_PASSWORD_DIFFER");
 
 		set_hudmessage(255, 0, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
 		show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_PASSWORD_DIFFER");
@@ -538,8 +538,8 @@ public change_step_three(id)
 	set_hudmessage(0, 255, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
 	show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_PASSWORD_CHANGE_SUCCESS");
 
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_PASSWORD_CHANGE_SUCCESS");
-	client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_SETINFO_HELP", setinfo, playerData[id][PASSWORD]);
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_ACCOUNTS_PASSWORD_CHANGE_SUCCESS");
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_ACCOUNTS_SETINFO_HELP", setinfo, playerData[id][PASSWORD]);
 
 	cmd_execute(id, "setinfo _%s %s", setinfo, playerData[id][PASSWORD]);
 	cmd_execute(id, "writecfg %s", setinfo);
@@ -567,7 +567,7 @@ public delete_account(id)
 			return PLUGIN_HANDLED;
 		}
 
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_WRONG_PASSWORD", playerData[id][FAILS], passwordMaxFails);
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_ACCOUNTS_WRONG_PASSWORD", playerData[id][FAILS], passwordMaxFails);
 
 		set_hudmessage(255, 0, 0, 0.24, 0.07, 0, 0.0, 3.5, 0.0, 0.0);
 		show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_WRONG_PASSWORD");
@@ -754,13 +754,13 @@ public _csgo_check_account(id)
 	}
 
 	if (sql == Empty_Handle) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_DATABASE_ERROR");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_ACCOUNTS_DATABASE_ERROR");
 
 		return false;
 	}
 
 	if (playerData[id][STATUS] < LOGGED) {
-		client_print_color(id, id, "^4[CS:GO]^1 %L", id, "CSGO_ACCOUNTS_LOGIN_FIRST");
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_ACCOUNTS_LOGIN_FIRST");
 
 		account_menu(id);
 
