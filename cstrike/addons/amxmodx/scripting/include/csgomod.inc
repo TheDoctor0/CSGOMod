@@ -36,6 +36,9 @@
 #define OFFSET_AMMO 376
 #define OFFSET_C4 385
 
+#define SAVE_NAME 0
+#define SAVE_STEAM_ID 1
+
 #define weapon_entity(%0) (get_pdata_int(%0, OFFSET_ID, OFFSET_ITEM_LINUX))
 #define is_user_valid(%1) (1 <= %1 <= MAX_PLAYERS)
 
