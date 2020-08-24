@@ -948,7 +948,7 @@ public random_weapon_skin(id, weapon[])
 	formatex(itemData, charsmax(itemData), "\y%L", id, "CSGO_MENU_YES");
 	menu_additem(menu, itemData, weapon);
 
-	formatex(menuData, charsmax(itemData), "\w%L^n", id, "CSGO_MENU_NO");
+	formatex(itemData, charsmax(itemData), "\w%L^n", id, "CSGO_MENU_NO");
 	menu_additem(menu, itemData);
 
 	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_DRAW_INFO", skinChanceSVIP - skinChance, skinChancePerMember);
@@ -1817,7 +1817,7 @@ public market_buy_skin_handle(id, menu, item)
 	formatex(itemData, charsmax(itemData), "\y%L", id, "CSGO_MENU_YES");
 	menu_additem(menu, itemData, itemIds);
 
-	formatex(menuData, charsmax(itemData), "\w%L^n", id, "CSGO_MENU_NO");
+	formatex(itemData, charsmax(itemData), "\w%L^n", id, "CSGO_MENU_NO");
 	menu_additem(menu, itemData);
 
 	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_EXIT");
@@ -1977,7 +1977,7 @@ public market_withdraw_skin_handle(id, menu, item)
 	formatex(itemData, charsmax(itemData), "\y%L", id, "CSGO_MENU_YES");
 	menu_additem(menu, itemData, itemIds);
 
-	formatex(menuData, charsmax(itemData), "\w%L^n", id, "CSGO_MENU_NO");
+	formatex(itemData, charsmax(itemData), "\w%L^n", id, "CSGO_MENU_NO");
 	menu_additem(menu, itemData);
 
 	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_EXIT");
