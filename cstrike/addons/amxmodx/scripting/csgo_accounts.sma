@@ -627,7 +627,7 @@ public delete_account_handle(id, menu, item)
 
 public sql_init()
 {
-	new host[64], user[64], pass[64], db[64], queryData[128], error[128], errorNum;
+	new host[64], user[64], pass[64], db[64], queryData[128], error[256], errorNum;
 
 	get_cvar_string("csgo_sql_host", host, charsmax(host));
 	get_cvar_string("csgo_sql_user", user, charsmax(user));
@@ -648,7 +648,11 @@ public sql_init()
 
 	new Handle:query = SQL_PrepareQuery(connectHandle, queryData);
 
-	SQL_Execute(query);
+	if (!SQL_Execute(query)) {
+		SQL_QueryError(query, error, charsmax(error));
+
+		log_to_file("csgo-error.log", "[CS:GO Accounts] Init SQL Error: %s", error);
+	}
 
 	SQL_FreeHandle(query);
 	SQL_FreeHandle(connectHandle);

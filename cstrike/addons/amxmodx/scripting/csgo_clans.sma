@@ -2404,20 +2404,32 @@ public sql_init()
 
 	query = SQL_PrepareQuery(connection, queryData);
 
-	SQL_Execute(query);
+	if (!SQL_Execute(query)) {
+		SQL_QueryError(query, error, charsmax(error));
+
+		log_to_file("csgo-error.log", "[CS:GO Clans] Init SQL Error: %s", error);
+	}
 
 	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_clans_applications` (`name` varchar(64) NOT NULL, `clan` INT NOT NULL, PRIMARY KEY (`name`, `clan`));");
 
 	query = SQL_PrepareQuery(connection, queryData);
 
-	SQL_Execute(query);
+	if (!SQL_Execute(query)) {
+		SQL_QueryError(query, error, charsmax(error));
+
+		log_to_file("csgo-error.log", "[CS:GO Clans] Init SQL Error: %s", error);
+	}
 
 	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_clans_wars` (`id` INT NOT NULL AUTO_INCREMENT, `clan` INT NOT NULL DEFAULT 0, `clan2` INT NOT NULL DEFAULT 0, ");
 	add(queryData, charsmax(queryData), "`progress` INT NOT NULL DEFAULT 0, `progress2` INT NOT NULL DEFAULT 0, `duration` INT NOT NULL DEFAULT 0, `reward` INT NOT NULL DEFAULT 0, `started` INT NOT NULL DEFAULT 0, PRIMARY KEY (`id`));");
 
 	query = SQL_PrepareQuery(connection, queryData);
 
-	SQL_Execute(query);
+	if (!SQL_Execute(query)) {
+		SQL_QueryError(query, error, charsmax(error));
+
+		log_to_file("csgo-error.log", "[CS:GO Clans] Init SQL Error: %s", error);
+	}
 
 	SQL_FreeHandle(query);
 }

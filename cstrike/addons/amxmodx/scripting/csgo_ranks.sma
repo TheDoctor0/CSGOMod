@@ -177,7 +177,7 @@ public plugin_precache()
 
 public sql_init()
 {
-	new host[64], user[64], pass[64], database[64], error[128], errorNum;
+	new host[64], user[64], pass[64], database[64], error[256], errorNum;
 
 	get_cvar_string("csgo_sql_host", host, charsmax(host));
 	get_cvar_string("csgo_sql_user", user, charsmax(user));
@@ -202,13 +202,21 @@ public sql_init()
 
 	new Handle:query = SQL_PrepareQuery(connectHandle, queryData);
 
-	SQL_Execute(query);
+	if (!SQL_Execute(query)) {
+		SQL_QueryError(query, error, charsmax(error));
+
+		log_to_file("csgo-error.log", "[CS:GO Ranks] Init SQL Error: %s", error);
+	}
 
 	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_hud` (`name` varchar(32) NOT NULL, `red` int(10) NOT NULL DEFAULT 0, `green` int(10) NOT NULL DEFAULT 0, `blue` int(10) NOT NULL DEFAULT 0, `x` int(10) NOT NULL DEFAULT 0, `y` int(10) NOT NULL DEFAULT 0, PRIMARY KEY (`name`));");
 
 	query = SQL_PrepareQuery(connectHandle, queryData);
 
-	SQL_Execute(query);
+	if (!SQL_Execute(query)) {
+		SQL_QueryError(query, error, charsmax(error));
+
+		log_to_file("csgo-error.log", "[CS:GO Ranks] Init SQL Error: %s", error);
+	}
 
 	SQL_FreeHandle(query);
 	SQL_FreeHandle(connectHandle);

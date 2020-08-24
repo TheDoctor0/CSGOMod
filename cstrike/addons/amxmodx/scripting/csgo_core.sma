@@ -287,7 +287,7 @@ public load_skins_details()
 
 public plugin_cfg()
 {
-	new configPath[64], host[64], user[64], pass[64], db[64], error[128], errorNum;
+	new configPath[64], host[64], user[64], pass[64], db[64], error[256], errorNum;
 
 	get_localinfo("amxx_configsdir", configPath, charsmax(configPath));
 
@@ -315,13 +315,21 @@ public plugin_cfg()
 
 	new Handle:query = SQL_PrepareQuery(connection, queryData);
 
-	SQL_Execute(query);
+	if (!SQL_Execute(query)) {
+		SQL_QueryError(query, error, charsmax(error));
+
+		log_to_file("csgo-error.log", "[CS:GO Mod] Init SQL Error: %s", error);
+	}
 
 	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_data` (name VARCHAR(35), money FLOAT NOT NULL DEFAULT 0, exchange INT NOT NULL DEFAULT 0, menu INT NOT NULL DEFAULT 0, online INT NOT NULL DEFAULT 0, PRIMARY KEY(name));");
 
 	query = SQL_PrepareQuery(connection, queryData);
 
-	SQL_Execute(query);
+	if (!SQL_Execute(query)) {
+		SQL_QueryError(query, error, charsmax(error));
+
+		log_to_file("csgo-error.log", "[CS:GO Mod] Init SQL Error: %s", error);
+	}
 
 	SQL_FreeHandle(query);
 
