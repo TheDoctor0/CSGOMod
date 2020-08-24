@@ -79,10 +79,10 @@ enum _:playerSkinsInfo { SKIN_ID, SKIN_COUNT };
 enum _:skinsInfo { SKIN_NAME[64], SKIN_WEAPON[32], SKIN_MODEL[64], SKIN_SUBMODEL, SKIN_PRICE, SKIN_CHANCE };
 enum _:marketInfo { MARKET_ID, MARKET_SKIN, MARKET_OWNER, Float:MARKET_PRICE };
 
-new playerData[MAX_PLAYERS + 1][playerInfo], Array:playerSkins[MAX_PLAYERS + 1], Float:randomSkinPrice[WEAPON_ALL + 1], overallSkinChance[WEAPON_ALL + 1], Array:skins, Array:weapons,
-	Array:market, Handle:sql, Handle:connection, marketSkins, multipleSkins, skinChance, skinChanceSVIP, Float:skinChancePerMember, maxMarketSkins, Float:marketCommision,
-	Float:killReward, Float:killHSReward, Float:bombReward, Float:defuseReward, Float:hostageReward, Float:winReward, minPlayers, bool:end, bool:sqlConnected,
-	sqlHost[64], sqlUser[64], sqlPassword[64], sqlDatabase[64], force;
+new playerData[MAX_PLAYERS + 1][playerInfo], Array:playerSkins[MAX_PLAYERS + 1], Float:randomSkinPrice[WEAPON_ALL + 1], overallSkinChance[WEAPON_ALL + 1], Array:skins,
+	Array:weapons, Array:market, Handle:sql, Handle:connection, marketSkins, multipleSkins, skinChance, skinChanceSVIP, silencerAttached, Float:skinChancePerMember,
+	maxMarketSkins, Float:marketCommision, Float:killReward, Float:killHSReward, Float:bombReward, Float:defuseReward, Float:hostageReward, Float:winReward, minPlayers,
+	bool:end, bool:sqlConnected, sqlHost[64], sqlUser[64], sqlPassword[64], sqlDatabase[64], force;
 
 native csgo_get_zeus(id);
 
@@ -104,6 +104,7 @@ public plugin_init()
 	bind_pcvar_num(create_cvar("csgo_max_market_skins", "5"), maxMarketSkins);
 	bind_pcvar_num(create_cvar("csgo_skin_chance", "20"), skinChance);
 	bind_pcvar_num(create_cvar("csgo_svip_skin_chance", "25"), skinChanceSVIP);
+	bind_pcvar_num(create_cvar("csgo_silencer_attached", "1"), silencerAttached);
 	bind_pcvar_float(create_cvar("csgo_market_commision", "5"), marketCommision);
 	bind_pcvar_float(create_cvar("csgo_clan_skin_chance_per_member", "1"), skinChancePerMember);
 	bind_pcvar_float(create_cvar("csgo_kill_reward", "0.35"), killReward);
@@ -2399,7 +2400,7 @@ public add_player_item(id, ent)
 			}
 		}
 
-		if (weapon == CSW_USP || weapon == CSW_M4A1) {
+		if (silencerAttached && (weapon == CSW_USP || weapon == CSW_M4A1)) {
 			cs_set_weapon_silen(ent, 1, 0);
 		}
 	}
