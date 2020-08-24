@@ -210,7 +210,7 @@ public sql_init()
 		hasError = true;
 	}
 
-	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_hud` (`name` varchar(32) NOT NULL, `red` int(10) NOT NULL DEFAULT 0, `green` int(10) NOT NULL DEFAULT 0, `blue` int(10) NOT NULL DEFAULT 0, `x` int(10) NOT NULL DEFAULT 0, `y` int(10) NOT NULL DEFAULT 0, PRIMARY KEY (`name`));");
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_hud` (`name` varchar(32) NOT NULL, `steamid` VARCHAR(35), `red` int(10) NOT NULL DEFAULT 0, `green` int(10) NOT NULL DEFAULT 0, `blue` int(10) NOT NULL DEFAULT 0, `x` int(10) NOT NULL DEFAULT 0, `y` int(10) NOT NULL DEFAULT 0, PRIMARY KEY (name, steamid));");
 
 	query = SQL_PrepareQuery(connectHandle, queryData);
 
@@ -406,8 +406,8 @@ stock save_data(id, end = 0)
 				playerData[id][KILLS], playerData[id][RANK], playerData[id][ELO_RANK], time, get_systime(), queryDataStats, queryDataMedals, playerData[id][SAFE_NAME], time);
 		}
 		case SAVE_STEAM_ID: {
-			formatex(queryData, charsmax(queryData), "UPDATE `csgo_ranks` SET `name` name = ^"%s^", `kills` = %i, `rank` = %i, `elorank` = %f, `time` = %i, `lastvisit` = %i%s%s WHERE steamid = ^"%s^" AND `time` <= %i",
-				playerData[id][KILLS], playerData[id][RANK], playerData[id][ELO_RANK], time, get_systime(), queryDataStats, queryDataMedals, playerData[id][STEAM_ID], time);
+			formatex(queryData, charsmax(queryData), "UPDATE `csgo_ranks` SET `name` = ^"%s^", `kills` = %i, `rank` = %i, `elorank` = %f, `time` = %i, `lastvisit` = %i%s%s WHERE steamid = ^"%s^" AND `time` <= %i",
+				playerData[id][SAFE_NAME], playerData[id][KILLS], playerData[id][RANK], playerData[id][ELO_RANK], time, get_systime(), queryDataStats, queryDataMedals, playerData[id][STEAM_ID], time);
 		}
 	}
 

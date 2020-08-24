@@ -69,12 +69,10 @@ public client_connect(id)
 
 	if (is_user_bot(id) || is_user_hltv(id) || !accountsEnabled) return;
 
-	switch (saveType) {
-		case SAVE_NAME: {
-			get_user_name(id, playerData[id][NAME], charsmax(playerData[][NAME]));
+	get_user_name(id, playerData[id][NAME], charsmax(playerData[][NAME]));
 
-			mysql_escape_string(playerData[id][NAME], playerData[id][SAFE_NAME], charsmax(playerData[][SAFE_NAME]));
-		}
+	switch (saveType) {
+		case SAVE_NAME: mysql_escape_string(playerData[id][NAME], playerData[id][SAFE_NAME], charsmax(playerData[][SAFE_NAME]));
 		case SAVE_STEAM_ID: get_user_authid(id, playerData[id][STEAM_ID], charsmax(playerData[][STEAM_ID]));
 	}
 
@@ -652,7 +650,7 @@ public sql_init()
 		return;
 	}
 
-	new queryData[128], bool:hasError;
+	new queryData[192], bool:hasError;
 
 	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_accounts` (`name` VARCHAR(64), `steamid` VARCHAR(35), `pass` VARCHAR(32), PRIMARY KEY(name, steamid));");
 
@@ -746,14 +744,14 @@ public account_query(id, type)
 	switch (saveType) {
 		case SAVE_NAME: {
 			switch (type) {
-				case INSERT: formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_accounts` (name, password) VALUES (^"%s^", '%s')", playerData[id][SAFE_NAME], password);
+				case INSERT: formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_accounts` (name, pass) VALUES (^"%s^", '%s')", playerData[id][SAFE_NAME], password);
 				case UPDATE: formatex(queryData, charsmax(queryData), "UPDATE `csgo_accounts` SET pass = '%s' WHERE name = ^"%s^"", password, playerData[id][SAFE_NAME]);
 				case DELETE: formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_accounts` WHERE name = ^"%s^"", playerData[id][SAFE_NAME]);
 			}
 		}
 		case SAVE_STEAM_ID: {
 			switch (type) {
-				case INSERT: formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_accounts` (steamid, password) VALUES (^"%s^", '%s')", playerData[id][STEAM_ID], password);
+				case INSERT: formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_accounts` (steamid, pass) VALUES (^"%s^", '%s')", playerData[id][STEAM_ID], password);
 				case UPDATE: formatex(queryData, charsmax(queryData), "UPDATE `csgo_accounts` SET pass = '%s' WHERE steamid = ^"%s^"", password, playerData[id][STEAM_ID]);
 				case DELETE: formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_accounts` WHERE steamid = ^"%s^"", playerData[id][STEAM_ID]);
 			}
