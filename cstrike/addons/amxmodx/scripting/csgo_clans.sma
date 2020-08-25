@@ -14,7 +14,7 @@ new const commandClan[][] = { "say /clan", "say_team /clan", "say /clans", "say_
 enum _:clanInfo { CLAN_ID, CLAN_LEVEL, Float:CLAN_MONEY, CLAN_KILLS, CLAN_MEMBERS, CLAN_WINS, Trie:CLAN_STATUS, CLAN_NAME[32] };
 enum _:warInfo { WAR_ID, WAR_CLAN, WAR_CLAN2, WAR_PROGRESS, WAR_PROGRESS2, WAR_DURATION, WAR_REWARD };
 enum _:statusInfo { STATUS_NONE, STATUS_MEMBER, STATUS_DEPUTY, STATUS_LEADER };
-enum _:playerInfo { NAME[32], SAFE_NAME[64], STEAM_ID[35], CLAN, CHOSEN_NAME[32], CHOSEN_ID, WAR_FRAGS, WAR_REWARD };
+enum _:playerInfo { NAME[32], SAFE_NAME[64], STEAM_ID[35], CLAN, CHOSEN_ID, WAR_FRAGS, WAR_REWARD };
 
 new playerData[MAX_PLAYERS + 1][playerInfo], Handle:sql, bool:sqlConnected, Array:csgoClans, Array:csgoWars, Handle:connection, bool:end, info, loaded,
 	Float:createFee, Float:joinFee, membersStart, levelMax, chatPrefix, Float:levelCost, Float:nextLevelCost, membersPerLevel, saveType;
