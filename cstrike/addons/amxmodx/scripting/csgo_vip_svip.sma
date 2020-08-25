@@ -271,6 +271,7 @@ public player_spawn(id)
 		}
 
 		give_item(id, "weapon_deagle");
+		give_item(id, "ammo_50ae");
 		give_item(id, "weapon_hegrenade");
 
 		if (get_bit(id, SVIP)) {
