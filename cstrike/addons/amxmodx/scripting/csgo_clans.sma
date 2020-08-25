@@ -841,7 +841,7 @@ public members_menu_handle(failState, Handle:query, error[], errorNum, tempId[],
 
 	if (!is_user_connected(id)) return PLUGIN_HANDLED;
 
-	new itemData[64], userName[32], status, menu;
+	new itemData[128], userSteamId[35], userName[32], flag, menu;
 
 	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CLANS_MANAGE_MENU");
 
@@ -849,12 +849,13 @@ public members_menu_handle(failState, Handle:query, error[], errorNum, tempId[],
 
 	while (SQL_MoreResults(query)) {
 		SQL_ReadResult(query, SQL_FieldNameToNum(query, "name"), userName, charsmax(userName));
+		SQL_ReadResult(query, SQL_FieldNameToNum(query, "steamid"), userSteamId, charsmax(userSteamId));
 
-		status = SQL_ReadResult(query, SQL_FieldNameToNum(query, "flag"));
+		flag = SQL_ReadResult(query, SQL_FieldNameToNum(query, "flag"));
 
-		formatex(itemData, charsmax(itemData), "%s#%i", userName, status);
+		formatex(itemData, charsmax(itemData), "%s#%s#%i", userName, userSteamId, flag);
 
-		switch (status) {
+		switch (flag) {
 			case STATUS_MEMBER: format(userName, charsmax(userName), "%L", id, "CSGO_CLANS_STATUS_MEMBER", userName);
 			case STATUS_DEPUTY: format(userName, charsmax(userName), "%L", id, "CSGO_CLANS_STATUS_DEPUTY", userName);
 			case STATUS_LEADER: format(userName, charsmax(userName), "%L", id, "CSGO_CLANS_STATUS_LEADER", userName);
@@ -889,13 +890,14 @@ public member_menu_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	new itemData[64], userName[32], tempFlag[6], itemAccess, itemCallback;
+	new menuData[128], itemData[128], tempData[64], userSteamId[35], userName[32], tempFlag[2], itemAccess, itemCallback;
 
 	menu_item_getinfo(menu, item, itemAccess, itemData, charsmax(itemData), _, _, itemCallback);
 
 	menu_destroy(menu);
 
-	strtok(itemData, userName, charsmax(userName), tempFlag, charsmax(tempFlag), '#');
+	strtok2(itemData, userName, charsmax(userName), tempData, charsmax(tempData), '#');
+	strtok2(tempData, userSteamId, charsmax(userSteamId), tempFlag, charsmax(tempFlag), '#');
 
 	new flag = str_to_num(tempFlag), userId = get_user_index(userName);
 
@@ -917,35 +919,49 @@ public member_menu_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	formatex(playerData[id][CHOSEN_NAME], charsmax(playerData[][CHOSEN_NAME]), userName);
-	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CLANS_MANAGE_SELECT");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MANAGE_SELECT");
 
-	new menu = menu_create(itemData, "member_options_menu_handle");
+	new menu = menu_create(menuData, "member_options_menu_handle"),
+		callback = menu_makecallback("member_options_menu_callback");
 
-	if (get_user_status(id) == STATUS_LEADER) {
-		formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CLANS_MANAGE_TRANSFER_LEADERSHIP");
-		menu_additem(menu, itemData, "1");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MANAGE_TRANSFER_LEADERSHIP");
+	menu_additem(menu, menuData, itemData, _, callback);
 
-		if (flag == STATUS_MEMBER) {
-			formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CLANS_MANAGE_ASSIGN_DEPUTY");
-			menu_additem(menu, itemData, "2");
-		}
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MANAGE_ASSIGN_DEPUTY");
+	menu_additem(menu, menuData, itemData, _, callback);
 
-		if (flag == STATUS_DEPUTY) {
-			formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CLANS_MANAGE_DEGRADE_DEPUTY");
-			menu_additem(menu, itemData, "3");
-		}
-	}
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MANAGE_DEGRADE_DEPUTY");
+	menu_additem(menu, menuData, itemData, _, callback);
 
-	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CLANS_MANAGE_KICK_MEMBER");
-	menu_additem(menu, itemData, "4");
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_MANAGE_KICK_MEMBER");
+	menu_additem(menu, menuData, itemData, _, callback);
 
-	formatex(itemData, charsmax(itemData), "%L", id, "CSGO_MENU_EXIT");
-	menu_setprop(menu, MPROP_EXITNAME, itemData);
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
 
 	menu_display(id, menu);
 
 	return PLUGIN_CONTINUE;
+}
+
+public member_options_menu_callback(id, menu, item)
+{
+	new itemData[128], tempData[64], userSteamId[35], userName[32], tempFlag[2], itemAccess, itemCallback;
+
+	menu_item_getinfo(menu, item, itemAccess, itemData, charsmax(itemData), _, _, itemCallback);
+
+	strtok2(itemData, userName, charsmax(userName), tempData, charsmax(tempData), '#');
+	strtok2(tempData, userSteamId, charsmax(userSteamId), tempFlag, charsmax(tempFlag), '#');
+
+	new flag = str_to_num(tempFlag);
+
+	switch (item) {
+		case 0: return get_user_status(id) == STATUS_LEADER ? ITEM_ENABLED : ITEM_DISABLED;
+		case 1: return get_user_status(id) == STATUS_LEADER && flag == STATUS_MEMBER ? ITEM_ENABLED : ITEM_DISABLED;
+		case 2: return get_user_status(id) == STATUS_LEADER && flag == STATUS_DEPUTY ? ITEM_ENABLED : ITEM_DISABLED;
+	}
+
+	return ITEM_ENABLED;
 }
 
 public member_options_menu_handle(id, menu, item)
@@ -960,15 +976,20 @@ public member_options_menu_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	new itemData[6], itemAccess, itemCallback;
+	new itemData[128], tempData[64], userSteamId[35], userName[32], tempFlag[2], itemAccess, itemCallback;
 
 	menu_item_getinfo(menu, item, itemAccess, itemData, charsmax(itemData), _, _, itemCallback);
 
-	switch (str_to_num(itemData)) {
-		case 1: update_member(id, STATUS_LEADER);
-		case 2:	update_member(id, STATUS_DEPUTY);
-		case 3:	update_member(id, STATUS_MEMBER);
-		case 4: update_member(id, STATUS_NONE);
+	menu_destroy(menu);
+
+	strtok2(itemData, userName, charsmax(userName), tempData, charsmax(tempData), '#');
+	strtok2(tempData, userSteamId, charsmax(userSteamId), tempFlag, charsmax(tempFlag), '#');
+
+	switch (item) {
+		case 0: update_member(id, STATUS_LEADER, userName, userSteamId);
+		case 1:	update_member(id, STATUS_DEPUTY, userName, userSteamId);
+		case 2:	update_member(id, STATUS_MEMBER, userName, userSteamId);
+		case 3: update_member(id, STATUS_NONE, userName, userSteamId);
 	}
 
 	menu_destroy(menu);
@@ -976,7 +997,7 @@ public member_options_menu_handle(id, menu, item)
 	return PLUGIN_CONTINUE;
 }
 
-public update_member(id, status)
+stock update_member(id, status, const userName[] = "", const userSteamId[] = "")
 {
 	new bool:playerOnline;
 
@@ -1014,15 +1035,15 @@ public update_member(id, status)
 		}
 
 		switch (status) {
-			case STATUS_LEADER: client_print_color(player, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_MANAGE_UPDATE_LEADER2", playerData[id][CHOSEN_NAME]);
-			case STATUS_DEPUTY: client_print_color(player, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_MANAGE_UPDATE_DEPUTY2", playerData[id][CHOSEN_NAME]);
-			case STATUS_MEMBER: client_print_color(player, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_MANAGE_UPDATE_MEMBER2", playerData[id][CHOSEN_NAME]);
-			case STATUS_NONE: client_print_color(player, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_MANAGE_UPDATE_NONE2", playerData[id][CHOSEN_NAME]);
+			case STATUS_LEADER: client_print_color(player, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_MANAGE_UPDATE_LEADER2", userName);
+			case STATUS_DEPUTY: client_print_color(player, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_MANAGE_UPDATE_DEPUTY2", userName);
+			case STATUS_MEMBER: client_print_color(player, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_MANAGE_UPDATE_MEMBER2", userName);
+			case STATUS_NONE: client_print_color(player, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_MANAGE_UPDATE_NONE2", userName);
 		}
 	}
 
 	if (!playerOnline) {
-		save_member(id, status, _, playerData[id][CHOSEN_NAME]);
+		save_member(id, status, _, userName, userSteamId);
 
 		if (status == STATUS_NONE) set_clan_info(playerData[id][CLAN], CLAN_MEMBERS, -1);
 		if (status == STATUS_LEADER) set_user_status(id, STATUS_DEPUTY);
@@ -1081,7 +1102,7 @@ public applications_menu_handle(failState, Handle:query, error[], errorNum, temp
 		formatex(itemName, charsmax(itemName), "%L", id, "CSGO_CLANS_APPLICATION_ITEM", userName, rankName, money);
 		formatex(itemData, charsmax(itemData), "%s#%s", userName, userSteamId);
 
-		menu_additem(menu, itemName, userName);
+		menu_additem(menu, itemName, itemData);
 
 		SQL_NextRow(query);
 
@@ -1122,7 +1143,7 @@ public applications_confirm_menu(id, menu, item)
 
 	menu_item_getinfo(menu, item, itemAccess, itemData, charsmax(itemData), _, _, itemCallback);
 
-	strtok(itemData, userName, charsmax(userName), userSteamId, charsmax(userSteamId), '#');
+	strtok2(itemData, userName, charsmax(userName), userSteamId, charsmax(userSteamId), '#');
 
 	menu_destroy(menu);
 
@@ -1130,13 +1151,13 @@ public applications_confirm_menu(id, menu, item)
 
 	new menu = menu_create(menuData, "applications_confirm_handle");
 
-	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_APPLICATION_ACCEPT_BANK", userName);
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_APPLICATION_ACCEPT_BANK");
 	menu_additem(menu, menuData, itemData);
 
-	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_APPLICATION_ACCEPT_PLAYER", userName);
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_APPLICATION_ACCEPT_PLAYER");
 	menu_additem(menu, menuData, itemData);
 
-	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_APPLICATION_DECLINE", userName);
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CLANS_APPLICATION_DECLINE");
 	menu_additem(menu, menuData, itemData);
 
 	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
@@ -1157,16 +1178,31 @@ public applications_confirm_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	new itemData[128], userName[32], userSteamId[35], itemAccess, itemCallback;
+	new itemData[128], userName[32], userSteamId[35], itemAccess, itemCallback, player = 0;
 
 	menu_item_getinfo(menu, item, itemAccess, itemData, charsmax(itemData), _, _, itemCallback);
 
-	strtok(itemData, userName, charsmax(userName), userSteamId, charsmax(userSteamId), '#');
+	strtok2(itemData, userName, charsmax(userName), userSteamId, charsmax(userSteamId), '#');
 
 	menu_destroy(menu);
 
+	switch (saveType) {
+		case SAVE_NAME: player = get_user_index(userName);
+		case SAVE_STEAM_ID: {
+			for (new i = 1; i <= MAX_PLAYERS; i++) {
+				if (!is_user_connected(i) || is_user_bot(i) || is_user_hltv(i)) continue;
+
+				if (equal(playerData[i][STEAM_ID], userSteamId)) {
+					player = i;
+
+					break;
+				}
+			}
+		}
+	}
+
 	if (item == 2) {
-		remove_application(id, userName, userSteamId);
+		remove_application(id, player, userName, userSteamId);
 
 		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_APPLICATION_DECLINED", userName);
 
@@ -1196,33 +1232,16 @@ public applications_confirm_handle(id, menu, item)
 
 		set_clan_info(playerData[id][CLAN], CLAN_MONEY, _, -joinFee);
 	} else {
-		new player = 0;
-
-		switch (saveType) {
-			case SAVE_NAME: player = get_user_index(userName);
-			case SAVE_STEAM_ID: {
-				for (new i = 1; i <= MAX_PLAYERS; i++) {
-					if (!is_user_connected(i) || is_user_bot(i) || is_user_hltv(i)) continue;
-
-					if (equal(playerData[i][STEAM_ID], userSteamId)) {
-						player = i;
-
-						break;
-					}
-				}
-			}
-		}
-
 		if (is_user_connected(player)) {
-			if (csgo_get_money(id) < joinFee) {
+			if (csgo_get_money(player) < joinFee) {
 				client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_APPLICATION_FEE_PLAYER", floatround(joinFee));
 
 				return PLUGIN_HANDLED;
 			}
 
-			csgo_add_money(id, -joinFee);
+			csgo_add_money(player, -joinFee);
 		} else {
-			new queryData[128], error[128], Handle:query, Float:money, errorNum;
+			new queryData[128], error[128], Handle:query, Float:money = 0.0, errorNum;
 
 			switch (saveType) {
 				case SAVE_NAME: {
@@ -1232,7 +1251,7 @@ public applications_confirm_handle(id, menu, item)
 
 					formatex(queryData, charsmax(queryData), "SELECT money FROM `csgo_data` WHERE `name` = ^"%s^"", safeName);
 				}
-				case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "SELECT money FROM `csgo_data` WHERE `name` = ^"%s^"", userSteamId);
+				case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "SELECT money FROM `csgo_data` WHERE `steamid` = ^"%s^"", userSteamId);
 			}
 
 			query = SQL_PrepareQuery(connection, queryData);
@@ -1276,7 +1295,7 @@ public applications_confirm_handle(id, menu, item)
 		}
 	}
 
-	accept_application(id, userName, userSteamId);
+	accept_application(id, player, userName, userSteamId);
 
 	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_APPLICATION_ACCEPTED", userName);
 
@@ -1561,7 +1580,7 @@ public declare_war_confirm(id, menu, item)
 
 	menu_item_getinfo(menu, item, itemAccess, itemData, charsmax(itemData), _, _, menuCallback);
 
-	strtok(itemData, clanName, charsmax(clanName), tempClanId, charsmax(tempClanId), '#');
+	strtok2(itemData, clanName, charsmax(clanName), tempClanId, charsmax(tempClanId), '#');
 
 	formatex(tempData, charsmax(tempData), "%L", id, "CSGO_CLANS_WARS_SELECT_CONFIRM", clanName, playerData[id][WAR_FRAGS], playerData[id][WAR_REWARD]);
 
@@ -1605,7 +1624,7 @@ public declare_war_confirm_handle(id, menu, item)
 
 	menu_destroy(menu);
 
-	strtok(itemData, clanName, charsmax(clanName), tempClanId, charsmax(tempClanId), '#');
+	strtok2(itemData, clanName, charsmax(clanName), tempClanId, charsmax(tempClanId), '#');
 
 	declare_war(id, str_to_num(tempClanId));
 
@@ -2304,7 +2323,7 @@ public application_handle(id, menu, item)
 
 	menu_destroy(menu);
 
-	strtok(itemData, clanName, charsmax(clanName), tempClanId, charsmax(tempClanId), '#');
+	strtok2(itemData, clanName, charsmax(clanName), tempClanId, charsmax(tempClanId), '#');
 
 	if (check_applications(id, str_to_num(tempClanId))) {
 		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_APPLY_EXISTS");
@@ -2350,7 +2369,7 @@ public application_confirm_handle(id, menu, item)
 
 	menu_destroy(menu);
 
-	strtok(itemData, clanName, charsmax(clanName), tempClanId, charsmax(tempClanId), '#');
+	strtok2(itemData, clanName, charsmax(clanName), tempClanId, charsmax(tempClanId), '#');
 
 	new clanId = str_to_num(tempClanId);
 
@@ -2983,25 +3002,8 @@ stock check_applications(id, clanId)
 	return foundApplication;
 }
 
-stock accept_application(id, const userName[] = "", const userSteamId[] = "")
+stock accept_application(id, player, const userName[] = "", const userSteamId[] = "")
 {
-	new player = 0;
-
-	switch (saveType) {
-		case SAVE_NAME: player = get_user_index(userName);
-		case SAVE_STEAM_ID: {
-			for (new i = 1; i <= MAX_PLAYERS; i++) {
-				if (!is_user_connected(i) || is_user_bot(i) || is_user_hltv(i)) continue;
-
-				if (equal(playerData[i][STEAM_ID], userSteamId)) {
-					player = i;
-
-					break;
-				}
-			}
-		}
-	}
-
 	if (is_user_connected(player)) {
 		new clanName[32];
 
@@ -3017,25 +3019,8 @@ stock accept_application(id, const userName[] = "", const userSteamId[] = "")
 	}
 }
 
-stock remove_application(id, const userName[] = "", const userSteamId[] = "")
+stock remove_application(id, player, const userName[] = "", const userSteamId[] = "")
 {
-	new player = 0;
-
-	switch (saveType) {
-		case SAVE_NAME: player = get_user_index(userName);
-		case SAVE_STEAM_ID: {
-			for (new i = 1; i <= MAX_PLAYERS; i++) {
-				if (!is_user_connected(i) || is_user_bot(i) || is_user_hltv(i)) continue;
-
-				if (equal(playerData[i][STEAM_ID], userSteamId)) {
-					player = i;
-
-					break;
-				}
-			}
-		}
-	}
-
 	if (is_user_connected(player)) {
 		new clanName[32], playerName[32];
 

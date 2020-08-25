@@ -642,7 +642,7 @@ public choose_weapon_menu_handle(id, menu, item)
 
 	menu_destroy(menu);
 
-	strtok(itemData, weapon, charsmax(weapon), itemType, charsmax(itemType), '#');
+	strtok2(itemData, weapon, charsmax(weapon), itemType, charsmax(itemType), '#');
 
 	switch (str_to_num(itemType)) {
 		case 0: set_weapon_skin(id, weapon);
