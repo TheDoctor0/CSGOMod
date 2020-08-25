@@ -210,7 +210,7 @@ public sql_init()
 		hasError = true;
 	}
 
-	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_hud` (`name` varchar(32) NOT NULL, `steamid` VARCHAR(35), `red` int(10) NOT NULL DEFAULT 0, `green` int(10) NOT NULL DEFAULT 0, `blue` int(10) NOT NULL DEFAULT 0, `x` int(10) NOT NULL DEFAULT 0, `y` int(10) NOT NULL DEFAULT 0, PRIMARY KEY (name, steamid));");
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_hud` (`name` VARCHAR(64), `steamid` VARCHAR(35), `red` INT NOT NULL DEFAULT 0, `green` INT NOT NULL DEFAULT 0, `blue` INT NOT NULL DEFAULT 0, `x` INT NOT NULL DEFAULT 0, `y` INT NOT NULL DEFAULT 0, PRIMARY KEY (name, steamid));");
 
 	query = SQL_PrepareQuery(connectHandle, queryData);
 
