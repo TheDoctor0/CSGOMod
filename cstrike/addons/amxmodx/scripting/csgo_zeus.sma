@@ -350,7 +350,7 @@ stock create_thunder(start[3], end[3])
 
 stock create_thunder2(start, end[3])
 {
-	message_begin(MSG_BROADCAST ,SVC_TEMPENTITY);
+	message_begin(MSG_BROADCAST, SVC_TEMPENTITY);
 	write_byte(TE_BEAMENTPOINT);
 	write_short(start | 0x1000);
 	write_coord(end[0]);

@@ -63,7 +63,7 @@ public clcmd_client_buy_open(id)
 
 	static msgBuyClose;
 
-	if (!msgBuyClose) msgBuyClose = get_user_msgid( "BuyClose");
+	if (!msgBuyClose) msgBuyClose = get_user_msgid("BuyClose");
 
 	message_begin(MSG_ONE, msgBuyClose, _, id),
 	message_end();

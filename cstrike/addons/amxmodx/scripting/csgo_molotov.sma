@@ -40,8 +40,7 @@ new const commandBuy[][] = { "say /molotov", "say_team /molotov", "say /m", "say
 
 new molotovEnabled, molotovPrice, Float:molotovRadius, Float:molotovFireTime, Float:molotovFireDamage;
 
-new molotov, molotovOffset[MAX_PLAYERS + 1], bool:restarted, bool:reset,
-	msgScoreInfo, msgDeathMsg, mapBuyBlock, fireSprite, smokeSprite[2], Float:gameTime;
+new molotov, molotovOffset[MAX_PLAYERS + 1], bool:restarted, bool:reset, mapBuyBlock, fireSprite, smokeSprite[2], Float:gameTime;
 
 public plugin_init()
 {
@@ -66,9 +65,6 @@ public plugin_init()
 
 	register_forward(FM_EmitSound, "sound_emit");
 	register_forward(FM_KeyValue, "key_value", true);
-
-	msgScoreInfo = get_user_msgid("ScoreInfo");
-	msgDeathMsg = get_user_msgid("DeathMsg");
 }
 
 public plugin_natives()
@@ -505,6 +501,10 @@ stock reset_tasks()
 
 stock kill(killer, victim, team)
 {
+	static msgDeathMsg;
+
+	if (!msgDeathMsg) msgDeathMsg = get_user_msgid("DeathMsg");
+
 	message_begin(MSG_ALL, msgDeathMsg, {0,0,0}, 0);
 	write_byte(killer);
 	write_byte(victim);
@@ -551,6 +551,10 @@ stock kill(killer, victim, team)
 
 		cs_set_user_money(killer, money > 16000 ? 16000 : money);
 	}
+
+	static msgScoreInfo;
+
+	if (!msgScoreInfo) msgScoreInfo = get_user_msgid("ScoreInfo");
 
 	message_begin(MSG_ALL, msgScoreInfo);
 	write_byte(killer);

@@ -74,13 +74,14 @@ new const defaultShell[] = "models/pshell.mdl",
 		  shotgunShell[] = "models/shotgunshell.mdl";
 
 enum _:tempInfo { WEAPON, WEAPONS, WEAPON_ENT, EXCHANGE_PLAYER, EXCHANGE, EXCHANGE_FOR_SKIN, GIVE_PLAYER, SALE_SKIN, BUY, BUY_WEAPON, BUY_SUBMODEL, Float:COUNTDOWN };
-enum _:playerInfo { ACTIVE[CSW_P90 + 1], Float:MONEY, SKIN, SUBMODEL, bool:SKINS_LOADED, bool:DATA_LOADED, bool:EXCHANGE_BLOCKED, bool:MENU_BLOCKED, TEMP[tempInfo], NAME[32], SAFE_NAME[64] };
+enum _:playerInfo { ACTIVE[CSW_P90 + 1], Float:MONEY, SKIN, SUBMODEL, bool:SKINS_LOADED, bool:DATA_LOADED, bool:EXCHANGE_BLOCKED, bool:MENU_BLOCKED, TEMP[tempInfo], NAME[32], SAFE_NAME[64], STEAM_ID[35] };
 enum _:playerSkinsInfo { SKIN_ID, SKIN_COUNT };
 enum _:skinsInfo { SKIN_NAME[64], SKIN_WEAPON[32], SKIN_MODEL[64], SKIN_SUBMODEL, SKIN_PRICE, SKIN_CHANCE };
 enum _:marketInfo { MARKET_ID, MARKET_SKIN, MARKET_OWNER, Float:MARKET_PRICE };
+enum _:typeInfo { TYPE_NAME, TYPE_STEAM_ID };
 
 new playerData[MAX_PLAYERS + 1][playerInfo], Array:playerSkins[MAX_PLAYERS + 1], Float:randomSkinPrice[WEAPON_ALL + 1], overallSkinChance[WEAPON_ALL + 1], Array:skins,
-	Array:weapons, Array:market, Handle:sql, Handle:connection, marketSkins, multipleSkins, skinChance, skinChanceSVIP, silencerAttached, Float:skinChancePerMember,
+	Array:weapons, Array:market, Handle:sql, Handle:connection, saveType, marketSkins, multipleSkins, skinChance, skinChanceSVIP, silencerAttached, Float:skinChancePerMember,
 	maxMarketSkins, Float:marketCommision, Float:killReward, Float:killHSReward, Float:bombReward, Float:defuseReward, Float:hostageReward, Float:winReward, minPlayers,
 	bool:end, bool:sqlConnected, sqlHost[64], sqlUser[64], sqlPassword[64], sqlDatabase[64], force;
 
@@ -99,6 +100,7 @@ public plugin_init()
 	bind_pcvar_string(create_cvar("csgo_sql_pass", "password", FCVAR_SPONLY | FCVAR_PROTECTED), sqlPassword, charsmax(sqlPassword));
 	bind_pcvar_string(create_cvar("csgo_sql_db", "database", FCVAR_SPONLY | FCVAR_PROTECTED), sqlDatabase, charsmax(sqlDatabase));
 
+	bind_pcvar_num(create_cvar("csgo_save_type", "0"), saveType);
 	bind_pcvar_num(create_cvar("csgo_multiple_skins", "1"), multipleSkins);
 	bind_pcvar_num(create_cvar("csgo_min_players", "4"), minPlayers);
 	bind_pcvar_num(create_cvar("csgo_max_market_skins", "5"), maxMarketSkins);
@@ -314,7 +316,7 @@ public plugin_cfg()
 
 	new queryData[256], bool:hasError;
 
-	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_skins` (name VARCHAR(35), weapon VARCHAR(35), skin VARCHAR(64), count INT NOT NULL DEFAULT 1, PRIMARY KEY(name, weapon, skin));");
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_skins` (name VARCHAR(64), steamid VARCHAR(35), weapon VARCHAR(35), skin VARCHAR(64), count INT NOT NULL DEFAULT 1, PRIMARY KEY(name, steamid, weapon, skin));");
 
 	new Handle:query = SQL_PrepareQuery(connection, queryData);
 
@@ -326,7 +328,7 @@ public plugin_cfg()
 		hasError = true;
 	}
 
-	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_data` (name VARCHAR(35), money FLOAT NOT NULL DEFAULT 0, exchange INT NOT NULL DEFAULT 0, menu INT NOT NULL DEFAULT 0, online INT NOT NULL DEFAULT 0, PRIMARY KEY(name));");
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_data` (name VARCHAR(64), steamid VARCHAR(35), money FLOAT NOT NULL DEFAULT 0, exchange INT NOT NULL DEFAULT 0, menu INT NOT NULL DEFAULT 0, online INT NOT NULL DEFAULT 0, PRIMARY KEY(steamid, name));");
 
 	query = SQL_PrepareQuery(connection, queryData);
 
@@ -394,6 +396,7 @@ public client_putinserver(id)
 
 	if (is_user_hltv(id) || is_user_bot(id)) return;
 
+	get_user_authid(id, playerData[id][STEAM_ID], charsmax(playerData[][STEAM_ID]));
 	get_user_name(id, playerData[id][NAME], charsmax(playerData[][NAME]));
 
 	mysql_escape_string(playerData[id][NAME], playerData[id][SAFE_NAME], charsmax(playerData[][SAFE_NAME]));
@@ -639,7 +642,7 @@ public choose_weapon_menu_handle(id, menu, item)
 
 	menu_destroy(menu);
 
-	strtok(itemData, weapon, charsmax(weapon), itemType, charsmax(itemType), '#');
+	strtok2(itemData, weapon, charsmax(weapon), itemType, charsmax(itemType), '#');
 
 	switch (str_to_num(itemType)) {
 		case 0: set_weapon_skin(id, weapon);
@@ -2647,12 +2650,6 @@ stock change_skin(id, weapon, ent = 0)
 				} else {
 					playerData[id][SKIN] = weaponSkin;
 					playerData[id][SUBMODEL] = skin[SKIN_SUBMODEL];
-
-					if (containi(skin[SKIN_NAME], "M4A4") != -1) {
-						cs_set_weapon_silen(ent, 0, 0);
-
-						set_pdata_float(ent, OFFSET_SECONDARY_ATTACK, 9999.0, OFFSET_ITEM_LINUX);
-					}
 				}
 			}
 
@@ -2667,12 +2664,6 @@ stock change_skin(id, weapon, ent = 0)
 
 		playerData[id][SKIN] = playerData[id][ACTIVE][weapon];
 		playerData[id][SUBMODEL] = skin[SKIN_SUBMODEL];
-
-		if (containi(skin[SKIN_NAME], "M4A4") != -1) {
-			cs_set_weapon_silen(ent, 0, 0);
-
-			set_pdata_float(ent, OFFSET_SECONDARY_ATTACK, 9999.0, OFFSET_ITEM_LINUX);
-		}
 	}
 
 	set_task(0.1, "deploy_weapon_switch", id + TASK_DEPLOY);
@@ -2930,7 +2921,10 @@ public load_data(id)
 
 	playerId[0] = id;
 
-	formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_data` WHERE name = ^"%s^"", playerData[id][SAFE_NAME]);
+	switch (saveType) {
+		case SAVE_NAME: formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_data` WHERE `name` = ^"%s^"", playerData[id][SAFE_NAME]);
+		case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_data` WHERE `steamid` = ^"%s^"", playerData[id][STEAM_ID]);
+	}
 
 	SQL_ThreadQuery(sql, "load_data_handle", queryData, playerId, sizeof(playerId));
 }
@@ -2951,10 +2945,18 @@ public load_data_handle(failState, Handle:query, error[], errorNum, playerId[], 
 		if (SQL_ReadResult(query, SQL_FieldNameToNum(query, "exchange"))) playerData[id][EXCHANGE_BLOCKED] = true;
 		if (SQL_ReadResult(query, SQL_FieldNameToNum(query, "menu"))) playerData[id][MENU_BLOCKED] = true;
 	} else {
-		new queryData[192];
+		new queryData[256];
 
-		formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_data` (`name`, `money`, `exchange`, `menu`, `online`) VALUES (^"%s^", '0', '0', '0', '0');",
-			playerData[id][SAFE_NAME]);
+		switch (saveType) {
+			case SAVE_NAME: {
+				formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_data` (`name`, `money`, `exchange`, `menu`, `online`) VALUES (^"%s^", '0', '0', '0', '0');",
+					playerData[id][SAFE_NAME]);
+			}
+			case SAVE_STEAM_ID: {
+				formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_data` (`steamid`, `money`, `exchange`, `menu`, `online`) VALUES (^"%s^", '0', '0', '0', '0');",
+					playerData[id][STEAM_ID]);
+			}
+		}
 
 		SQL_ThreadQuery(sql, "ignore_handle", queryData);
 	}
@@ -2968,10 +2970,18 @@ stock save_data(id, end = 0)
 {
 	if (!playerData[id][DATA_LOADED]) return;
 
-	new queryData[192];
+	new queryData[256];
 
-	formatex(queryData, charsmax(queryData), "UPDATE `csgo_data` SET `money` = %f, `exchange` = %i, `menu` = %i, `online` = %i WHERE name = ^"%s^"",
-		playerData[id][MONEY], playerData[id][EXCHANGE_BLOCKED], playerData[id][MENU_BLOCKED], end ? 0 : 1, playerData[id][SAFE_NAME]);
+	switch (saveType) {
+		case SAVE_NAME: {
+			formatex(queryData, charsmax(queryData), "UPDATE `csgo_data` SET `money` = %f, `exchange` = %i, `menu` = %i, `online` = %i WHERE `name` = ^"%s^"",
+				playerData[id][MONEY], playerData[id][EXCHANGE_BLOCKED], playerData[id][MENU_BLOCKED], end ? 0 : 1, playerData[id][SAFE_NAME]);
+		}
+		case SAVE_STEAM_ID: {
+			formatex(queryData, charsmax(queryData), "UPDATE `csgo_data` SET `money` = %f, `exchange` = %i, `menu` = %i, `online` = %i WHERE `steamid` = ^"%s^"",
+				playerData[id][MONEY], playerData[id][EXCHANGE_BLOCKED], playerData[id][MENU_BLOCKED], end ? 0 : 1, playerData[id][STEAM_ID]);
+		}
+	}
 
 	switch (end) {
 		case 0, 1: SQL_ThreadQuery(sql, "ignore_handle", queryData);
@@ -3011,7 +3021,10 @@ public load_skins(id)
 
 	playerId[0] = id;
 
-	formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_skins` WHERE name = ^"%s^"", playerData[id][SAFE_NAME]);
+	switch (saveType) {
+		case SAVE_NAME: formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_skins` WHERE `name` = ^"%s^"", playerData[id][SAFE_NAME]);
+		case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_skins` WHERE `steamid` = ^"%s^"", playerData[id][STEAM_ID]);
+	}
 
 	SQL_ThreadQuery(sql, "load_skins_handle", queryData, playerId, sizeof(playerId));
 }
@@ -3292,16 +3305,20 @@ stock remove_skin(id, skinId, weapon[], skin[])
 {
 	if (!playerData[id][SKINS_LOADED]) return;
 
-	new queryData[192], skinSafeName[64];
+	new queryData[256], skinSafeName[64];
 
 	mysql_escape_string(skin, skinSafeName, charsmax(skinSafeName));
 
 	if (!change_local_skin(id, skinId)) {
-		formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_skins` WHERE name = ^"%s^" AND weapon = '%s' AND skin = '%s'",
-			playerData[id][SAFE_NAME], weapon, skinSafeName);
+		switch (saveType) {
+			case SAVE_NAME: formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_skins` WHERE name = ^"%s^" AND weapon = '%s' AND skin = '%s'", playerData[id][SAFE_NAME], weapon, skinSafeName);
+			case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_skins` WHERE steamid = ^"%s^" AND weapon = '%s' AND skin = '%s'", playerData[id][STEAM_ID], weapon, skinSafeName);
+		}
 	} else {
-		formatex(queryData, charsmax(queryData), "UPDATE `csgo_skins` SET count = count - 1 WHERE name = ^"%s^" AND weapon = '%s' AND skin = '%s'",
-			playerData[id][SAFE_NAME], weapon, skinSafeName);
+		switch (saveType) {
+			case SAVE_NAME: formatex(queryData, charsmax(queryData), "UPDATE `csgo_skins` SET count = count - 1 WHERE name = ^"%s^" AND weapon = '%s' AND skin = '%s'", playerData[id][SAFE_NAME], weapon, skinSafeName);
+			case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "UPDATE `csgo_skins` SET count = count - 1 WHERE steamid = ^"%s^" AND weapon = '%s' AND skin = '%s'", playerData[id][STEAM_ID], weapon, skinSafeName);
+		}
 	}
 
 	if (playerData[id][ACTIVE][get_weapon_id(weapon)] == skinId) {
@@ -3317,9 +3334,12 @@ stock remove_active_skin(id, weapon[])
 {
 	if (!playerData[id][SKINS_LOADED]) return;
 
-	new queryData[192];
+	new queryData[256];
 
-	formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_skins` WHERE name = ^"%s^" AND weapon = '%s ACTIVE'", playerData[id][SAFE_NAME], weapon);
+	switch (saveType) {
+		case SAVE_NAME: formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_skins` WHERE name = ^"%s^" AND weapon = '%s ACTIVE'", playerData[id][SAFE_NAME], weapon);
+		case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_skins` WHERE steamid = ^"%s^" AND weapon = '%s ACTIVE'", playerData[id][STEAM_ID], weapon);
+	}
 
 	SQL_ThreadQuery(sql, "ignore_handle", queryData);
 }
@@ -3328,12 +3348,14 @@ stock add_skin(id, skinId, weapon[], skin[])
 {
 	if (!playerData[id][SKINS_LOADED] || (!multipleSkins && has_skin(id, skinId))) return;
 
-	new queryData[192], skinSafeName[64];
+	new queryData[256], skinSafeName[64];
 
 	mysql_escape_string(skin, skinSafeName, charsmax(skinSafeName));
 
-	formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_skins` (`name`, `weapon`, `skin`) VALUES (^"%s^", '%s', '%s') ON DUPLICATE KEY UPDATE count = count + 1;",
-		playerData[id][SAFE_NAME], weapon, skinSafeName);
+	switch (saveType) {
+		case SAVE_NAME: formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_skins` (`name`, `weapon`, `skin`) VALUES (^"%s^", '%s', '%s') ON DUPLICATE KEY UPDATE count = count + 1;", playerData[id][SAFE_NAME], weapon, skinSafeName);
+		case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_skins` (`steamid`, `weapon`, `skin`) VALUES (^"%s^", '%s', '%s') ON DUPLICATE KEY UPDATE count = count + 1;", playerData[id][STEAM_ID], weapon, skinSafeName);
+	}
 
 	SQL_ThreadQuery(sql, "ignore_handle", queryData);
 
@@ -3359,12 +3381,14 @@ stock set_skin(id, weapon[], skin[] = "", skinId = NONE, active = 0)
 	}
 
 	if (active && playerData[id][SKINS_LOADED]) {
-		new queryData[192], skinSafeName[64];
+		new queryData[256], skinSafeName[64];
 
 		mysql_escape_string(skin, skinSafeName, charsmax(skinSafeName));
 
-		formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_skins` (`name`, `weapon`, `skin`) VALUES (^"%s^", '%s ACTIVE', '%s');",
-			playerData[id][SAFE_NAME], weapon, skinSafeName);
+		switch (saveType) {
+			case SAVE_NAME: formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_skins` (`name`, `weapon`, `skin`) VALUES (^"%s^", '%s ACTIVE', '%s');", playerData[id][SAFE_NAME], weapon, skinSafeName);
+			case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_skins` (`steamid`, `weapon`, `skin`) VALUES (^"%s^", '%s ACTIVE', '%s');", playerData[id][STEAM_ID], weapon, skinSafeName);
+		}
 
 		SQL_ThreadQuery(sql, "ignore_handle", queryData);
 	}
