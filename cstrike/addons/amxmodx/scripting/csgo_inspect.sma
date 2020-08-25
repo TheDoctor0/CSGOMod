@@ -65,7 +65,7 @@ public deagle_reload(weapon)
 
 	remove_task(id);
 
-	if (!is_user_alive(id)) return;
+	if (!pev_valid(id) || !is_user_alive(id)) return;
 
 	deagleDisable[id] = true;
 
@@ -78,7 +78,7 @@ public deagle_override(weapon)
 
 	remove_task(id);
 
-	if (!is_user_alive(id)) return;
+	if (!pev_valid(id) || !is_user_alive(id)) return;
 
 	deagleDisable[id] = true;
 
@@ -93,12 +93,12 @@ public knife_override(weapon)
 
 public inspect_weapon(id)
 {
-	if (!is_user_alive(id) || cs_get_user_shield(id) || cs_get_user_zoom(id) > 1) return PLUGIN_HANDLED;
+	if (!pev_valid(id) || !is_user_alive(id) || cs_get_user_shield(id) || cs_get_user_zoom(id) > 1) return PLUGIN_HANDLED;
 
 	new weaponId = get_user_weapon(id);
 	static weapon; weapon = get_pdata_cbase(id, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
 
-	if (weaponsWithoutInspect & (1<<weaponId)) return PLUGIN_HANDLED;
+	if (weaponsWithoutInspect & (1<<weaponId) || !pev_valid(weapon)) return PLUGIN_HANDLED;
 
 	new animation = inspectAnimation[weaponId], currentAnimation = pev(get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX), pev_weaponanim);
 

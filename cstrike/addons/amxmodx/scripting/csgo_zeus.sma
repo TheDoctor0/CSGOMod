@@ -54,7 +54,7 @@ public plugin_init()
 	register_event("DeathMsg", "event_deathmsg", "a", "2>0");
 	register_event("HLTV", "event_new_round", "a", "1=0", "2=0");
 	register_logevent("event_round_start", 2, "1=Round_Start");
-	register_event("TextMsg", "event_gamerestart", "a", "2=#Game_Commencing", "2=#Game_will_restart_in");
+	register_event("TextMsg", "event_game_restart", "a", "2=#Game_Commencing", "2=#Game_will_restart_in");
 }
 
 public plugin_natives()
@@ -116,7 +116,7 @@ public client_disconnected(id)
 
 public buy_zeus(id)
 {
-	if (!is_user_alive(id) || !cs_get_user_buyzone(id) || !zeusEnabled) return PLUGIN_HANDLED;
+	if (!zeusEnabled || !pev_valid(id) || !cs_get_user_buyzone(id) || !is_user_alive(id)) return PLUGIN_HANDLED;
 
 	new Float:cvarBuyTime = get_cvar_float("mp_buytime"), Float:buyTime;
 
@@ -190,7 +190,7 @@ public buy_zeus(id)
 public event_deathmsg()
 	rem_bit(read_data(2), zeus);
 
-public event_gamerestart()
+public event_game_restart()
 	restarted = true;
 
 public event_round_start()
@@ -211,7 +211,7 @@ public event_new_round()
 
 public weapon_attach_to_player(weapon, id)
 {
-	if (get_pdata_float(weapon, OFFSET_EMPTY_SOUND, OFFSET_ITEM_LINUX) || !get_bit(id, zeus) || !zeusEnabled) return;
+	if (!zeusEnabled || get_pdata_float(weapon, OFFSET_EMPTY_SOUND, OFFSET_ITEM_LINUX) || !pev_valid(id) || !get_bit(id, zeus)) return;
 
 	set_pdata_int(weapon, OFFSET_CLIP, 1, OFFSET_ITEM_LINUX);
 	set_pdata_int(id, OFFSET_CLIENT_CLIP, 0, OFFSET_PLAYER_LINUX);
@@ -221,7 +221,7 @@ public weapon_item_deploy(weapon)
 {
 	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
-	if (!is_user_alive(id) || !zeusEnabled || !get_bit(id, zeus)) return HAM_IGNORED;
+	if (!zeusEnabled || !pev_valid(id) || !is_user_alive(id) || !get_bit(id, zeus)) return HAM_IGNORED;
 
 	set_pev(id, pev_viewmodel2, models[ViewModel]);
 	set_pev(id, pev_weaponmodel2, models[PlayerModel]);
@@ -236,7 +236,7 @@ public weapon_primary_attack(weapon)
 {
 	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
-	if (!is_user_alive(id) || !zeusEnabled || !get_bit(id, zeus)) return HAM_IGNORED;
+	if (!zeusEnabled || !pev_valid(id) || !is_user_alive(id) || !get_bit(id, zeus)) return HAM_IGNORED;
 
 	rem_bit(id, zeus);
 
@@ -275,7 +275,7 @@ public weapon_item_can_drop(weapon)
 {
 	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
-	if (!is_user_alive(id) || !zeusEnabled || !get_bit(id, zeus)) return HAM_IGNORED;
+	if (!zeusEnabled || !pev_valid(id) || !is_user_alive(id) || !get_bit(id, zeus)) return HAM_IGNORED;
 
 	SetHamReturnInteger(false);
 

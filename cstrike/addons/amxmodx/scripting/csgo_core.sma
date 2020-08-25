@@ -2535,7 +2535,7 @@ public check_aim_weapon(id)
 {
 	id -= TASK_AIM;
 
-	if (!is_user_alive(id)) return FMRES_IGNORED;
+	if (!pev_valid(id) || !is_user_alive(id)) return FMRES_IGNORED;
 
 	static bool:canPickup[MAX_PLAYERS + 1], weaponHud, ent;
 
@@ -2703,7 +2703,7 @@ stock send_weapon_animation(id, submodel, animation = 0)
 {
 	static i, count, spectator, spectators[MAX_PLAYERS];
 
-	if (!is_user_alive(id)) return;
+	if (!pev_valid(id) || !is_user_alive(id)) return;
 
 	set_pev(id, pev_weaponanim, animation);
 
@@ -2719,7 +2719,7 @@ stock send_weapon_animation(id, submodel, animation = 0)
 	for (i = 0; i < count; i++) {
 		spectator = spectators[i];
 
-		if (!is_user_connected(spectator) || pev(spectator, pev_iuser1) != OBSERVER || pev(spectator, pev_iuser2) != id) continue;
+		if (!is_user_connected(spectator) || !pev_valid(spectator) || pev(spectator, pev_iuser1) != OBSERVER || pev(spectator, pev_iuser2) != id) continue;
 
 		set_pev(spectator, pev_weaponanim, animation);
 
@@ -3480,7 +3480,7 @@ stock remove_seller(id)
 
 stock fm_get_user_aiming_ent(id, const className[])
 {
-	if (!is_user_alive(id)) return 0;
+	if (!pev_valid(id) || !is_user_alive(id)) return 0;
 
 	new Float:origin[3];
 

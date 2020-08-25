@@ -89,7 +89,7 @@ public CS_InternalCommand(id, const command[])
 
 stock message_not_available(id, const type[])
 {
-	if (!is_user_alive(id)) return;
+	if (!pev_valid(id) || !is_user_alive(id)) return;
 
 	static textMsg;
 

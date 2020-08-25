@@ -464,7 +464,7 @@ public display_hud(id)
 {
 	id -= TASK_HUD;
 
-	if (is_user_bot(id) || !is_user_connected(id) || !get_bit(id, hudLoaded)) return PLUGIN_CONTINUE;
+	if (!pev_valid(id) || !is_user_connected(id) || is_user_bot(id) || !get_bit(id, hudLoaded)) return PLUGIN_CONTINUE;
 
 	static address[64], clan[64], operation[64], skin[64], statTrak[64], account[64], weaponStatTrak = -1, target;
 
@@ -1196,7 +1196,7 @@ public show_icon(id)
 {
 	new target = read_data(2);
 
-	if (!is_user_alive(id) || !is_user_alive(target)) return;
+	if (!pev_valid(id) || !pev_valid(target) || !is_user_alive(id) || !is_user_alive(target)) return;
 
 	new color[2], Float:height, defaultHUD = get_xvar_num(defaultInfo), flags = read_flags(iconFlags), rank = playerData[target][RANK];
 
@@ -1483,7 +1483,7 @@ stock get_loguser_index()
 
 stock create_attachment(id, target, offset, sprite, life)
 {
-	if (!is_user_alive(id) || !is_user_alive(target)) return;
+	if (!pev_valid(id) || !pev_valid(target) || !is_user_alive(id) || !is_user_alive(target)) return;
 
 	message_begin(MSG_ONE_UNRELIABLE, SVC_TEMPENTITY, _, id);
 	write_byte(TE_PLAYERATTACHMENT);

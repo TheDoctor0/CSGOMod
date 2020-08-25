@@ -59,7 +59,7 @@ public round_start()
 
 public clcmd_client_buy_open(id)
 {
-	if (csgo_get_menu(id) || !is_user_alive(id)) return PLUGIN_CONTINUE;
+	if (csgo_get_menu(id) || !pev_valid(id) || !is_user_alive(id)) return PLUGIN_CONTINUE;
 
 	static msgBuyClose;
 
@@ -585,7 +585,7 @@ public clcmd_buy_weapon_handle(id, menu, item)
 
 stock can_buy(id)
 {
-	if (!is_user_alive(id) || !cs_get_user_buyzone(id)) return false;
+	if (!pev_valid(id) || !is_user_alive(id) || !cs_get_user_buyzone(id)) return false;
 
 	new Float:buyTime;
 

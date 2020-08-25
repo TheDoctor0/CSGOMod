@@ -56,7 +56,7 @@ public plugin_init()
 
 	register_event("DeathMsg", "event_deathmsg", "a", "2>0");
 	register_event("HLTV", "event_new_round", "a", "1=0", "2=0");
-	register_event("TextMsg", "event_gamerestart", "a", "2=#Game_Commencing", "2=#Game_will_restart_in");
+	register_event("TextMsg", "event_game_restart", "a", "2=#Game_Commencing", "2=#Game_will_restart_in");
 
 	register_logevent("event_round_end", 2, "1=Round_End");
 
@@ -133,7 +133,7 @@ public client_disconnected(id)
 
 public buy_molotov(id)
 {
-	if (!molotovEnabled || !cs_get_user_buyzone(id) || !is_user_alive(id)) return PLUGIN_HANDLED;
+	if (!molotovEnabled || !pev_valid(id) || !cs_get_user_buyzone(id) || !is_user_alive(id)) return PLUGIN_HANDLED;
 
 	new Float:cvarBuyTime = get_cvar_float("mp_buytime"), Float:buyTime;
 
@@ -207,7 +207,7 @@ public buy_molotov(id)
 public event_deathmsg()
 	rem_bit(read_data(2), molotov);
 
-public event_gamerestart()
+public event_game_restart()
 	restarted = true;
 
 public event_round_end()
@@ -244,7 +244,7 @@ public molotov_deploy_model(weapon)
 {
 	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
-	if (!is_user_alive(id) || !molotovEnabled || !get_bit(id, molotov)) return HAM_IGNORED;
+	if (!molotovEnabled || !pev_valid(id) || !is_user_alive(id) || !get_bit(id, molotov)) return HAM_IGNORED;
 
 	set_pev(id, pev_viewmodel2, models[ViewModel]);
 	set_pev(id, pev_weaponmodel2, models[PlayerModel]);
@@ -349,7 +349,15 @@ stock molotov_explode(ent)
 }
 
 public fire_sound(data[])
-	if (pev_valid(data[1])) emit_sound(data[1], CHAN_AUTO, sounds[Fire], VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
+{
+	if (pev_valid(data[1])) {
+		if (is_user_connected(data[2]) && pev_valid(data[2])) {
+			emit_sound(data[1], CHAN_AUTO, sounds[Fire], VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
+		} else {
+			fire_stop(data);
+		}
+	}
+}
 
 public fire_stop(data[])
 {
@@ -359,7 +367,7 @@ public fire_stop(data[])
 
 public fire_damage(data[])
 {
-	if (extinguish_molotov(data)) return;
+	if (extinguish_molotov(data) || !pev_valid(data[2]) || !is_user_connected(data[2])) return;
 
 	new Float:newOrigin[3], origin[3];
 
@@ -501,6 +509,8 @@ stock reset_tasks()
 
 stock kill(killer, victim, team)
 {
+	if (!pev_valid(killer) || !pev_valid(victim) || !is_user_connected(killer) || !is_user_alive(victim)) return;
+
 	static msgDeathMsg;
 
 	if (!msgDeathMsg) msgDeathMsg = get_user_msgid("DeathMsg");
