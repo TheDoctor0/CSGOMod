@@ -2352,7 +2352,7 @@ public trace_attack_post(ent, attacker, Float:damage, Float:direction[3], ptr, d
 {
 	static weapon, Float:vectorEnd[3];
 
-	if (!pev_valid(attacker) || !pev_valid(ent)) return HAM_IGNORED;
+	if (!pev_valid(attacker)) return HAM_IGNORED;
 
 	weapon = get_pdata_cbase(attacker, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
 
@@ -2449,7 +2449,7 @@ public update_client_data_post(id, sendWeapons, handleCD)
 
 	target = (specMode = pev(id, pev_iuser1)) ? pev(id, pev_iuser2) : id;
 
-	if (!pev_valid(ent) || !is_user_alive(target)) return FMRES_IGNORED;
+	if (!pev_valid(target) || !is_user_alive(target)) return FMRES_IGNORED;
 
 	ent = get_pdata_cbase(target, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
 
