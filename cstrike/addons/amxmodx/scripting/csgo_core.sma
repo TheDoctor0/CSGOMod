@@ -2673,7 +2673,7 @@ public deploy_weapon_switch(id)
 {
 	id -= TASK_DEPLOY;
 
-	if (!is_user_alive(id)) return;
+	if (!pev_valid(id) || !is_user_alive(id)) return;
 
 	static skin[skinsInfo], weapon; weapon = get_pdata_cbase(id, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
 
