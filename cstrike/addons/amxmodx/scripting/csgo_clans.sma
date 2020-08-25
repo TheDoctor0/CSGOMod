@@ -1041,7 +1041,10 @@ public applications_menu(id)
 
 	tempId[0] = id;
 
-	formatex(queryData, charsmax(queryData), "SELECT a.name, (SELECT money FROM `csgo_data` WHERE name = a.name) as money, (SELECT rank FROM `csgo_ranks` WHERE name = a.name) as rank FROM `csgo_clans_applications` a WHERE clan = '%i' ORDER BY rank DESC, money DESC", playerData[id][CLAN]);
+	switch (saveType) {
+		case SAVE_NAME: formatex(queryData, charsmax(queryData), "SELECT a.name, a.steamid, (SELECT money FROM `csgo_data` WHERE name = a.name) as money, (SELECT rank FROM `csgo_ranks` WHERE name = a.name) as rank FROM `csgo_clans_applications` a WHERE clan = '%i' ORDER BY rank DESC, money DESC", playerData[id][CLAN]);
+		case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "SELECT a.name, a.steamid, (SELECT money FROM `csgo_data` WHERE steamid = a.steamid) as money, (SELECT rank FROM `csgo_ranks` WHERE steamid = a.steamid) as rank FROM `csgo_clans_applications` a WHERE clan = '%i' ORDER BY rank DESC, money DESC", playerData[id][CLAN]);
+	}
 
 	SQL_ThreadQuery(sql, "applications_menu_handle", queryData, tempId, sizeof(tempId));
 
