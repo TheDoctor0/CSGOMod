@@ -2259,9 +2259,11 @@ public event_money(id)
 
 public weapon_deploy_post(ent)
 {
+	if (!pev_valid(ent)) return HAM_IGNORED;
+
 	static weapon, id; id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
-	if (!is_user_alive(id)) return HAM_IGNORED;
+	if (!pev_valid(id) || !is_user_alive(id)) return HAM_IGNORED;
 
 	weapon = weapon_entity(ent);
 	playerData[id][TEMP][WEAPON] = weapon;
@@ -2279,9 +2281,11 @@ public weapon_deploy_post(ent)
 
 public weapon_send_weapon_anim_post(ent, animation, skipLocal)
 {
+	if (!pev_valid(ent)) return HAM_IGNORED;
+
 	static weapon, id; id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
-	if (!is_user_alive(id)) return HAM_IGNORED;
+	if (!pev_valid(id) || !is_user_alive(id)) return HAM_IGNORED;
 
 	weapon = weapon_entity(ent);
 
@@ -2297,9 +2301,11 @@ public weapon_send_weapon_anim_post(ent, animation, skipLocal)
 
 public weapon_primary_attack(ent)
 {
+	if (!pev_valid(ent)) return HAM_IGNORED;
+
 	static weapon, id; id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
-	if (!is_user_alive(id)) return HAM_IGNORED;
+	if (!pev_valid(id) || !is_user_alive(id)) return HAM_IGNORED;
 
 	weapon = weapon_entity(ent);
 
@@ -2317,9 +2323,11 @@ public weapon_primary_attack(ent)
 
 public m4a1_secondary_attack(ent)
 {
+	if (!pev_valid(ent)) return HAM_IGNORED;
+
 	static skin, id; id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
-	if (!is_user_alive(id)) return HAM_IGNORED;
+	if (!pev_valid(id) || !is_user_alive(id)) return HAM_IGNORED;
 
 	skin = get_weapon_skin(id, weapon_entity(ent));
 
@@ -2343,6 +2351,8 @@ public m4a1_secondary_attack(ent)
 public trace_attack_post(ent, attacker, Float:damage, Float:direction[3], ptr, damageType)
 {
 	static weapon, Float:vectorEnd[3];
+
+	if (!pev_valid(attacker) || !pev_valid(ent)) return HAM_IGNORED;
 
 	weapon = get_pdata_cbase(attacker, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
 
@@ -2439,7 +2449,7 @@ public update_client_data_post(id, sendWeapons, handleCD)
 
 	target = (specMode = pev(id, pev_iuser1)) ? pev(id, pev_iuser2) : id;
 
-	if (!is_user_alive(target)) return FMRES_IGNORED;
+	if (!pev_valid(ent) || !is_user_alive(target)) return FMRES_IGNORED;
 
 	ent = get_pdata_cbase(target, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
 

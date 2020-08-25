@@ -211,7 +211,7 @@ public event_new_round()
 
 public weapon_attach_to_player(weapon, id)
 {
-	if (!zeusEnabled || get_pdata_float(weapon, OFFSET_EMPTY_SOUND, OFFSET_ITEM_LINUX) || !pev_valid(id) || !get_bit(id, zeus)) return;
+	if (!zeusEnabled || !pev_valid(weapon) || !pev_valid(id) || !get_bit(id, zeus) || get_pdata_float(weapon, OFFSET_EMPTY_SOUND, OFFSET_ITEM_LINUX)) return;
 
 	set_pdata_int(weapon, OFFSET_CLIP, 1, OFFSET_ITEM_LINUX);
 	set_pdata_int(id, OFFSET_CLIENT_CLIP, 0, OFFSET_PLAYER_LINUX);
@@ -219,6 +219,8 @@ public weapon_attach_to_player(weapon, id)
 
 public weapon_item_deploy(weapon)
 {
+	if (!pev_valid(weapon)) return HAM_IGNORED;
+
 	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	if (!zeusEnabled || !pev_valid(id) || !is_user_alive(id) || !get_bit(id, zeus)) return HAM_IGNORED;
@@ -234,6 +236,8 @@ public weapon_item_deploy(weapon)
 
 public weapon_primary_attack(weapon)
 {
+	if (!pev_valid(weapon)) return HAM_IGNORED;
+
 	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	if (!zeusEnabled || !pev_valid(id) || !is_user_alive(id) || !get_bit(id, zeus)) return HAM_IGNORED;
@@ -273,6 +277,8 @@ public weapon_primary_attack(weapon)
 
 public weapon_item_can_drop(weapon)
 {
+	if (!pev_valid(weapon)) return HAM_IGNORED;
+
 	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	if (!zeusEnabled || !pev_valid(id) || !is_user_alive(id) || !get_bit(id, zeus)) return HAM_IGNORED;

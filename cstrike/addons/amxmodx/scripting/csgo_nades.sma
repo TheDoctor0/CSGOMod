@@ -28,39 +28,47 @@ public plugin_init()
 
 public grenade_deploy(weapon)
 {
+	if (!pev_valid(weapon)) return HAM_IGNORED;
+
 	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
-	if (!is_user_alive(id)) return HAM_IGNORED;
+	if (!pev_valid(id) || !is_user_alive(id)) return HAM_IGNORED;
 
 	grenadeThrow[id] = NORMAL;
 
 	return HAM_IGNORED;
 }
 
-public grenade_secondary_attack(const ent)
+public grenade_secondary_attack(ent)
 {
-	if (pev_valid(ent)) {
-		new id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX), buttons = pev(id, pev_button);
+	if (!pev_valid(ent)) return HAM_IGNORED;
 
-		grenadeThrow[id] = (buttons & IN_ATTACK) ? MEDIUM : SHORT;
+	new id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
-		ExecuteHamB(Ham_Weapon_PrimaryAttack, ent);
-	}
+	if (!pev_valid(id) || !is_user_alive(id)) return HAM_IGNORED;
+
+	new buttons = pev(id, pev_button);
+
+	grenadeThrow[id] = (buttons & IN_ATTACK) ? MEDIUM : SHORT;
+
+	ExecuteHamB(Ham_Weapon_PrimaryAttack, ent);
+
+	return HAM_IGNORED;
 }
 
 public grenade_throw(id, ent, weapon)
 {
-	if (pev_valid(ent)) {
-		new Float:grenadeVelocity[3];
+	if (!pev_valid(ent) || !pev_valid(id)) return;
 
-		pev(ent, pev_velocity, grenadeVelocity);
+	new Float:grenadeVelocity[3];
 
-		new Float:multiplier = velocityMultiplier[grenadeThrow[id]];
+	pev(ent, pev_velocity, grenadeVelocity);
 
-		xs_vec_mul_scalar(grenadeVelocity, multiplier, grenadeVelocity);
+	new Float:multiplier = velocityMultiplier[grenadeThrow[id]];
 
-		set_pev(ent, pev_velocity, grenadeVelocity);
+	xs_vec_mul_scalar(grenadeVelocity, multiplier, grenadeVelocity);
 
-		grenadeThrow[id] = NORMAL;
-	}
+	set_pev(ent, pev_velocity, grenadeVelocity);
+
+	grenadeThrow[id] = NORMAL;
 }

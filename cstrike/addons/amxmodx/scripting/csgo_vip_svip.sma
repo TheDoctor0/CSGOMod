@@ -259,7 +259,7 @@ public player_spawn(id)
 	remove_task(id);
 	client_authorized_post(id);
 
-	if (!is_user_alive(id) || !get_bit(id, VIP)) return PLUGIN_CONTINUE;
+	if (!is_user_alive(id) || !pev_valid(id) || !get_bit(id, VIP)) return PLUGIN_CONTINUE;
 
 	if (get_user_team(id) == 2) cs_set_user_defuse(id, 1);
 
@@ -320,9 +320,7 @@ public vip_menu(id)
 
 public vip_menu_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
-
-	if (item == MENU_EXIT) {
+	if (!is_user_alive(id) || !pev_valid(id) || item == MENU_EXIT) {
 		menu_destroy(menu);
 
 		return PLUGIN_HANDLED;
@@ -391,7 +389,7 @@ public vip_menu_handle(id, menu, item)
 
 public close_vip_menu(id)
 {
-	if (used[id] || !is_user_alive(id)) return PLUGIN_CONTINUE;
+	if (used[id] || !is_user_alive(id) || !pev_valid(id)) return PLUGIN_CONTINUE;
 
 	if (!check_weapons(id)) {
 		if (get_bit(id, SVIP)) {
@@ -486,9 +484,7 @@ public vip_menu_pistol(id)
 
 public vip_menu_pistol_handle(id, menu, item)
 {
-	if (!is_user_connected(id)) return PLUGIN_HANDLED;
-
-	if (item == MENU_EXIT) {
+	if (!is_user_alive(id) || !pev_valid(id) || item == MENU_EXIT) {
 		menu_destroy(menu);
 
 		return PLUGIN_HANDLED;
@@ -542,7 +538,7 @@ public vip_menu_pistol_handle(id, menu, item)
 
 public close_vip_menu_pistol(id)
 {
-	if (used[id] || !is_user_alive(id)) return PLUGIN_CONTINUE;
+	if (used[id] || !is_user_alive(id) || !pev_valid(id)) return PLUGIN_CONTINUE;
 
 	if (!check_weapons(id)) {
 		if (get_bit(id, SVIP)) {

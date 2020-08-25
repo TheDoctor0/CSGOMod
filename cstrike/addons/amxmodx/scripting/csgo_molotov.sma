@@ -242,6 +242,8 @@ public event_new_round()
 
 public molotov_deploy_model(weapon)
 {
+	if (!pev_valid(weapon)) return HAM_IGNORED;
+
 	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	if (!molotovEnabled || !pev_valid(id) || !is_user_alive(id) || !get_bit(id, molotov)) return HAM_IGNORED;
@@ -260,7 +262,7 @@ public player_spawned_post(id)
 
 public grenade_throw(id, ent, wid)
 {
-	if (!molotovEnabled || !is_user_connected(id) || wid != CSW_HEGRENADE || !get_bit(id, molotov)) return PLUGIN_CONTINUE;
+	if (!molotovEnabled || !is_user_connected(id) || !pev_valid(ent) || wid != CSW_HEGRENADE || !get_bit(id, molotov)) return PLUGIN_CONTINUE;
 
 	rem_bit(id, molotov);
 
@@ -274,32 +276,32 @@ public grenade_throw(id, ent, wid)
 
 public sound_emit(ent, channel, sample[])
 {
-	if (equal(sample[8], "he_bounce", 9)) {
-		new modelName[64];
+	if (!equal(sample[8], "he_bounce", 9) || !pev_valid(ent)) return FMRES_IGNORED;
 
-		pev(ent, pev_model, modelName, charsmax(modelName));
+	new modelName[64];
 
-		if (contain(modelName, "w_molotov.mdl") != -1) {
-			emit_sound(ent, CHAN_AUTO, "debris/glass2.wav", VOL_NORM, ATTN_STATIC, 0, PITCH_LOW);
+	pev(ent, pev_model, modelName, charsmax(modelName));
 
-			new Float:friction, Float:velocity[3];
+	if (contain(modelName, "w_molotov.mdl") != -1) {
+		emit_sound(ent, CHAN_AUTO, "debris/glass2.wav", VOL_NORM, ATTN_STATIC, 0, PITCH_LOW);
 
-			pev(ent, pev_friction, friction);
-			friction *= 1.15;
-			set_pev(ent, pev_friction, friction);
+		new Float:friction, Float:velocity[3];
 
-			pev(ent, pev_velocity, velocity);
-			velocity[0] *= 0.3;
-			velocity[1] *= 0.3;
-			velocity[2] *= 0.3;
-			set_pev(ent, pev_velocity, velocity);
+		pev(ent, pev_friction, friction);
+		friction *= 1.15;
+		set_pev(ent, pev_friction, friction);
 
-			molotov_explode(ent);
+		pev(ent, pev_velocity, velocity);
+		velocity[0] *= 0.3;
+		velocity[1] *= 0.3;
+		velocity[2] *= 0.3;
+		set_pev(ent, pev_velocity, velocity);
 
-			return FMRES_SUPERCEDE;
-		} else if (contain(modelName, "w_broken_molotov.mdl") != -1) {
-			return FMRES_SUPERCEDE;
-		}
+		molotov_explode(ent);
+
+		return FMRES_SUPERCEDE;
+	} else if (contain(modelName, "w_broken_molotov.mdl") != -1) {
+		return FMRES_SUPERCEDE;
 	}
 
 	return FMRES_IGNORED;

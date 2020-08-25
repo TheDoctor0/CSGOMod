@@ -61,35 +61,49 @@ public plugin_init()
 
 public deagle_reload(weapon)
 {
+	if (!pev_valid(weapon)) return HAM_IGNORED;
+
 	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	remove_task(id);
 
-	if (!pev_valid(id) || !is_user_alive(id)) return;
+	if (!pev_valid(id) || !is_user_alive(id)) return HAM_IGNORED;
 
 	deagleDisable[id] = true;
 
 	set_task(2.5, "deagle_enable", id);
+
+	return HAM_IGNORED;
 }
 
 public deagle_override(weapon)
 {
+	if (!pev_valid(weapon)) return HAM_IGNORED;
+
 	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	remove_task(id);
 
-	if (!pev_valid(id) || !is_user_alive(id)) return;
+	if (!pev_valid(id) || !is_user_alive(id)) return HAM_IGNORED;
 
 	deagleDisable[id] = true;
 
 	set_task(0.8, "deagle_enable", id);
+
+	return HAM_IGNORED;
+}
+
+public knife_override(weapon)
+{
+	if (!pev_valid(weapon)) return HAM_IGNORED;
+
+	set_pdata_float(weapon, OFFSET_WEAPON_IDLE, 0.8, OFFSET_ITEM_LINUX);
+
+	return HAM_IGNORED;
 }
 
 public deagle_enable(id)
 	deagleDisable[id] = false;
-
-public knife_override(weapon)
-	set_pdata_float(weapon, OFFSET_WEAPON_IDLE, 0.8, OFFSET_ITEM_LINUX);
 
 public inspect_weapon(id)
 {
