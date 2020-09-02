@@ -83,7 +83,7 @@ enum _:typeInfo { TYPE_NAME, TYPE_STEAM_ID };
 new playerData[MAX_PLAYERS + 1][playerInfo], Array:playerSkins[MAX_PLAYERS + 1], Float:randomSkinPrice[WEAPON_ALL + 1], overallSkinChance[WEAPON_ALL + 1], Array:skins,
 	Array:weapons, Array:market, Handle:sql, Handle:connection, saveType, marketSkins, multipleSkins, skinChance, skinChanceSVIP, silencerAttached, Float:skinChancePerMember,
 	maxMarketSkins, Float:marketCommision, Float:killReward, Float:killHSReward, Float:bombReward, Float:defuseReward, Float:hostageReward, Float:winReward, minPlayers,
-	bool:end, bool:sqlConnected, sqlHost[64], sqlUser[64], sqlPassword[64], sqlDatabase[64], force;
+	bool:end, bool:sqlConnected, sqlHost[64], sqlUser[64], sqlPassword[64], sqlDatabase[64], force, resetHandle;
 
 native csgo_get_zeus(id);
 
@@ -130,9 +130,10 @@ public plugin_init()
 
 	register_menucmd(register_menuid("Exchange"), (MENU_KEY_8 | MENU_KEY_9 | MENU_KEY_0), "exchange_question_handle");
 
-	register_concmd("SKIN_PRICE", "set_skin_price");
+	register_clcmd("SKIN_PRICE", "set_skin_price");
 
 	register_concmd("csgo_add_money", "cmd_add_money", ADMIN_ADMIN, "<player> <money>");
+	register_concmd("cod_reset_data", "cmd_reset_data", ADMIN_ADMIN);
 
 	register_logevent("log_event_operation", 3, "1=triggered");
 
@@ -170,6 +171,8 @@ public plugin_init()
 	}
 
 	RegisterHam(Ham_Weapon_SecondaryAttack, "weapon_m4a1", "m4a1_secondary_attack", 0);
+
+	resetHandle = CreateMultiForward("csgo_reset_data", ET_IGNORE);
 }
 
 public plugin_precache()
@@ -2064,6 +2067,48 @@ public cmd_add_money(id)
 	log_to_file("csgo-admin.log", "%s gave %.2f Euro to player %s.", playerData[id][NAME], addedMoney, playerData[player][NAME]);
 
 	return PLUGIN_HANDLED;
+}
+
+public cmd_reset_data(id)
+{
+	if (!(get_user_flags(id) & ADMIN_ADMIN)) return PLUGIN_HANDLED;
+
+	log_to_file("csgo-admin.log", "Admin %s forced full data reset.", PLUGIN, playerData[id][NAME]);
+
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_RESET_INFO");
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_RESET_INFO2");
+
+	clear_database(id);
+
+	new ret;
+
+	ExecuteForward(resetHandle, ret);
+
+	set_task(10.0, "restart_map");
+
+	return PLUGIN_HANDLED;
+}
+
+public clear_database(id)
+{
+	for (new i = 1; i <= MAX_PLAYERS; i++) playerData[id][DATA_LOADED] = false;
+
+	sqlConnected = false;
+
+	new tempData[32];
+
+	formatex(tempData, charsmax(tempData), "DROP TABLE `csgo_mod`;");
+
+	SQL_ThreadQuery(sql, "ignore_handle", tempData);
+}
+
+public restart_map()
+{
+	new currentMap[64];
+
+	get_mapname(currentMap, charsmax(currentMap));
+
+	server_cmd("changelevel ^"%s^"", currentMap);
 }
 
 public client_death(killer, victim, weaponId, hitPlace, teamKill)

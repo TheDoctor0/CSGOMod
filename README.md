@@ -38,7 +38,13 @@ There is one simple admin command that can be used to add money (Euro) to any pl
 ```
 csgo_add_money <nick> <amount>
 ```
-To use it you need **ADMIN_ADMIN** access, so better add yourself *"abcdefghijklmnopqrstuvxy"* flags.
+
+If you want to make a full data reset without manually cleaning up database, you can use this command:
+```
+csgo_reset_data
+```
+
+To use those commands you need **ADMIN_ADMIN** access, so better add yourself *"abcdefghijklmnopqrstuvxy"* flags.
 
 ## Documentation
 Online documentation is available on [csgomod-docs.5v.pl](http://csgomod-docs.5v.pl/). You can also find it in [csgomod.inc](https://github.com/TheDoctor0/CSGOMod/blob/master/cstrike/addons/amxmodx/scripting/include/csgomod.inc).

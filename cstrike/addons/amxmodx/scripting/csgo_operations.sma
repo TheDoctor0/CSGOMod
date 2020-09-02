@@ -87,6 +87,13 @@ public plugin_cfg()
 public plugin_end()
 	nvault_close(operations);
 
+public cod_reset_data()
+{
+	for (new i = 1; i <= MAX_PLAYERS; i++) rem_bit(i, loaded);
+
+	nvault_prune(operations, 0, get_systime() + 1);
+}
+
 public client_disconnected(id)
 	rem_bit(id, loaded);
 

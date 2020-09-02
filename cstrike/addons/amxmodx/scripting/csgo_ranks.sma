@@ -145,6 +145,19 @@ public plugin_cfg()
 public plugin_end()
 	SQL_FreeHandle(sql);
 
+public cod_reset_data()
+{
+	for (new i = 1; i <= MAX_PLAYERS; i++) rem_bit(i, loaded);
+
+	sqlConnected = false;
+
+	new tempData[128];
+
+	formatex(tempData, charsmax(tempData), "DROP TABLE `csgo_ranks`; DROP TABLE `csgo_hud`;");
+
+	SQL_ThreadQuery(sql, "ignore_handle", tempData);
+}
+
 public plugin_natives()
 {
 	register_native("csgo_add_kill", "_csgo_add_kill", 1);

@@ -495,6 +495,8 @@ CSGO_CORE_WITHDRAW_NONE=There are no skins of yours on the market!
 CSGO_CORE_WITHDRAW_NO_SKIN=The selected skin has already been purchased!
 CSGO_CORE_PURCHASE_CONFIRMATION=Confirmation of withdrawal of a skin from the market:^n\wSkin: \y%s (%s)^n\wPrice: \y%.2f Euro^n\wAre you sure you want to\r withdraw\w that skin?^n^n
 CSGO_CORE_PURCHASE_SUCCESS=Skin^3 %s (%s)^1 has been successfully withdrawn from the market.
+CSGO_CORE_RESET_INFO=A full data reset is in progress...
+CSGO_CORE_RESET_INFO2=The map will restart in 10 seconds.
 
 [pl]
 CSGO_MENU_EXIT=Wyjscie
@@ -990,3 +992,5 @@ CSGO_CORE_WITHDRAW_NONE=Na rynku nie ma zadnych twoich skinow!
 CSGO_CORE_WITHDRAW_NO_SKIN=Wybrany skin zostal juz wykupiony!
 CSGO_CORE_PURCHASE_CONFIRMATION=Potwierdzenie wycofania skina z rynku:^n\wSkin: \y%s (%s)^n\wKoszt: \y%.2f Euro^n\wCzy na pewno chcesz \rwycofac\w tego skina?^n^n
 CSGO_CORE_PURCHASE_SUCCESS=Skin^3 %s (%s)^1 zostal pomyslnie wycofany z rynku.
+CSGO_CORE_RESET_INFO=Trwa przeprowadzanie pelnego resetu danych...
+CSGO_CORE_RESET_INFO2=Za 10 sekund nastapi restart mapy.

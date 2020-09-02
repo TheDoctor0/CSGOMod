@@ -79,6 +79,19 @@ public plugin_end()
 	ArrayDestroy(csgoClans);
 }
 
+public csgo_reset_data()
+{
+	for (new i = 1; i <= MAX_PLAYERS; i++) playerData[i][CLAN_ID] = 0;
+
+	sqlConnected = false;
+
+	new tempData[256];
+
+	formatex(tempData, charsmax(tempData), "DROP TABLE `csgo_clans`; DROP TABLE `csgo_clans_applications`; DROP TABLE `csgo_clans_members`; DROP TABLE `csgo_clans_wars`;");
+
+	SQL_ThreadQuery(sql, "ignore_handle", tempData);
+}
+
 public client_putinserver(id)
 {
 	if (is_user_bot(id) || is_user_hltv(id)) return;

@@ -299,6 +299,13 @@ native csgo_get_user_molotov(id);
  */
 forward csgo_user_login(id);
 
+/**
+ * Multiforward called on data reset.
+ *
+ * @noreturn
+ */
+forward csgo_reset_data();
+
 
 stock mysql_escape_string(const source[], dest[], length)
 {
