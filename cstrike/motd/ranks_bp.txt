@@ -1,0 +1,35 @@
+<html>
+<head>
+<style type="text/css">
+body {
+background-color: #161616;
+font-family:Verdana,Tahoma;
+}
+</style>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1257">
+</head>
+<font size="4" color="red"><b><center>Lista de rankings disponiveis:</b></font></center>
+<font size="2" color="#dadada"><b>
+<center><span style="line-height:20px">
+* Unranked - Conseguir 100 kills<br>
+* Silver I - Rank Padrao<br>
+* Silver II - 100 Pontos<br>
+* Silver III - 120 Pontos<br>
+* Silver IV - 140 Pontos<br>
+* Silver Elite - 160 Pontos<br>
+* Silver Elite Master - 180 Pontos<br>
+* Gold Nova I - 200 Pontos<br>
+* Gold Nova II - 215 Pontos<br>
+* Gold Nova III - 230 Pontos<br>
+* Gold Nova Master - 245 Pontos<br>
+* Master Guardian I - 260 Pontos<br>
+* Master Guardian II - 275 Pontos<br>
+* Master Guardian Elite - 290 Pontos<br>
+* Distinguished Master Guardian - 315 Pontos<br>
+* Legendary Eagle - 340 Pontos<br>
+* Legendary Eagle Master - 370 Pontos<br>
+* Supreme Master First Class - 410 Pontos<br>
+* The Global Elite - 450 Pontos<br>
+</center></b><br></span>
+</body>
+</html>

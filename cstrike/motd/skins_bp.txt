@@ -1,0 +1,47 @@
+
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta charset="UTF-8">
+</head>
+<body style="color: #fff" bgcolor="black">
+<font size="4" color="orange"><b>Depois de entrar no servidor, voce deve fazer login.<br>
+To do this type <font color="#f00">/account</font>.</b></font><br>
+<br>
+Apos o login, todas as informacoes necessarias aparecerao no canto superior direito.<br>
+<br>
+<b><font color ="#ff0000">
+Para cada morte e objetivo do mapa, voce recebera um Euro pelo qual pode obter skins!</font></b><br>
+<br>
+Voce pode usar /menu para acessar todos os comandos disponiveis.<br>
+<br>
+<font size="4" color="orange"><b>1. Escolher Skins (/set)</b></font><br>
+Neste menu voce pode selecionar suas skin e coloca-las nas armas escolhidas.<br>
+<br>
+<font size="4" color="orange"><b>2. Comprar Skins (/kup)</b></font><br>
+Esta e uma loja onde voce pode comprar skin por um determinado preco.<br>
+<br>
+<font size="4" color="orange"><b>3. Criar Skins (/draw)</b></font><br>
+Este e o lugar onde as skins podem ser criadas. Lembre-se, nem todo sorteio dara uma skin.<br>
+<br>
+<font size="4" color="orange"><b>4. Mercado de Skins (/market)</b></font><br>
+Neste menu voce pode colocar suas skins a venda ou comprar de outros jogadores.<br>
+<br>
+<font size="4" color="orange"><b>5. Missoes (/operations)</b></font><br>
+Aqui voce pode realizar varias missoes - missoes para as quais recebera dinheiro adicionais.<br>
+<br>
+<font size="4" color="orange"><b>6. Times (/clans)</b></font><br>
+Os times são seus proprios esquadroes para jogadores, o que lhe da bonus especiais.<br>
+<br>
+<font size="4" color="orange"><b>7. Transferir Dinheiro (/transfer)</b></font><br>
+A opcao de transferir o Euro para outros jogadores.<br>
+<br>
+<font size="4" color="orange"><b>8. Troca de Skins (/exchange)</b></font><br>
+Alguem tem uma skin que voce quer? E neste menu que voce pode negociar com ele.<br>
+<br>
+<font size="4" color="orange"><b>9. Doar Skin (/give)</b></font><br>
+Se voce tem um bom coracao, voce pode dar a alguem a skin que voce nao precisa mais.<br>
+<br>
+<font size="4" color="orange"><b>10. Configuracoes de HUD (/hud)</b></font><br>
+Voce pode alterar as configuracoes de exibicao do HUD aqui.<br>
+<br>
+</body></html>
