@@ -669,7 +669,7 @@ public sql_init()
 
 	new queryData[192], bool:hasError;
 
-	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_accounts` (`name` VARCHAR(64) NULL, `steamid` VARCHAR(35) NULL, `pass` VARCHAR(32), PRIMARY KEY(name, steamid));");
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_accounts` (`name` VARCHAR(64) DEFAULT NULL, `steamid` VARCHAR(35) DEFAULT NULL, `pass` VARCHAR(32), PRIMARY KEY(name, steamid));");
 
 	new Handle:query = SQL_PrepareQuery(connection, queryData);
 

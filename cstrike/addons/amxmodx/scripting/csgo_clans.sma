@@ -2493,7 +2493,7 @@ public sql_init()
 
 	SQL_Execute(query);
 
-	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_clans_members` (`name` varchar(64) NULL, `steamid` VARCHAR(35) NULL, `clan` INT NOT NULL, ");
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_clans_members` (`name` varchar(64) DEFAULT NULL, `steamid` VARCHAR(35) DEFAULT NULL, `clan` INT NOT NULL, ");
 	add(queryData, charsmax(queryData), "`flag` INT NOT NULL DEFAULT 0, `deposit` DOUBLE(16, 2) NOT NULL DEFAULT 0, `withdraw` DOUBLE(16, 2) NOT NULL DEFAULT 0, PRIMARY KEY (name, steamid));");
 
 	query = SQL_PrepareQuery(connection, queryData);
@@ -2506,7 +2506,7 @@ public sql_init()
 		hasError = true;
 	}
 
-	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_clans_applications` (`name` VARCHAR(64) NULL, `steamid` VARCHAR(35) NULL, `clan` INT NOT NULL, PRIMARY KEY (name, steamid, clan));");
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_clans_applications` (`name` VARCHAR(64) DEFAULT NULL, `steamid` VARCHAR(35) DEFAULT NULL, `clan` INT NOT NULL, PRIMARY KEY (name, steamid, clan));");
 
 	query = SQL_PrepareQuery(connection, queryData);
 

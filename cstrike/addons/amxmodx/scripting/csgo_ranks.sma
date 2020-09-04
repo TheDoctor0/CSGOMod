@@ -209,7 +209,7 @@ public sql_init()
 
 	new queryData[1024], bool:hasError;
 
-	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_ranks` (`name` VARCHAR(64) NULL, `steamid` VARCHAR(35) NULL, `kills` INT NOT NULL DEFAULT 0, `rank` INT NOT NULL DEFAULT 0, `time` INT NOT NULL DEFAULT 0, ");
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_ranks` (`name` VARCHAR(64) DEFAULT NULL, `steamid` VARCHAR(35) DEFAULT NULL, `kills` INT NOT NULL DEFAULT 0, `rank` INT NOT NULL DEFAULT 0, `time` INT NOT NULL DEFAULT 0, ");
 	add(queryData, charsmax(queryData), "`firstvisit` INT NOT NULL DEFAULT 0, `lastvisit` INT NOT NULL DEFAULT 0, `gold` INT NOT NULL DEFAULT 0, `silver` INT NOT NULL DEFAULT 0, `bronze` INT NOT NULL DEFAULT 0, `medals` INT NOT NULL DEFAULT 0, ");
 	add(queryData, charsmax(queryData), "`bestkills` INT NOT NULL DEFAULT 0, `bestdeaths` INT NOT NULL DEFAULT 0, `besths` INT NOT NULL DEFAULT 0, `beststats` INT NOT NULL DEFAULT 0, `elorank` double NOT NULL DEFAULT 0, PRIMARY KEY (name, steamid));");
 
@@ -223,7 +223,7 @@ public sql_init()
 		hasError = true;
 	}
 
-	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_hud` (`name` VARCHAR(64), `steamid` VARCHAR(35), `red` INT NOT NULL DEFAULT 0, `green` INT NOT NULL DEFAULT 0, `blue` INT NOT NULL DEFAULT 0, `x` INT NOT NULL DEFAULT 0, `y` INT NOT NULL DEFAULT 0, PRIMARY KEY (name, steamid));");
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_hud` (`name` VARCHAR(64) DEFAULT NULL, `steamid` VARCHAR(35) DEFAULT NULL, `red` INT NOT NULL DEFAULT 0, `green` INT NOT NULL DEFAULT 0, `blue` INT NOT NULL DEFAULT 0, `x` INT NOT NULL DEFAULT 0, `y` INT NOT NULL DEFAULT 0, PRIMARY KEY (name, steamid));");
 
 	query = SQL_PrepareQuery(connectHandle, queryData);
 

@@ -180,7 +180,7 @@ public sql_init()
 
 	new queryData[2048], queryTemp[64], weaponName[32], bool:hasError;
 
-	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_stattrak` (`name` VARCHAR(64) NULL, `steamid` VARCHAR(35) NULL, ");
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_stattrak` (`name` VARCHAR(64) DEFAULT NULL, `steamid` VARCHAR(35) DEFAULT NULL, ");
 
 	for (new weapon = 1; weapon <= CSW_P90; weapon++) {
 		if ((1<<weapon) & excludedWeapons) continue;
