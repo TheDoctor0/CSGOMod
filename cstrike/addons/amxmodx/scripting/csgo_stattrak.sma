@@ -44,14 +44,10 @@ public client_putinserver(id)
 
 	if (is_user_hltv(id) || is_user_bot(id)) return;
 
-	switch (saveType) {
-		case SAVE_NAME: {
-			get_user_name(id, playerName[id], charsmax(playerName[]));
+	get_user_authid(id, playerSteamId[id], charsmax(playerSteamId[]));
+	get_user_name(id, playerName[id], charsmax(playerName[]));
 
-			mysql_escape_string(playerName[id], playerName[id], charsmax(playerName[]));
-		}
-		case SAVE_STEAM_ID: get_user_authid(id, playerSteamId[id], charsmax(playerSteamId[]));
-	}
+	mysql_escape_string(playerName[id], playerName[id], charsmax(playerName[]));
 
 	set_task(0.1, "load_data", id + TASK_LOAD);
 }
@@ -80,8 +76,8 @@ public load_data(id)
 	tempId[0] = id;
 
 	switch (saveType) {
-		case SAVE_NAME: formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_stattrak` WHERE name = ^"%s^";", playerName[id]);
-		case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_stattrak` WHERE steamid = ^"%s^";", playerSteamId[id]);
+		case SAVE_NAME: formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_stattrak` WHERE name = ^"%s^" LIMIT 1;", playerName[id]);
+		case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_stattrak` WHERE steamid = ^"%s^" LIMIT 1;", playerSteamId[id]);
 	}
 
 	SQL_ThreadQuery(sql, "load_data_handle", queryData, tempId, sizeof(tempId));
@@ -108,12 +104,9 @@ public load_data_handle(failState, Handle:query, error[], errorNum, tempId[], da
 			playerData[id][weapon] = SQL_ReadResult(query, SQL_FieldNameToNum(query, weaponName));
 		}
 	} else {
-		new queryData[128];
+		new queryData[192];
 
-		switch (saveType) {
-			case SAVE_NAME: formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_stattrak` (`name`) VALUES (^"%s^");", playerName[id]);
-			case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_stattrak` (`steamid`) VALUES (^"%s^");", playerSteamId[id]);
-		}
+		formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_stattrak` (name, steamid) VALUES (^"%s^", ^"%s^");", playerName[id], playerSteamId[id]);
 
 		SQL_ThreadQuery(sql, "ignore_handle", queryData);
 	}
@@ -140,8 +133,8 @@ public save_data(id)
 	}
 
 	switch (saveType) {
-		case SAVE_NAME: formatex(queryTemp, charsmax(queryTemp), "name = ^"%s^" WHERE name = ^"%s^";", playerName[id], playerName[id]);
-		case SAVE_STEAM_ID: formatex(queryTemp, charsmax(queryTemp), "steamid = ^"%s^" WHERE steamid = ^"%s^";", playerSteamId[id], playerSteamId[id]);
+		case SAVE_NAME: formatex(queryTemp, charsmax(queryTemp), "steamid = ^"%s^" WHERE name = ^"%s^";", playerSteamId[id], playerName[id]);
+		case SAVE_STEAM_ID: formatex(queryTemp, charsmax(queryTemp), "name = ^"%s^" WHERE steamid = ^"%s^";",  playerName[id], playerSteamId[id]);
 	}
 
 	add(queryData, charsmax(queryData), queryTemp);
@@ -180,7 +173,7 @@ public sql_init()
 
 	new queryData[2048], queryTemp[64], weaponName[32], bool:hasError;
 
-	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_stattrak` (`name` VARCHAR(64) DEFAULT NULL, `steamid` VARCHAR(35) DEFAULT NULL, ");
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_stattrak` (`name` VARCHAR(64), `steamid` VARCHAR(35), ");
 
 	for (new weapon = 1; weapon <= CSW_P90; weapon++) {
 		if ((1<<weapon) & excludedWeapons) continue;

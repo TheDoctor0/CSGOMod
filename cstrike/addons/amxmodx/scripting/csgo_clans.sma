@@ -2493,7 +2493,7 @@ public sql_init()
 
 	SQL_Execute(query);
 
-	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_clans_members` (`name` varchar(64) DEFAULT NULL, `steamid` VARCHAR(35) DEFAULT NULL, `clan` INT NOT NULL, ");
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_clans_members` (`name` varchar(64), `steamid` VARCHAR(35), `clan` INT NOT NULL, ");
 	add(queryData, charsmax(queryData), "`flag` INT NOT NULL DEFAULT 0, `deposit` DOUBLE(16, 2) NOT NULL DEFAULT 0, `withdraw` DOUBLE(16, 2) NOT NULL DEFAULT 0, PRIMARY KEY (name, steamid));");
 
 	query = SQL_PrepareQuery(connection, queryData);
@@ -2506,7 +2506,7 @@ public sql_init()
 		hasError = true;
 	}
 
-	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_clans_applications` (`name` VARCHAR(64) DEFAULT NULL, `steamid` VARCHAR(35) DEFAULT NULL, `clan` INT NOT NULL, PRIMARY KEY (name, steamid, clan));");
+	formatex(queryData, charsmax(queryData), "CREATE TABLE IF NOT EXISTS `csgo_clans_applications` (`name` VARCHAR(64), `steamid` VARCHAR(35), `clan` INT NOT NULL, PRIMARY KEY (name, steamid, clan));");
 
 	query = SQL_PrepareQuery(connection, queryData);
 
@@ -2573,8 +2573,8 @@ public load_clan_data(id)
 	tempId[0] = id;
 
 	switch (saveType) {
-		case SAVE_NAME: formatex(queryData, charsmax(queryData), "SELECT a.flag, b.* FROM `csgo_clans_members` a JOIN `csgo_clans` b ON a.clan = b.id WHERE a.name = ^"%s^"", playerData[id][SAFE_NAME]);
-		case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "SELECT a.flag, a.name as nick, b.* FROM `csgo_clans_members` a JOIN `csgo_clans` b ON a.clan = b.id WHERE a.steamid = ^"%s^"", playerData[id][STEAM_ID]);
+		case SAVE_NAME: formatex(queryData, charsmax(queryData), "SELECT a.flag, b.* FROM `csgo_clans_members` a JOIN `csgo_clans` b ON a.clan = b.id WHERE a.name = ^"%s^" LIMIT 1;", playerData[id][SAFE_NAME]);
+		case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "SELECT a.flag, a.name as nick, b.* FROM `csgo_clans_members` a JOIN `csgo_clans` b ON a.clan = b.id WHERE a.steamid = ^"%s^" LIMIT 1;", playerData[id][STEAM_ID]);
 	}
 
 	SQL_ThreadQuery(sql, "load_clan_data_handle", queryData, tempId, sizeof(tempId));
@@ -2645,10 +2645,7 @@ public load_clan_data_handle(failState, Handle:query, error[], errorNum, tempId[
 	} else {
 		new queryData[256];
 
-		switch (saveType) {
-			case SAVE_NAME: formatex(queryData, charsmax(queryData), "INSERT IGNORE INTO `csgo_clans_members` (`name`) VALUES (^"%s^")", playerData[id][SAFE_NAME]);
-			case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "INSERT IGNORE INTO `csgo_clans_members` (`name`, `steamid`) VALUES (^"%s^", ^"%s^")", playerData[id][SAFE_NAME], playerData[id][STEAM_ID]);
-		}
+		formatex(queryData, charsmax(queryData), "INSERT IGNORE INTO `csgo_clans_members` (`name`, `steamid`) VALUES (^"%s^", ^"%s^")", playerData[id][SAFE_NAME], playerData[id][STEAM_ID]);
 
 		SQL_ThreadQuery(sql, "ignore_handle", queryData);
 	}
@@ -2739,15 +2736,18 @@ public _csgo_get_clan_members(clanId)
 
 stock save_member(id, status = 0, change = 0, const userName[] = "", const userSteamId[] = "")
 {
-	new queryData[256], safeName[64], setWhereClause[128], whereClause[64];
+	new queryData[256], safeName[64], playerSteamId[35], setWhereClause[128], whereClause[64];
 
 	if (strlen(userName)) mysql_escape_string(userName, safeName, charsmax(safeName));
 	else copy(safeName, charsmax(safeName), playerData[id][SAFE_NAME]);
 
+	if (strlen(userSteamId)) copy(playerSteamId, charsmax(playerSteamId), userSteamId);
+	else copy(playerSteamId, charsmax(playerSteamId), playerData[id][STEAM_ID]);
+
 	switch (saveType) {
 		case SAVE_NAME: {
 			formatex(whereClause, charsmax(whereClause), " WHERE name = ^"%s^"", safeName);
-			formatex(setWhereClause, charsmax(setWhereClause), " WHERE name = ^"%s^"", safeName);
+			formatex(setWhereClause, charsmax(setWhereClause), ", steamid = ^"%s^" WHERE name = ^"%s^"", playerSteamId, safeName);
 		}
 		case SAVE_STEAM_ID: {
 			new playerSteamId[35];
@@ -2966,7 +2966,7 @@ stock add_payment(id, Float:money, withdraw = false)
 	formatex(type, charsmax(type), "%s", withdraw ? "withdraw" : "deposit");
 
 	switch (saveType) {
-		case SAVE_NAME: formatex(queryData, charsmax(queryData), "UPDATE `csgo_clans_members` SET %s = %s + %.2f WHERE name = ^"%s^"", type, type, money, playerData[id][SAFE_NAME]);
+		case SAVE_NAME: formatex(queryData, charsmax(queryData), "UPDATE `csgo_clans_members` SET %s = %s + %.2f, steamid = ^"%s^" WHERE name = ^"%s^"", type, type, money, playerData[id][STEAM_ID], playerData[id][SAFE_NAME]);
 		case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "UPDATE `csgo_clans_members` SET %s = %s + %.2f, name = ^"%s^" WHERE steamid = ^"%s^"", type, type, money, playerData[id][SAFE_NAME], playerData[id][STEAM_ID]);
 	}
 
@@ -2977,10 +2977,7 @@ stock add_application(id, clanId)
 {
 	new queryData[256];
 
-	switch (saveType) {
-		case SAVE_NAME: formatex(queryData, charsmax(queryData), "INSERT IGNORE INTO `csgo_clans_applications` (`name`, `clan`) VALUES (^"%s^", '%i');", playerData[id][SAFE_NAME], clanId);
-		case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "INSERT IGNORE INTO `csgo_clans_applications` (`name`, `steamid`, `clan`) VALUES (^"%s^", ^"%s^", '%i');", playerData[id][SAFE_NAME], playerData[id][STEAM_ID], clanId);
-	}
+	formatex(queryData, charsmax(queryData), "INSERT IGNORE INTO `csgo_clans_applications` (`name`, `steamid`, `clan`) VALUES (^"%s^", ^"%s^", '%i');", playerData[id][SAFE_NAME], playerData[id][STEAM_ID], clanId);
 
 	SQL_ThreadQuery(sql, "ignore_handle", queryData);
 
