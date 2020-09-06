@@ -29,7 +29,7 @@ public plugin_init()
 
 	RegisterHam(Ham_Spawn, "player", "player_spawn", 1);
 	
-	assistForward = CreateMultiForward( ET_IGNORE, FP_CELL, FP_CELL );
+	assistForward = CreateMultiForward("csgo_user_assist", ET_IGNORE, FP_CELL, FP_CELL );
 }
 
 public client_putinserver(id)
