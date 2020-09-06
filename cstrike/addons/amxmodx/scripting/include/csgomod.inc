@@ -318,6 +318,15 @@ forward csgo_user_register(id);
  */
 forward csgo_user_assist(killer, victim);
 
+forward csgo_user_login(id);
+
+/**
+ * Multiforward called on data reset.
+ *
+ * @noreturn
+ */
+forward csgo_reset_data();
+
 stock mysql_escape_string(const source[], dest[], length)
 {
 	copy(dest, length, source);
