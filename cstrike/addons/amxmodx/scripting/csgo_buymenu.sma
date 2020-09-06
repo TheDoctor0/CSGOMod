@@ -141,14 +141,14 @@ public clcmd_handgun(id)
 {
 	if (!can_buy(id)) return PLUGIN_HANDLED;
 
-	new menuData[128], skinName[64], itemData[3], skin, menu = menu_create("\yBuy Handgun                               $ Cost    \rSkin\y^n(Secondary weapon)", "clcmd_buy_weapon_handle");
+	new menuData[128], skinName[64], itemData[3], skin, menu = menu_create("\yBuy Handgun\R$ Cost    \rSkin\y^n(Secondary weapon)", "clcmd_buy_weapon_handle");
 
 	if ((skin = csgo_get_weapon_skin(id, CSW_GLOCK18)) > -1) {
 		csgo_get_skin_name(id, skin, skinName, charsmax(skinName));
 
-		formatex(menuData, charsmax(menuData), "\w9X19mm Sidearm                        \y400   \r%s", skinName);
+		formatex(menuData, charsmax(menuData), "\w9X19mm Sidearm\R\y400   \r%s", skinName);
 	} else {
-		formatex(menuData, charsmax(menuData), "\w9X19mm Sidearm                        \y400");
+		formatex(menuData, charsmax(menuData), "\w9X19mm Sidearm\R\y400");
 	}
 
 	num_to_str(CSW_GLOCK18, itemData, charsmax(itemData));
@@ -157,9 +157,9 @@ public clcmd_handgun(id)
 	if ((skin = csgo_get_weapon_skin(id, CSW_USP)) > -1) {
 		csgo_get_skin_name(id, skin, skinName, charsmax(skinName));
 
-		formatex(menuData, charsmax(menuData), "\wK&M .45 Tactical                       ^t\y500   \r%s", skinName);
+		formatex(menuData, charsmax(menuData), "\wK&M .45 Tactical\R^t\y500   \r%s", skinName);
 	} else {
-		formatex(menuData, charsmax(menuData), "\wK&M .45 Tactical                       ^t\y500");
+		formatex(menuData, charsmax(menuData), "\wK&M .45 Tactical\R^t\y500");
 	}
 
 	num_to_str(CSW_USP, itemData, charsmax(itemData));
@@ -168,9 +168,9 @@ public clcmd_handgun(id)
 	if ((skin = csgo_get_weapon_skin(id, CSW_P228)) > -1) {
 		csgo_get_skin_name(id, skin, skinName, charsmax(skinName));
 
-		formatex(menuData, charsmax(menuData), "\w228 Compact                              \y600   \r%s", skinName);
+		formatex(menuData, charsmax(menuData), "\w228 Compact\R\y600   \r%s", skinName);
 	} else {
-		formatex(menuData, charsmax(menuData), "\w228 Compact                              \y600");
+		formatex(menuData, charsmax(menuData), "\w228 Compact\R\y600");
 	}
 
 	num_to_str(CSW_P228, itemData, charsmax(itemData));
@@ -179,9 +179,9 @@ public clcmd_handgun(id)
 	if ((skin = csgo_get_weapon_skin(id, CSW_DEAGLE)) > -1) {
 		csgo_get_skin_name(id, skin, skinName, charsmax(skinName));
 
-		formatex(menuData, charsmax(menuData), "\wNight Hawk .50C                         \y650   \r%s", skinName);
+		formatex(menuData, charsmax(menuData), "\wNight Hawk .50C\R\y650   \r%s", skinName);
 	} else {
-		formatex(menuData, charsmax(menuData), "\wNight Hawk .50C                         \y650");
+		formatex(menuData, charsmax(menuData), "\wNight Hawk .50C\R\y650");
 	}
 
 	num_to_str(CSW_DEAGLE, itemData, charsmax(itemData));
@@ -191,9 +191,9 @@ public clcmd_handgun(id)
 		if ((skin = csgo_get_weapon_skin(id, CSW_ELITE)) > -1) {
 			csgo_get_skin_name(id, skin, skinName, charsmax(skinName));
 
-			formatex(menuData, charsmax(menuData), "\w.40 Dual Elites                            \y800   \r%s", skinName);
+			formatex(menuData, charsmax(menuData), "\w.40 Dual Elites\R\y800   \r%s", skinName);
 		} else {
-			formatex(menuData, charsmax(menuData), "\w.40 Dual Elites                            \y800");
+			formatex(menuData, charsmax(menuData), "\w.40 Dual Elites\R\y800");
 		}
 
 		num_to_str(CSW_ELITE, itemData, charsmax(itemData));
@@ -202,9 +202,9 @@ public clcmd_handgun(id)
 		if ((skin = csgo_get_weapon_skin(id, CSW_FIVESEVEN)) > -1) {
 			csgo_get_skin_name(id, skin, skinName, charsmax(skinName));
 
-			formatex(menuData, charsmax(menuData), "\wES Five-Seven                            \y750   \r%s", skinName);
+			formatex(menuData, charsmax(menuData), "\wES Five-Seven\R\y750   \r%s", skinName);
 		} else {
-			formatex(menuData, charsmax(menuData), "\wES Five-Seven                            \y750");
+			formatex(menuData, charsmax(menuData), "\wES Five-Seven\R\y750");
 		}
 
 		num_to_str(CSW_FIVESEVEN, itemData, charsmax(itemData));
@@ -223,14 +223,14 @@ public clcmd_shotgun(id)
 {
 	if (!can_buy(id)) return PLUGIN_HANDLED;
 
-	new menuData[128], skinName[64], itemData[3], skin, menu = menu_create("\yBuy Shotgun                               $ Cost    \rSkin\y^n(Primary weapon)", "clcmd_buy_weapon_handle");
+	new menuData[128], skinName[64], itemData[3], skin, menu = menu_create("\yBuy Shotgun\R$ Cost    \rSkin\y^n(Primary weapon)", "clcmd_buy_weapon_handle");
 
 	if ((skin = csgo_get_weapon_skin(id, CSW_M3)) > -1) {
 		csgo_get_skin_name(id, skin, skinName, charsmax(skinName));
 
-		formatex(menuData, charsmax(menuData), "\wLeone 12 Gauge Super              \y1700   \r%s", skinName);
+		formatex(menuData, charsmax(menuData), "\wLeone 12 Gauge Super\R\y1700   \r%s", skinName);
 	} else {
-		formatex(menuData, charsmax(menuData), "\wLeone 12 Gauge Super              \y1700");
+		formatex(menuData, charsmax(menuData), "\wLeone 12 Gauge Super\R\y1700");
 	}
 
 	num_to_str(CSW_M3, itemData, charsmax(itemData));
@@ -239,9 +239,9 @@ public clcmd_shotgun(id)
 	if ((skin = csgo_get_weapon_skin(id, CSW_XM1014)) > -1) {
 		csgo_get_skin_name(id, skin, skinName, charsmax(skinName));
 
-		formatex(menuData, charsmax(menuData), "\wLeone YG1265 Auto Shotgun    ^t\y3000   \r%s", skinName);
+		formatex(menuData, charsmax(menuData), "\wLeone YG1265 Auto Shotgun\R^t\y3000   \r%s", skinName);
 	} else {
-		formatex(menuData, charsmax(menuData), "\wLeone YG1265 Auto Shotgun    ^t\y3000");
+		formatex(menuData, charsmax(menuData), "\wLeone YG1265 Auto Shotgun\R^t\y3000");
 	}
 
 	num_to_str(CSW_XM1014, itemData, charsmax(itemData));
@@ -259,15 +259,15 @@ public clcmd_submachinegun(id)
 {
 	if (!can_buy(id)) return PLUGIN_HANDLED;
 
-	new menuData[128], skinName[64], itemData[3], skin, menu = menu_create("\yBuy Sub-Machine Gun                  $ Cost    \rSkin\y^n(Primary weapon)", "clcmd_buy_weapon_handle");
+	new menuData[128], skinName[64], itemData[3], skin, menu = menu_create("\yBuy Sub-Machine Gun\R$ Cost    \rSkin\y^n(Primary weapon)", "clcmd_buy_weapon_handle");
 
 	if (cs_get_user_team(id) == CS_TEAM_T) {
 		if ((skin = csgo_get_weapon_skin(id, CSW_MAC10)) > -1) {
 			csgo_get_skin_name(id, skin, skinName, charsmax(skinName));
 
-			formatex(menuData, charsmax(menuData), "\wIngram MAC-10                       ^t\y1400   \r%s", skinName);
+			formatex(menuData, charsmax(menuData), "\wIngram MAC-10\R^t\y1400   \r%s", skinName);
 		} else {
-			formatex(menuData, charsmax(menuData), "\wIngram MAC-10                       ^t\y1400");
+			formatex(menuData, charsmax(menuData), "\wIngram MAC-10\R^t\y1400");
 		}
 
 		num_to_str(CSW_MAC10, itemData, charsmax(itemData));
@@ -276,9 +276,9 @@ public clcmd_submachinegun(id)
 		if ((skin = csgo_get_weapon_skin(id, CSW_TMP)) > -1) {
 			csgo_get_skin_name(id, skin, skinName, charsmax(skinName));
 
-			formatex(menuData, charsmax(menuData), "\wSchmidt Machine Pistol            ^t\y1250   \r%s", skinName);
+			formatex(menuData, charsmax(menuData), "\wSchmidt Machine Pistol\R^t\y1250   \r%s", skinName);
 		} else {
-			formatex(menuData, charsmax(menuData), "\wSchmidt Machine Pistol            ^t\y1250");
+			formatex(menuData, charsmax(menuData), "\wSchmidt Machine Pistol\R^t\y1250");
 		}
 
 		num_to_str(CSW_TMP, itemData, charsmax(itemData));
@@ -288,9 +288,9 @@ public clcmd_submachinegun(id)
 	if ((skin = csgo_get_weapon_skin(id, CSW_MP5NAVY)) > -1) {
 		csgo_get_skin_name(id, skin, skinName, charsmax(skinName));
 
-		formatex(menuData, charsmax(menuData), "\wK&M Sub-Machine Gun              \y1500   \r%s", skinName);
+		formatex(menuData, charsmax(menuData), "\wK&M Sub-Machine Gun\R\y1500   \r%s", skinName);
 	} else {
-		formatex(menuData, charsmax(menuData), "\wK&M Sub-Machine Gun              \y1500");
+		formatex(menuData, charsmax(menuData), "\wK&M Sub-Machine Gun\R\y1500");
 	}
 
 	num_to_str(CSW_MP5NAVY, itemData, charsmax(itemData));
@@ -299,9 +299,9 @@ public clcmd_submachinegun(id)
 	if ((skin = csgo_get_weapon_skin(id, CSW_UMP45)) > -1) {
 		csgo_get_skin_name(id, skin, skinName, charsmax(skinName));
 
-		formatex(menuData, charsmax(menuData), "\wK&M UMP45                             \y1700   \r%s", skinName);
+		formatex(menuData, charsmax(menuData), "\wK&M UMP45\R\y1700   \r%s", skinName);
 	} else {
-		formatex(menuData, charsmax(menuData), "\wK&M UMP45                             \y1700");
+		formatex(menuData, charsmax(menuData), "\wK&M UMP45\R\y1700");
 	}
 
 	num_to_str(CSW_UMP45, itemData, charsmax(itemData));
@@ -310,9 +310,9 @@ public clcmd_submachinegun(id)
 	if ((skin = csgo_get_weapon_skin(id, CSW_P90)) > -1) {
 		csgo_get_skin_name(id, skin, skinName, charsmax(skinName));
 
-		formatex(menuData, charsmax(menuData), "\wES C90                                   ^t\y2350   \r%s", skinName);
+		formatex(menuData, charsmax(menuData), "\wES C90\R^t\y2350   \r%s", skinName);
 	} else {
-		formatex(menuData, charsmax(menuData), "\wES C90                                   ^t\y2350");
+		formatex(menuData, charsmax(menuData), "\wES C90\R^t\y2350");
 	}
 
 	num_to_str(CSW_P90, itemData, charsmax(itemData));
@@ -330,15 +330,15 @@ public clcmd_rifle(id)
 {
 	if (!can_buy(id)) return PLUGIN_HANDLED;
 
-	new menuData[128], skinName[64], itemData[3], skin, menu = menu_create("\yBuy Rifle                                   $  Cost    \rSkin\y^n(Primary weapon)", "clcmd_buy_weapon_handle");
+	new menuData[128], skinName[64], itemData[3], skin, menu = menu_create("\yBuy Rifle\R$  Cost    \rSkin\y^n(Primary weapon)", "clcmd_buy_weapon_handle");
 
 	if (cs_get_user_team(id) == CS_TEAM_T) {
 		if ((skin = csgo_get_weapon_skin(id, CSW_GALIL)) > -1) {
 			csgo_get_skin_name(id, skin, skinName, charsmax(skinName));
 
-			formatex(menuData, charsmax(menuData), "\wIDF Defender                           \y2000   \r%s", skinName);
+			formatex(menuData, charsmax(menuData), "\wIDF Defender\R\y2000   \r%s", skinName);
 		} else {
-			formatex(menuData, charsmax(menuData), "\wIDF Defender                           \y2000");
+			formatex(menuData, charsmax(menuData), "\wIDF Defender\R\y2000");
 		}
 
 		num_to_str(CSW_GALIL, itemData, charsmax(itemData));
@@ -347,9 +347,9 @@ public clcmd_rifle(id)
 		if ((skin = csgo_get_weapon_skin(id, CSW_AK47)) > -1) {
 			csgo_get_skin_name(id, skin, skinName, charsmax(skinName));
 
-			formatex(menuData, charsmax(menuData), "\wCV-47                                    ^t\y2500   \r%s", skinName);
+			formatex(menuData, charsmax(menuData), "\wCV-47\R^t\y2500   \r%s", skinName);
 		} else {
-			formatex(menuData, charsmax(menuData), "\wCV-47                                    ^t\y2500");
+			formatex(menuData, charsmax(menuData), "\wCV-47\R^t\y2500");
 		}
 
 		num_to_str(CSW_AK47, itemData, charsmax(itemData));
@@ -358,9 +358,9 @@ public clcmd_rifle(id)
 		if ((skin = csgo_get_weapon_skin(id, CSW_SCOUT)) > -1) {
 			csgo_get_skin_name(id, skin, skinName, charsmax(skinName));
 
-			formatex(menuData, charsmax(menuData), "\wSchmidt Scout                          \y2750   \r%s", skinName);
+			formatex(menuData, charsmax(menuData), "\wSchmidt Scout\R\y2750   \r%s", skinName);
 		} else {
-			formatex(menuData, charsmax(menuData), "\wSchmidt Scout                          \y2750");
+			formatex(menuData, charsmax(menuData), "\wSchmidt Scout\R\y2750");
 		}
 
 		num_to_str(CSW_SCOUT, itemData, charsmax(itemData));
@@ -369,9 +369,9 @@ public clcmd_rifle(id)
 		if ((skin = csgo_get_weapon_skin(id, CSW_SG552)) > -1) {
 			csgo_get_skin_name(id, skin, skinName, charsmax(skinName));
 
-			formatex(menuData, charsmax(menuData), "\wKrieg 552 Commando                \y3500   \r%s", skinName);
+			formatex(menuData, charsmax(menuData), "\wKrieg 552 Commando\R\y3500   \r%s", skinName);
 		} else {
-			formatex(menuData, charsmax(menuData), "\wKrieg 552 Commando                \y3500");
+			formatex(menuData, charsmax(menuData), "\wKrieg 552 Commando\R\y3500");
 		}
 
 		num_to_str(CSW_SG552, itemData, charsmax(itemData));
@@ -380,9 +380,9 @@ public clcmd_rifle(id)
 		if ((skin = csgo_get_weapon_skin(id, CSW_AWP)) > -1) {
 			csgo_get_skin_name(id, skin, skinName, charsmax(skinName));
 
-			formatex(menuData, charsmax(menuData), "\wMagnum Sniper Rifle                 \y4750   \r%s", skinName);
+			formatex(menuData, charsmax(menuData), "\wMagnum Sniper Rifle\R\y4750   \r%s", skinName);
 		} else {
-			formatex(menuData, charsmax(menuData), "\wMagnum Sniper Rifle                 \y4750");
+			formatex(menuData, charsmax(menuData), "\wMagnum Sniper Rifle\R\y4750");
 		}
 
 		num_to_str(CSW_AWP, itemData, charsmax(itemData));
@@ -402,9 +402,9 @@ public clcmd_rifle(id)
 		if ((skin = csgo_get_weapon_skin(id, CSW_FAMAS)) > -1) {
 			csgo_get_skin_name(id, skin, skinName, charsmax(skinName));
 
-			formatex(menuData, charsmax(menuData), "\wClarion 5.56                            ^t\y2250   \r%s", skinName);
+			formatex(menuData, charsmax(menuData), "\wClarion 5.56\R^t\y2250   \r%s", skinName);
 		} else {
-			formatex(menuData, charsmax(menuData), "\wClarion 5.56                            ^t\y2250");
+			formatex(menuData, charsmax(menuData), "\wClarion 5.56\R^t\y2250");
 		}
 
 		num_to_str(CSW_FAMAS, itemData, charsmax(itemData));
@@ -413,9 +413,9 @@ public clcmd_rifle(id)
 		if ((skin = csgo_get_weapon_skin(id, CSW_SCOUT)) > -1) {
 			csgo_get_skin_name(id, skin, skinName, charsmax(skinName));
 
-			formatex(menuData, charsmax(menuData), "\wSchmidt Scout                         ^t\y2750   \r%s", skinName);
+			formatex(menuData, charsmax(menuData), "\wSchmidt Scout\R^t\y2750   \r%s", skinName);
 		} else {
-			formatex(menuData, charsmax(menuData), "\wSchmidt Scout                         ^t\y2750");
+			formatex(menuData, charsmax(menuData), "\wSchmidt Scout\R^t\y2750");
 		}
 
 		num_to_str(CSW_SCOUT, itemData, charsmax(itemData));
@@ -424,9 +424,9 @@ public clcmd_rifle(id)
 		if ((skin = csgo_get_weapon_skin(id, CSW_M4A1)) > -1) {
 			csgo_get_skin_name(id, skin, skinName, charsmax(skinName));
 
-			formatex(menuData, charsmax(menuData), "\wMaveric M4A1 Carabine             \y3100   \r%s", skinName);
+			formatex(menuData, charsmax(menuData), "\wMaveric M4A1 Carabine\R\y3100   \r%s", skinName);
 		} else {
-			formatex(menuData, charsmax(menuData), "\wMaveric M4A1 Carabine             \y3100");
+			formatex(menuData, charsmax(menuData), "\wMaveric M4A1 Carabine\R\y3100");
 		}
 
 		num_to_str(CSW_M4A1, itemData, charsmax(itemData));
@@ -435,9 +435,9 @@ public clcmd_rifle(id)
 		if ((skin = csgo_get_weapon_skin(id, CSW_AUG)) > -1) {
 			csgo_get_skin_name(id, skin, skinName, charsmax(skinName));
 
-			formatex(menuData, charsmax(menuData), "\wBullpup                                    \y3500   \r%s", skinName);
+			formatex(menuData, charsmax(menuData), "\wBullpup\R\y3500   \r%s", skinName);
 		} else {
-			formatex(menuData, charsmax(menuData), "\wBullpup                                    \y3500");
+			formatex(menuData, charsmax(menuData), "\wBullpup\R\y3500");
 		}
 
 		num_to_str(CSW_AUG, itemData, charsmax(itemData));
@@ -446,9 +446,9 @@ public clcmd_rifle(id)
 		if ((skin = csgo_get_weapon_skin(id, CSW_SG550)) > -1) {
 			csgo_get_skin_name(id, skin, skinName, charsmax(skinName));
 
-			formatex(menuData, charsmax(menuData), "\wKrieg 550 Commando               ^t\y4200   \r%s", skinName);
+			formatex(menuData, charsmax(menuData), "\wKrieg 550 Commando\R^t\y4200   \r%s", skinName);
 		} else {
-			formatex(menuData, charsmax(menuData), "\wKrieg 550 Commando               ^t\y4200");
+			formatex(menuData, charsmax(menuData), "\wKrieg 550 Commando\R^t\y4200");
 		}
 
 		num_to_str(CSW_SG550, itemData, charsmax(itemData));
@@ -457,9 +457,9 @@ public clcmd_rifle(id)
 		if ((skin = csgo_get_weapon_skin(id, CSW_AWP)) > -1) {
 			csgo_get_skin_name(id, skin, skinName, charsmax(skinName));
 
-			formatex(menuData, charsmax(menuData), "\wMagnum Sniper Rifle                ^t\y4750   \r%s", skinName);
+			formatex(menuData, charsmax(menuData), "\wMagnum Sniper Rifle\R^t\y4750   \r%s", skinName);
 		} else {
-			formatex(menuData, charsmax(menuData), "\wMagnum Sniper Rifle                ^t\y4750");
+			formatex(menuData, charsmax(menuData), "\wMagnum Sniper Rifle\R^t\y4750");
 		}
 
 		num_to_str(CSW_AWP, itemData, charsmax(itemData));
@@ -478,14 +478,14 @@ public clcmd_machinegun(id)
 {
 	if (!can_buy(id)) return PLUGIN_HANDLED;
 
-	new menuData[128], skinName[64], itemData[3], skin, menu = menu_create("\yBuy Machine Gun                      $  Cost    \rSkin\y^n(Primary weapon)", "clcmd_buy_weapon_handle");
+	new menuData[128], skinName[64], itemData[3], skin, menu = menu_create("\yBuy Machine Gun\R$  Cost    \rSkin\y^n(Primary weapon)", "clcmd_buy_weapon_handle");
 
 	if ((skin = csgo_get_weapon_skin(id, CSW_M249)) > -1) {
 		csgo_get_skin_name(id, skin, skinName, charsmax(skinName));
 
-		formatex(menuData, charsmax(menuData), "\wES M249 Para                          \y5750   \r%s", skinName);
+		formatex(menuData, charsmax(menuData), "\wES M249 Para\R\y5750   \r%s", skinName);
 	} else {
-		formatex(menuData, charsmax(menuData), "\wES M249 Para                          \y5750");
+		formatex(menuData, charsmax(menuData), "\wES M249 Para\R\y5750");
 	}
 
 	num_to_str(CSW_M249, itemData, charsmax(itemData));
@@ -503,32 +503,32 @@ public clcmd_equipment(id)
 {
 	if (!can_buy(id)) return PLUGIN_HANDLED;
 
-	new menuData[64], itemData[3], menu = menu_create("\yBuy Equipment                        $  Cost", "clcmd_buy_weapon_handle");
+	new menuData[64], itemData[3], menu = menu_create("\yBuy Equipment\R$  Cost", "clcmd_buy_weapon_handle");
 
 	num_to_str(CSW_VEST, itemData, charsmax(itemData));
-	menu_additem(menu, "\wKevlar Vest                              \y650", itemData);
+	menu_additem(menu, "\wKevlar Vest\R\y650", itemData);
 
 	num_to_str(CSW_VESTHELM, itemData, charsmax(itemData));
-	menu_additem(menu, "\wKevlar Vest & Helmet              \y1000", itemData);
+	menu_additem(menu, "\wKevlar Vest & Helmet\R\y1000", itemData);
 
 	num_to_str(CSW_FLASHBANG, itemData, charsmax(itemData));
-	menu_additem(menu, "\wFlashbang                                \y200", itemData);
+	menu_additem(menu, "\wFlashbang\R\y200", itemData);
 
 	num_to_str(CSW_HEGRENADE, itemData, charsmax(itemData));
-	menu_additem(menu, "\wHE Grenade                          ^t^t\y300", itemData);
+	menu_additem(menu, "\wHE Grenade\R^t^t\y300", itemData);
 
 	num_to_str(CSW_SMOKEGRENADE, itemData, charsmax(itemData));
-	menu_additem(menu, "\wSmoke Grenade                        \y300", itemData);
+	menu_additem(menu, "\wSmoke Grenade\R\y300", itemData);
 
 	if (cvar_exists("csgo_molotov_enabled") && get_cvar_num("csgo_molotov_enabled")) {
 		num_to_str(CSW_MOLOTOV, itemData, charsmax(itemData));
 
-		formatex(menuData, charsmax(menuData), "\wMolotov                                ^t^t\y%i", get_cvar_num("csgo_molotov_price"));
+		formatex(menuData, charsmax(menuData), "\wMolotov\R^t^t\y%i", get_cvar_num("csgo_molotov_price"));
 
 		menu_additem(menu, menuData, itemData);
 	} else {
 		num_to_str(CSW_NIGHTVISION, itemData, charsmax(itemData));
-		menu_additem(menu, "\wNightVision Goggles                ^t\y1250", itemData);
+		menu_additem(menu, "\wNightVision Goggles\R^t\y1250", itemData);
 	}
 
 	if (cs_get_user_team(id) == CS_TEAM_CT) {
@@ -539,12 +539,12 @@ public clcmd_equipment(id)
 	if (cvar_exists("csgo_zeus_enabled") && get_cvar_num("csgo_zeus_enabled")) {
 		num_to_str(CSW_ZEUS, itemData, charsmax(itemData));
 
-		formatex(menuData, charsmax(menuData), "\wZeus                                        \y%i", get_cvar_num("csgo_zeus_price"));
+		formatex(menuData, charsmax(menuData), "\wZeus\R\y%i", get_cvar_num("csgo_zeus_price"));
 
 		menu_additem(menu, menuData, itemData);
 	} else if(cs_get_user_team(id) == CS_TEAM_CT) {
 		num_to_str(CSW_SHIELD, itemData, charsmax(itemData));
-		menu_additem(menu, "\wTactical Shield                        \y2200", itemData);
+		menu_additem(menu, "\wTactical Shield\R\y2200", itemData);
 	}
 
 	if (cs_get_user_team(id) == CS_TEAM_CT) {
