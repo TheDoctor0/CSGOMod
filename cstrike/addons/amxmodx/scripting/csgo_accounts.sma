@@ -19,7 +19,7 @@ new const commandAccount[][] = { "say /haslo", "say_team /haslo", "say /password
 	"say /konto", "say_team /konto", "say /account", "say_team /account", "konto" };
 
 new playerData[MAX_PLAYERS + 1][playerInfo], setinfo[16], Handle:sql, bool:sqlConnected, dataLoaded, saveType,
-	autoLogin, accountsEnabled, loginMaxTime, passwordMaxFails, passwordMinLength, blockMovement, loginForward;
+	autoLogin, accountsEnabled, loginMaxTime, passwordMaxFails, passwordMinLength, blockMovement, ForwardResult, loginForward, registerForward;
 
 public plugin_init()
 {
@@ -47,6 +47,8 @@ public plugin_init()
 	RegisterHam(Ham_CS_Player_ResetMaxSpeed, "player", "block_movement", 1);
 
 	loginForward = CreateMultiForward("csgo_user_login", ET_IGNORE, FP_CELL);
+	registerForward = CreateMultiForward("csgo_user_register", ET_IGNORE, FP_CELL);
+
 }
 
 public plugin_natives()
@@ -257,9 +259,7 @@ public account_menu_handle(id, menu, item)
 			if (is_user_alive(id)) {
 				ExecuteHamB(Ham_CS_Player_ResetMaxSpeed, id);
 			}
-
-			new ret;
-
+			
 			ExecuteForward(loginForward, ret, id);
 		}
 	}
@@ -310,9 +310,7 @@ public login_account(id)
 		ExecuteHamB(Ham_CS_Player_ResetMaxSpeed, id);
 	}
 
-	new ret;
-
-	ExecuteForward(loginForward, ret, id);
+	ExecuteForward(loginForward, ForwardResult, id);
 
 	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_ACCOUNTS_LOGIN_SUCCESS");
 
@@ -420,9 +418,7 @@ public register_confirmation_handle(id, menu, item)
 				ExecuteHamB(Ham_CS_Player_ResetMaxSpeed, id);
 			}
 
-			new ret;
-
-			ExecuteForward(loginForward, ret, id);
+			ExecuteForward(registerForward, ForwardResult, id);
 
 			set_hudmessage(0, 255, 0, -1.0, 0.9, 0, 0.0, 3.5, 0.0, 0.0);
 			show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_REGISTER_SUCCESS");
@@ -733,10 +729,9 @@ public load_account_handle(failState, Handle:query, error[], errorNum, tempId[],
 				playerData[id][STATUS] = LOGGED;
 
 				set_bit(id, autoLogin);
-
-				new ret;
-
-				ExecuteForward(loginForward, ret, id);
+				
+			ExecuteForward(loginForward, ForwardResult, id);
+			
 			} else {
 				playerData[id][STATUS] = NOT_LOGGED;
 			}

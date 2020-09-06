@@ -300,12 +300,32 @@ native csgo_get_user_molotov(id);
 forward csgo_user_login(id);
 
 /**
+ * Multiforward called when a player is registering.
+ *
+ * @param id        Player index
+ *
+ * @noreturn
+ */
+forward csgo_user_register(id);
+
+/**
+ * Multiforward called when a player is assisting other player.
+ *
+ * @param killer        Killer index
+ * @param victim        Victim index
+ *
+ * @noreturn
+ */
+forward csgo_user_assist(killer, victim);
+
+forward csgo_user_login(id);
+
+/**
  * Multiforward called on data reset.
  *
  * @noreturn
  */
 forward csgo_reset_data();
-
 
 stock mysql_escape_string(const source[], dest[], length)
 {
