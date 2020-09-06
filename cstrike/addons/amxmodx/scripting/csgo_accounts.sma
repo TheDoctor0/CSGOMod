@@ -19,7 +19,7 @@ new const commandAccount[][] = { "say /haslo", "say_team /haslo", "say /password
 	"say /konto", "say_team /konto", "say /account", "say_team /account", "konto" };
 
 new playerData[MAX_PLAYERS + 1][playerInfo], setinfo[16], Handle:sql, bool:sqlConnected, dataLoaded, saveType,
-	autoLogin, accountsEnabled, loginMaxTime, passwordMaxFails, passwordMinLength, blockMovement, loginForward;
+	autoLogin, accountsEnabled, loginMaxTime, passwordMaxFails, passwordMinLength, blockMovement, ForwardResult, loginForward, registerForward;
 
 public plugin_init()
 {
@@ -47,6 +47,7 @@ public plugin_init()
 	RegisterHam(Ham_CS_Player_ResetMaxSpeed, "player", "block_movement", 1);
 
 	loginForward = CreateMultiForward("csgo_user_login", ET_IGNORE, FP_CELL);
+	registerForward = CreateMultiForward("csgo_user_register", ET_IGNORE, FP_CELL);
 }
 
 public plugin_natives()
@@ -57,23 +58,6 @@ public plugin_cfg()
 
 public plugin_end()
 	SQL_FreeHandle(sql);
-
-public csgo_reset_data()
-{
-	for (new i = 1; i <= MAX_PLAYERS; i++) {
-		rem_bit(i, dataLoaded);
-
-		playerData[i][STATUS] = NOT_REGISTERED;
-	}
-
-	sqlConnected = false;
-
-	new tempData[32];
-
-	formatex(tempData, charsmax(tempData), "DROP TABLE `csgo_accounts`;");
-
-	SQL_ThreadQuery(sql, "ignore_handle", tempData);
-}
 
 public client_connect(id)
 {
@@ -86,10 +70,12 @@ public client_connect(id)
 
 	if (is_user_bot(id) || is_user_hltv(id) || !accountsEnabled) return;
 
-	get_user_authid(id, playerData[id][STEAM_ID], charsmax(playerData[][STEAM_ID]));
 	get_user_name(id, playerData[id][NAME], charsmax(playerData[][NAME]));
 
-	mysql_escape_string(playerData[id][NAME], playerData[id][SAFE_NAME], charsmax(playerData[][SAFE_NAME]));
+	switch (saveType) {
+		case SAVE_NAME: mysql_escape_string(playerData[id][NAME], playerData[id][SAFE_NAME], charsmax(playerData[][SAFE_NAME]));
+		case SAVE_STEAM_ID: get_user_authid(id, playerData[id][STEAM_ID], charsmax(playerData[][STEAM_ID]));
+	}
 
 	set_task(0.1, "load_account", id + TASK_LOAD);
 }
@@ -258,9 +244,7 @@ public account_menu_handle(id, menu, item)
 				ExecuteHamB(Ham_CS_Player_ResetMaxSpeed, id);
 			}
 
-			new ret;
-
-			ExecuteForward(loginForward, ret, id);
+			ExecuteForward(loginForward, ForwardResult, id);
 		}
 	}
 
@@ -310,9 +294,7 @@ public login_account(id)
 		ExecuteHamB(Ham_CS_Player_ResetMaxSpeed, id);
 	}
 
-	new ret;
-
-	ExecuteForward(loginForward, ret, id);
+	ExecuteForward(loginForward, ForwardResult, id);
 
 	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_ACCOUNTS_LOGIN_SUCCESS");
 
@@ -420,9 +402,7 @@ public register_confirmation_handle(id, menu, item)
 				ExecuteHamB(Ham_CS_Player_ResetMaxSpeed, id);
 			}
 
-			new ret;
-
-			ExecuteForward(loginForward, ret, id);
+			ExecuteForward(registerForward, ForwardResult, id);
 
 			set_hudmessage(0, 255, 0, -1.0, 0.9, 0, 0.0, 3.5, 0.0, 0.0);
 			show_hudmessage(id, "%L", id, "CSGO_ACCOUNTS_HUD_REGISTER_SUCCESS");
@@ -700,8 +680,8 @@ public load_account(id)
 	tempId[0] = id;
 
 	switch (saveType) {
-		case SAVE_NAME: formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_accounts` WHERE name = ^"%s^" LIMIT 1;", playerData[id][SAFE_NAME]);
-		case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_accounts` WHERE steamid = ^"%s^" LIMIT 1;", playerData[id][STEAM_ID]);
+		case SAVE_NAME: formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_accounts` WHERE name = ^"%s^"", playerData[id][SAFE_NAME]);
+		case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "SELECT * FROM `csgo_accounts` WHERE steamid = ^"%s^"", playerData[id][STEAM_ID]);
 	}
 
 	SQL_ThreadQuery(sql, "load_account_handle", queryData, tempId, sizeof(tempId));
@@ -734,9 +714,7 @@ public load_account_handle(failState, Handle:query, error[], errorNum, tempId[],
 
 				set_bit(id, autoLogin);
 
-				new ret;
-
-				ExecuteForward(loginForward, ret, id);
+				ExecuteForward(loginForward, ForwardResult, id);
 			} else {
 				playerData[id][STATUS] = NOT_LOGGED;
 			}
@@ -752,22 +730,23 @@ public account_query(id, type)
 {
 	if (!is_user_connected(id)) return;
 
-	new queryData[192], password[32];
+	new queryData[128], password[32];
 
 	mysql_escape_string(playerData[id][PASSWORD], password, charsmax(password));
 
-	switch (type) {
-		case INSERT: formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_accounts` (name, steamid, pass) VALUES (^"%s^", ^"%s^", ^"%s^")", playerData[id][SAFE_NAME], playerData[id][STEAM_ID], password);
-		case UPDATE: {
-			switch (saveType) {
-				case SAVE_NAME: formatex(queryData, charsmax(queryData), "UPDATE `csgo_accounts` SET pass = '%s', steamid = ^"%s^" WHERE name = ^"%s^"", password, playerData[id][STEAM_ID], playerData[id][SAFE_NAME]);
-				case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "UPDATE `csgo_accounts` SET pass = '%s', name = ^"%s^" WHERE steamid = ^"%s^"", password, playerData[id][SAFE_NAME], playerData[id][STEAM_ID]);
+	switch (saveType) {
+		case SAVE_NAME: {
+			switch (type) {
+				case INSERT: formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_accounts` (name, pass) VALUES (^"%s^", '%s')", playerData[id][SAFE_NAME], password);
+				case UPDATE: formatex(queryData, charsmax(queryData), "UPDATE `csgo_accounts` SET pass = '%s' WHERE name = ^"%s^"", password, playerData[id][SAFE_NAME]);
+				case DELETE: formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_accounts` WHERE name = ^"%s^"", playerData[id][SAFE_NAME]);
 			}
 		}
-		case DELETE: {
-			switch (saveType) {
-				case SAVE_NAME: formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_accounts` WHERE name = ^"%s^"", playerData[id][SAFE_NAME]);
-				case SAVE_STEAM_ID: formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_accounts` WHERE steamid = ^"%s^"", playerData[id][STEAM_ID]);
+		case SAVE_STEAM_ID: {
+			switch (type) {
+				case INSERT: formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_accounts` (steamid, pass) VALUES (^"%s^", '%s')", playerData[id][STEAM_ID], password);
+				case UPDATE: formatex(queryData, charsmax(queryData), "UPDATE `csgo_accounts` SET pass = '%s' WHERE steamid = ^"%s^"", password, playerData[id][STEAM_ID]);
+				case DELETE: formatex(queryData, charsmax(queryData), "DELETE FROM `csgo_accounts` WHERE steamid = ^"%s^"", playerData[id][STEAM_ID]);
 			}
 		}
 	}
