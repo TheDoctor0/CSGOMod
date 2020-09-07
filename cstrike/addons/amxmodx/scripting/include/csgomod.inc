@@ -318,8 +318,6 @@ forward csgo_user_register(id);
  */
 forward csgo_user_assist(killer, victim);
 
-forward csgo_user_login(id);
-
 /**
  * Multiforward called on data reset.
  *
