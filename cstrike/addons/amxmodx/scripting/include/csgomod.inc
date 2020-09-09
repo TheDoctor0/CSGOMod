@@ -7,7 +7,7 @@
     #error THIS VERSION IS NOT SUPPORTED! PLEASE USE AMXX 1.8.3+!
 #endif
 
-#define VERSION	"2.1.0"
+#define VERSION	"2.1.3"
 #define CHAT_PREFIX "^4[CS:GO]^1"
 #define CONSOLE_PREFIX "[CS:GO]"
 
