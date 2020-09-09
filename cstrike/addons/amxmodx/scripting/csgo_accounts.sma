@@ -48,7 +48,6 @@ public plugin_init()
 
 	loginForward = CreateMultiForward("csgo_user_login", ET_IGNORE, FP_CELL);
 	registerForward = CreateMultiForward("csgo_user_register", ET_IGNORE, FP_CELL);
-
 }
 
 public plugin_natives()
