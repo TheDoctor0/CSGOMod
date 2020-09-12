@@ -1,0 +1,29 @@
+<html>
+<head>
+<style type="text/css">
+body {
+background-color: #161616;
+font-family:Verdana,Tahoma;
+}
+</style>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1257">
+</head>
+<font size="2" color="#008000"><b><center>VIP sana ne verir?</center></b></font><br />
+<font size="1" color="#dadada">
+<UL>
+<LI TYPE=square>25% daha fazla kazanilan EURO</LI><br>
+<LI TYPE=square>Ucretsiz Deagle</LI><br>
+<LI TYPE=square>2. raunddan itibaren El Bombasi + Yelek</LI><br>
+<LI TYPE=square>Oldurme basina 10 HP bonus</LI><br>
+<LI TYPE=square>Kafadan oldurme basina 15 HP bonus</LI><br>
+<LI TYPE=square>Oldurme basina 200$ bonus</LI><br>
+<LI TYPE=square>Kafadan oldurme basina 350$ bonus</LI><br>
+<LI TYPE=square>3. raunddan itibaren iki silah seti secimi:</LI><br>
+<LI TYPE=square>* M4A1 + Deagle</LI><br>
+<LI TYPE=square>* AK47 + Deagle</LI><br>
+<LI TYPE=square>Ucretsiz Imha Kiti (CT iken)</LI><br>
+<LI TYPE=square>Skor tablosunda VIP statusu</LI><br>
+<LI TYPE=square>VIP Sohbeti: u* (u@ icin alternatif)</LI><br>
+<LI TYPE=square>VIP (/vips) listesinde bulunma</LI><br>
+</body>
+</html>

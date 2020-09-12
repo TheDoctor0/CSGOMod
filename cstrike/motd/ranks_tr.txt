@@ -1,0 +1,35 @@
+<html>
+<head>
+<style type="text/css">
+body {
+background-color: #161616;
+font-family:Verdana,Tahoma;
+}
+</style>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1257">
+</head>
+<font size="4" color="red"><b><center>Mevcut Siralama Listesi:</b></font></center>
+<font size="2" color="#dadada"><b>
+<center><span style="line-height:20px">
+* Rutbesiz - 100 oldurme alti<br>
+* Gumus I - varsayilan siralama<br>
+* Gumus II - 100 Elo<br>
+* Gumus III - 120 Elo<br>
+* Gumus IV - 140 Elo<br>
+* Gumus Elit - 160 Elo<br>
+* Usta Gumus Elit - 180 Elo<br>
+* Altin Nova I - 200 Elo<br>
+* Altin Nova II - 215 Elo<br>
+* Altin Nova III - 230 Elo<br>
+* Usta Altin Nova - 245 Elo<br>
+* Usta Muhafiz I - 260 Elo<br>
+* Usta Muhafiz II - 275 Elo<br>
+* Usta Muhafiz Elit - 290 Elo<br>
+* Seckin Usta Muhafiz - 315 Elo<br>
+* Efsanevi Kartal - 340 Elo<br>
+* Usta Efsanevi Kartal - 370 Elo<br>
+* Birinci Sinif Ustun Usta - 410 Elo<br>
+* Evrensel Seckin - 450 Elo<br>
+</center></b><br></span>
+</body>
+</html>
