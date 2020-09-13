@@ -284,7 +284,7 @@ public login_account(id)
 
 			formatex(info, charsmax(info), "%L", id, "CSGO_ACCOUNTS_INVALID_PASSWORD");
 
-			server_cmd("kick #%d ^"%s^"", info);
+			server_cmd("kick #%d ^"%s^"", get_user_userid(id), info);
 
 			return PLUGIN_HANDLED;
 		}
