@@ -3154,7 +3154,7 @@ public _csgo_get_weapon_skin(id, weapon)
 
 public _csgo_get_skin_name(id, skin, dataReturn[], dataLength)
 {
-	param_convert(2);
+	param_convert(3);
 
 	if (skin > NONE) {
 		get_skin_info(skin, SKIN_NAME, dataReturn, dataLength);
