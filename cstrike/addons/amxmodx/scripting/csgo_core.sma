@@ -1028,8 +1028,10 @@ public random_weapon_skin_handle(id, menu, item)
 
 		add_skin(id, skinId, skin[SKIN_WEAPON], skin[SKIN_NAME]);
 
-		for (new i = 1; i <= MAX_PLAYERS; i++) {
-			client_print_color(i, id, "%s %L", CHAT_PREFIX, i, "CSGO_CORE_DRAW_SUCCESS", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON]);
+		for (new player = 1; player <= MAX_PLAYERS; player++) {
+			if (!is_user_connected(player) || is_user_hltv(player) || is_user_bot(player)) continue;
+
+			client_print_color(player, id, "%s %L", CHAT_PREFIX, player, "CSGO_CORE_DRAW_SUCCESS", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON]);
 		}
 
 		log_to_file("csgo-random.log", "Player %s has drawn a skin %s (%s)", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON]);
@@ -1727,8 +1729,10 @@ public set_skin_price(id)
 
 	change_local_skin(id, playerData[id][SALE_SKIN]);
 
-	for (new i = 1; i <= MAX_PLAYERS; i++) {
-		client_print_color(i, id, "%s %L", CHAT_PREFIX, i, "CSGO_CORE_SELL_ISSUED", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON], price);
+	for (new player = 1; player <= MAX_PLAYERS; player++) {
+		if (!is_user_connected(player) || is_user_hltv(player) || is_user_bot(player)) continue;
+
+		client_print_color(player, id, "%s %L", CHAT_PREFIX, player, "CSGO_CORE_SELL_ISSUED", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON], price);
 	}
 
 	return PLUGIN_HANDLED;
@@ -2172,7 +2176,7 @@ public round_winner(team)
 	if (get_playersnum() < minPlayers) return;
 
 	for (new id = 1; id <= MAX_PLAYERS; id++) {
-		if (!is_user_connected(id) || get_user_team(id) != team) continue;
+		if (!is_user_connected(id) || is_user_hltv(id) || is_user_bot(id) || get_user_team(id) != team) continue;
 
 		new Float:money = winReward * get_multiplier(id);
 
