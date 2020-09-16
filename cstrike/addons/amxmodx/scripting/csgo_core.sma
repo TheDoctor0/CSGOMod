@@ -1975,7 +1975,7 @@ public market_withdraw_skin_handle(id, menu, item)
 	ArrayGetArray(market, skinId, marketSkin);
 	ArrayGetArray(skins, marketSkin[MARKET_SKIN], skin);
 
-	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_PURCHASE_CONFIRMATION",
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_WITHDRAW_CONFIRMATION",
 		skin[SKIN_NAME], skin[SKIN_WEAPON], marketSkin[MARKET_PRICE]);
 
 	new menu = menu_create(menuData, "market_withdraw_confirm_handle");
