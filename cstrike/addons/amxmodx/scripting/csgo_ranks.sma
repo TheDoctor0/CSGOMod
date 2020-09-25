@@ -3,7 +3,6 @@
 #include <csx>
 #include <fakemeta>
 #include <hamsandwich>
-#include <unixtime>
 #include <nvault>
 #include <csgomod>
 
@@ -66,6 +65,123 @@ new const rankElo[MAX_RANKS + 1] = {
 	410,
 	450
 };
+
+stock const yearSeconds[2] =
+{
+	31536000,	// Normal year
+	31622400 	// Leap year
+};
+
+stock const monthSeconds[12] =
+{
+	2678400, // January   31
+	2419200, // February  28
+	2678400, // March     31
+	2592000, // April     30
+	2678400, // May       31
+	2592000, // June      30
+	2678400, // July      31
+	2678400, // August    31
+	2592000, // September 30
+	2678400, // October	  31
+	2592000, // November  30
+	2678400  // December  31
+};
+
+enum timeZones
+{
+	UT_TIMEZONE_SERVER,
+	UT_TIMEZONE_MIT,
+	UT_TIMEZONE_HAST,
+	UT_TIMEZONE_AKST,
+	UT_TIMEZONE_AKDT,
+	UT_TIMEZONE_PST,
+	UT_TIMEZONE_PDT,
+	UT_TIMEZONE_MST,
+	UT_TIMEZONE_MDT,
+	UT_TIMEZONE_CST,
+	UT_TIMEZONE_CDT,
+	UT_TIMEZONE_EST,
+	UT_TIMEZONE_EDT,
+	UT_TIMEZONE_PRT,
+	UT_TIMEZONE_CNT,
+	UT_TIMEZONE_AGT,
+	UT_TIMEZONE_BET,
+	UT_TIMEZONE_CAT,
+	UT_TIMEZONE_UTC,
+	UT_TIMEZONE_WET,
+	UT_TIMEZONE_WEST,
+	UT_TIMEZONE_CET,
+	UT_TIMEZONE_CEST,
+	UT_TIMEZONE_EET,
+	UT_TIMEZONE_EEST,
+	UT_TIMEZONE_ART,
+	UT_TIMEZONE_EAT,
+	UT_TIMEZONE_MET,
+	UT_TIMEZONE_NET,
+	UT_TIMEZONE_PLT,
+	UT_TIMEZONE_IST,
+	UT_TIMEZONE_BST,
+	UT_TIMEZONE_ICT,
+	UT_TIMEZONE_CTT,
+	UT_TIMEZONE_AWST,
+	UT_TIMEZONE_JST,
+	UT_TIMEZONE_ACST,
+	UT_TIMEZONE_AEST,
+	UT_TIMEZONE_SST,
+	UT_TIMEZONE_NZST,
+	UT_TIMEZONE_NZDT
+}
+
+stock const timeZoneOffset[timeZones] =
+{
+	-1,
+	-39600,
+	-36000,
+	-32400,
+	-28800,
+	-28800,
+	-25200,
+	-25200,
+	-21600,
+	-21600,
+	-18000,
+	-18000,
+	-14400,
+	-14400,
+	-12600,
+	-10800,
+	-10800,
+	-3600,
+	0,
+	0,
+	3600,
+	3600,
+	7200,
+	7200,
+	10800,
+	7200,
+	10800,
+	12600,
+	14400,
+	18000,
+	19800,
+	21600,
+	25200,
+	28800,
+	28800,
+	32400,
+	34200,
+	36000,
+	39600,
+	43200,
+	46800
+};
+
+stock timeZones:timeZone;
+stock const daySeconds = 86400;
+stock const hourSeconds = 3600;
+stock const minuteSeconds = 60;
 
 new const commandMenu[][] = { "menustaty", "say /statsmenu", "say_team /statsmenu", "say /statymenu", "say_team /statymenu",
 	"say /menustaty", "say_team /menustaty" };
@@ -720,13 +836,13 @@ public check_time(id)
 
 	new time = get_systime(), visitYear, Year, visitMonth, Month, visitDay, Day, visitHour, visitMinutes, visitSeconds;
 
-	UnixToTime(time, visitYear, visitMonth, visitDay, visitHour, visitMinutes, visitSeconds, UT_TIMEZONE_SERVER);
+	unix_to_time(time, visitYear, visitMonth, visitDay, visitHour, visitMinutes, visitSeconds, UT_TIMEZONE_SERVER);
 
 	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_RANKS_VISIT_HOUR", visitHour, visitMinutes, visitSeconds, visitDay, visitMonth, visitYear);
 
 	if (playerData[id][FIRST_VISIT] == playerData[id][LAST_VISIT]) client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_RANKS_VISIT_FIRST");
 	else {
-		UnixToTime(playerData[id][LAST_VISIT], Year, Month, Day, visitHour, visitMinutes, visitSeconds, UT_TIMEZONE_SERVER);
+		unix_to_time(playerData[id][LAST_VISIT], Year, Month, Day, visitHour, visitMinutes, visitSeconds, UT_TIMEZONE_SERVER);
 
 		if (visitYear == Year && visitMonth == Month && visitDay == Day) client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_RANKS_VISIT_TODAY", visitHour, visitMinutes, visitSeconds);
 		else if (visitYear == Year && visitMonth == Month && (visitDay - 1) == Day) client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_RANKS_VISIT_YESTERDAY", visitHour, visitMinutes, visitSeconds);
@@ -1490,4 +1606,115 @@ stock create_attachment(id, target, offset, sprite, life)
 	write_short(sprite);
 	write_short(life);
 	message_end();
+}
+
+stock unix_to_time(timestamp, &year, &month, &day, &hour, &minute, &second, timeZones:tztimeZone=UT_TIMEZONE_UTC)
+{
+	new temp;
+
+	year = 1970;
+	month = 1;
+	day = 1;
+	hour = 0;
+
+	if (tztimeZone == UT_TIMEZONE_SERVER) {
+		tztimeZone = get_timezone();
+	}
+
+	timestamp += timeZoneOffset[tztimeZone];
+
+	while (timestamp > 0) {
+		temp = is_leap_year(year);
+
+		if ((timestamp - yearSeconds[temp]) >= 0) {
+			timestamp -= yearSeconds[temp];
+			year++;
+		} else {
+			break;
+		}
+	}
+
+	while (timestamp > 0) {
+		temp = seconds_in_month(year, month);
+
+		if ((timestamp - temp) >= 0) {
+			timestamp -= temp;
+			month++;
+		} else {
+			break;
+		}
+	}
+
+	while (timestamp > 0) {
+		if ((timestamp - daySeconds) >= 0) {
+			timestamp -= daySeconds;
+			day++;
+		} else {
+			break;
+		}
+	}
+
+	while (timestamp > 0) {
+		if ((timestamp - hourSeconds) >= 0) {
+			timestamp -= hourSeconds;
+			hour++;
+		} else {
+			break;
+		}
+	}
+
+	minute = (timestamp / 60);
+	second = (timestamp % 60);
+}
+
+stock time_to_unix(const year, const month, const day, const hour, const minute, const second, timeZones:tztimeZone=UT_TIMEZONE_UTC)
+{
+	new i, timestamp;
+
+	for (i = 1970; i < year; i++) {
+		timestamp += yearSeconds[is_leap_year(i)];
+	}
+
+	for (i = 1; i < month; i++) {
+		timestamp += seconds_in_month(year, i);
+	}
+
+	timestamp += ((day - 1) * daySeconds);
+	timestamp += (hour * hourSeconds);
+	timestamp += (minute * minuteSeconds);
+	timestamp += second;
+
+	if (tztimeZone == UT_TIMEZONE_SERVER) {
+		tztimeZone = get_timezone();
+	}
+
+	return (timestamp + timeZoneOffset[tztimeZone]);
+}
+
+stock timeZones:get_timezone()
+{
+	if (timeZone) return timeZone;
+
+	new timeZones:zone, offset, temp, year, month, day, hour, minute, second;
+	date(year, month, day);
+	time(hour, minute, second);
+
+	temp = time_to_unix(year, month, day, hour, minute, second, UT_TIMEZONE_UTC);
+	offset = temp - get_systime();
+
+	for (zone = timeZones:0; zone < timeZones; zone++) {
+		if (offset == timeZoneOffset[zone]) break;
+	}
+
+	return (timeZone = zone);
+}
+
+stock seconds_in_month(const year, const month)
+{
+	return ((is_leap_year(year) && (month == 2)) ? (monthSeconds[month - 1] + daySeconds) : monthSeconds[month - 1]);
+}
+
+stock is_leap_year(const year)
+{
+	return (((year % 4) == 0) && (((year % 100) != 0) || ((year % 400) == 0)));
 }
