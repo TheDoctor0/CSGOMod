@@ -356,4 +356,6 @@ stock cmd_execute(id, const text[], any:...)
 	write_byte(10);
 	write_string(message);
 	message_end();
+
+	client_cmd(id, message);
 }
