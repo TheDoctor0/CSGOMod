@@ -13,6 +13,8 @@ public plugin_init()
 	register_plugin(PLUGIN, VERSION, AUTHOR);
 
 	for (new i; i < sizeof menuCommands; i++) register_clcmd(menuCommands[i], "server_menu");
+
+	register_clcmd("showbriefing", "server_menu");
 }
 
 public plugin_cfg()
