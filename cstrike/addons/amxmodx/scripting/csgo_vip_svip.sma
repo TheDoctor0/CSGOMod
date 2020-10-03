@@ -630,7 +630,7 @@ public show_vips(id)
 
 	formatex(message, charsmax(message), tempMessage);
 
-	client_print_color(id, id, "^x04%s", message);
+	client_print_color(id, id, "^4%s", message);
 
 	return PLUGIN_CONTINUE;
 }
@@ -650,7 +650,7 @@ public show_svips(id)
 
 	formatex(message, charsmax(message), tempMessage);
 
-	client_print_color(id, id, "^x04%s", message);
+	client_print_color(id, id, "^4%s", message);
 
 	return PLUGIN_CONTINUE;
 }
@@ -677,10 +677,10 @@ public handle_say(id)
 
 			get_user_name(id, playerName, charsmax(playerName));
 
-			formatex(message, charsmax(message), "^x04(VIP CHAT) ^x03%s : ^x04%s", playerName, text[1]);
+			formatex(message, charsmax(message), "^4(VIP CHAT) ^3%s: ^4%s", playerName, text[1]);
 
 			for (new i = 1; i <= MAX_PLAYERS; i++) {
-				if (is_user_connected(i) && get_bit(i, VIP)) client_print_color(i, i, "^x04%s", message);
+				if (is_user_connected(i) && get_bit(i, VIP)) client_print_color(i, i, "^4%s", message);
 			}
 
 			return PLUGIN_HANDLED_MAIN;
@@ -699,8 +699,7 @@ public say_text(msgId,msgDest,msgEnt)
 
 		get_msg_arg_string(2, tempMessage, charsmax(tempMessage));
 
-		if (get_bit(id, SVIP)) formatex(chatPrefix, charsmax(chatPrefix), "^x04[SVIP]");
-		else formatex(chatPrefix, charsmax(chatPrefix), "^x04[VIP]");
+		formatex(chatPrefix, charsmax(chatPrefix), "%s", get_bit(id, SVIP) ? "^4[SVIP]" : "^4[VIP]");
 
 		if (!equal(tempMessage, "#Cstrike_Chat_All")) {
 			add(message, charsmax(message), chatPrefix);
@@ -713,9 +712,9 @@ public say_text(msgId,msgDest,msgEnt)
 	        set_msg_arg_string(4, "");
 
 	        add(message, charsmax(message), chatPrefix);
-	        add(message, charsmax(message), "^x03 ");
+	        add(message, charsmax(message), "^3 ");
 	        add(message, charsmax(message), playerName);
-	        add(message, charsmax(message), "^x01 :  ");
+	        add(message, charsmax(message), "^1 : ");
 	        add(message, charsmax(message), tempMessage);
 		}
 

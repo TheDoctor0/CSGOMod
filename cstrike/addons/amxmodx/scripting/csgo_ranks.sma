@@ -1459,7 +1459,7 @@ public say_text(msgId, msgDest, msgEnt)
 	        add(message, charsmax(message), chatPrefix);
 	        add(message, charsmax(message), "^3 ");
 	        add(message, charsmax(message), playerName);
-	        add(message, charsmax(message), "^1 :  ");
+	        add(message, charsmax(message), "^1 : ");
 	        add(message, charsmax(message), tempMessage);
 		}
 

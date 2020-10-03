@@ -2216,7 +2216,7 @@ public say_text(msgId, msgDest, msgEnt)
 	        add(message, charsmax(message), prefix);
 	        add(message, charsmax(message), "^3 ");
 	        add(message, charsmax(message), playerData[id][NAME]);
-	        add(message, charsmax(message), "^1 :  ");
+	        add(message, charsmax(message), "^1 : ");
 	        add(message, charsmax(message), tempMessage);
 		}
 
