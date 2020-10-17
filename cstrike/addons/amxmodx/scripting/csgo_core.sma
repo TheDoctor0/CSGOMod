@@ -15,6 +15,8 @@
 #pragma dynamic 65536
 #pragma semicolon 1
 
+#define ADMIN_FLAG	ADMIN_ADMIN
+
 #define TASK_SKINS	1045
 #define TASK_DATA	2592
 #define TASK_AIM	3309
@@ -76,7 +78,7 @@ new const defaultShell[] = "models/pshell.mdl",
 enum _:tempInfo { WEAPON, WEAPONS, WEAPON_ENT, EXCHANGE_PLAYER, EXCHANGE, EXCHANGE_FOR_SKIN, GIVE_PLAYER, SALE_SKIN, BUY, BUY_WEAPON, BUY_SUBMODEL, Float:COUNTDOWN };
 enum _:playerInfo { ACTIVE[CSW_P90 + 1], Float:MONEY, SKIN, SUBMODEL, bool:SKINS_LOADED, bool:DATA_LOADED, bool:EXCHANGE_BLOCKED, bool:MENU_BLOCKED, TEMP[tempInfo], NAME[32], SAFE_NAME[64], STEAM_ID[35] };
 enum _:playerSkinsInfo { SKIN_ID, SKIN_COUNT };
-enum _:skinsInfo { SKIN_NAME[64], SKIN_WEAPON[32], SKIN_MODEL[64], SKIN_SUBMODEL, SKIN_PRICE, SKIN_CHANCE };
+enum _:skinsInfo { SKIN_NAME[64], SKIN_WEAPON[32], SKIN_MODEL[64], SKIN_SUBMODEL, SKIN_PRICE, SKIN_CHANCE, bool:SKIN_BUYABLE };
 enum _:marketInfo { MARKET_ID, MARKET_SKIN, MARKET_OWNER, Float:MARKET_PRICE };
 enum _:typeInfo { TYPE_NAME, TYPE_STEAM_ID };
 
@@ -193,7 +195,7 @@ public plugin_precache()
 
 	if (!file_exists(file)) set_fail_state("[CS:GO] No skins configuration file csgo_skins.ini!");
 
-	new skin[skinsInfo], lineData[256], tempValue[5][64], bool:error, count = 0, fileOpen = fopen(file, "r"), Array:files = ArrayCreate(64, 64), filePath[64];
+	new skin[skinsInfo], lineData[256], tempValue[6][64], bool:error, count = 0, fileOpen = fopen(file, "r"), Array:files = ArrayCreate(64, 64), filePath[64];
 
 	while (!feof(fileOpen)) {
 		fgets(fileOpen, lineData, charsmax(lineData)); trim(lineData);
@@ -210,7 +212,7 @@ public plugin_precache()
 
 			continue;
 		} else {
-			parse(lineData, tempValue[0], charsmax(tempValue[]), tempValue[1], charsmax(tempValue[]), tempValue[2], charsmax(tempValue[]), tempValue[3], charsmax(tempValue[]), tempValue[4], charsmax(tempValue[]));
+			parse(lineData, tempValue[0], charsmax(tempValue[]), tempValue[1], charsmax(tempValue[]), tempValue[2], charsmax(tempValue[]), tempValue[3], charsmax(tempValue[]), tempValue[4], charsmax(tempValue[]), tempValue[5], charsmax(tempValue[]));
 
 			formatex(skin[SKIN_NAME], charsmax(skin[SKIN_NAME]), tempValue[0]);
 			formatex(skin[SKIN_MODEL], charsmax(skin[SKIN_MODEL]), tempValue[1]);
@@ -218,6 +220,7 @@ public plugin_precache()
 			skin[SKIN_SUBMODEL] = str_to_num(tempValue[2]);
 			skin[SKIN_PRICE] = str_to_num(tempValue[3]);
 			skin[SKIN_CHANCE] = (str_to_num(tempValue[4]) > 1 ? str_to_num(tempValue[4]) : 1);
+			skin[SKIN_BUYABLE] = strlen(tempValue[5]) ? (!! str_to_num(tempValue[5])) : true;
 
 			if (!file_exists(skin[SKIN_MODEL])) {
 				log_to_file("csgo-error.log", "[CS:GO] The file %s containing the skin %s does not exist!", skin[SKIN_MODEL], skin[SKIN_NAME]);
@@ -766,7 +769,7 @@ public buy_weapon_skin(id, weapon[])
 	for (new i = 0; i < ArraySize(skins); i++) {
 		ArrayGetArray(skins, i, skin);
 
-		if (equal(weapon, skin[SKIN_WEAPON])) {
+		if (equal(weapon, skin[SKIN_WEAPON]) && skin[SKIN_BUYABLE]) {
 			if (!multipleSkins && has_skin(id, i)) continue;
 
 			num_to_str(i, tempId, charsmax(tempId));
@@ -985,7 +988,7 @@ public random_weapon_skin_handle(id, menu, item)
 
 	formatex(allName, charsmax(allName), "%L", id, "CSGO_CORE_ALL");
 
-	if (!multipleSkins && !get_missing_weapon_skins_count(id, weapon)) {
+	if (!multipleSkins && !get_missing_weapon_skins_count(id, weapon, 1)) {
 		if (equal(weapon, allName)) {
 			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_ALREADY_HAVE_ALL", weapon);
 		} else {
@@ -1001,7 +1004,9 @@ public random_weapon_skin_handle(id, menu, item)
 		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_NO_MONEY");
 
 		return PLUGIN_HANDLED;
-	} else playerData[id][MONEY] -= price;
+	} else {
+		playerData[id][MONEY] -= price;
+	}
 
 	new chance = (csgo_get_user_svip(id) ? skinChanceSVIP : skinChance) + floatround(csgo_get_clan_members(csgo_get_user_clan(id)) * skinChancePerMember, floatround_floor);
 
@@ -1012,7 +1017,7 @@ public random_weapon_skin_handle(id, menu, item)
 			ArrayGetArray(skins, i, skin);
 
 			if (equali(weapon, skin[SKIN_WEAPON]) || equal(weapon, allName)) {
-				if (!multipleSkins && has_skin(id, i)) continue;
+				if (!skin[SKIN_BUYABLE] || (!multipleSkins && has_skin(id, i))) continue;
 
 				skinsChance += skin[SKIN_CHANCE];
 
@@ -2040,7 +2045,7 @@ public market_withdraw_confirm_handle(id, menu, item)
 
 public cmd_add_money(id)
 {
-	if (!(get_user_flags(id) & ADMIN_ADMIN)) return PLUGIN_HANDLED;
+	if (!csgo_check_account(id) || !(get_user_flags(id) & ADMIN_FLAG)) return PLUGIN_HANDLED;
 
 	new playerName[32], tempMoney[4];
 
@@ -2075,7 +2080,7 @@ public cmd_add_money(id)
 
 public cmd_reset_data(id)
 {
-	if (!(get_user_flags(id) & ADMIN_ADMIN)) return PLUGIN_HANDLED;
+	if (!csgo_check_account(id) || !(get_user_flags(id) & ADMIN_FLAG)) return PLUGIN_HANDLED;
 
 	log_to_file("csgo-admin.log", "Admin %s forced full data reset.", PLUGIN, playerData[id][NAME]);
 
@@ -3255,6 +3260,8 @@ stock get_weapon_skins_count(id, weapon[], chance = 0)
 	for (new i = 0; i < ArraySize(skins); i++) {
 		ArrayGetArray(skins, i, skin);
 
+		if (chance && !skin[SKIN_BUYABLE]) continue;
+
 		if (equal(weapon, skin[SKIN_WEAPON]) || equal(weapon, allName)) {
 			weaponSkinsCount += chance ? skin[SKIN_CHANCE] : 1;
 		}
@@ -3274,6 +3281,8 @@ stock get_missing_weapon_skins_count(id, weapon[], chance = 0)
 
 		ArrayGetArray(skins, skinId, skin);
 
+		if (chance && !skin[SKIN_BUYABLE]) continue;
+
 		if (equal(weapon, skin[SKIN_WEAPON]) || equal(weapon, allName)) {
 			playerSkinsCount += chance ? skin[SKIN_CHANCE] : 1;
 		}
@@ -3285,13 +3294,15 @@ stock get_missing_weapon_skins_count(id, weapon[], chance = 0)
 		if (marketSkin[MARKET_OWNER] == id) {
 			ArrayGetArray(skins, marketSkin[MARKET_SKIN], skin);
 
+			if (chance && !skin[SKIN_BUYABLE]) continue;
+
 			if (equal(weapon, skin[SKIN_WEAPON]) || equal(weapon, allName)) {
 				playerSkinsCount += chance ? skin[SKIN_CHANCE] : 1;
 			}
 		}
 	}
 
-	return get_weapon_skins_count(id, weapon) - playerSkinsCount;
+	return get_weapon_skins_count(id, weapon, chance) - playerSkinsCount;
 }
 
 stock get_weapon_id(weapon[])
