@@ -34,9 +34,14 @@ Plugins can be enabled / disabled in [plugins-csgo.ini](https://github.com/TheDo
 All of available configuration files have proper description.
 
 ## Commands
-There is one simple admin command that can be used to add money (Euro) to any player balance:
+If you want to add money (Euro) to any player balance, you can use this command::
 ```
 csgo_add_money <nick> <amount>
+```
+
+If you want to give any skin to any player from menu, you can use this command::
+```
+csgo_add_skin
 ```
 
 If you want to make a full data reset without manually cleaning up database, you can use this command:
@@ -69,3 +74,4 @@ List of servers that are using this mod is available [HERE](https://www.gametrac
 - [wopox1337](https://dev-cs.ru/members/4/) for base zeus plugin
 - [DynamicBits](https://forums.alliedmods.net/member.php?u=30983) for base molotov plugin
 - [MPNumB](https://forums.alliedmods.net/member.php?u=25348) for base smoke plugin
+- [Nomexous](https://forums.alliedmods.net/member.php?u=31824) for base weapon physics plugin
