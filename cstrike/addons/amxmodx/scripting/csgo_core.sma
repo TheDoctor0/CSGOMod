@@ -75,7 +75,7 @@ new const maxBPAmmo[] = { -1, 52, -1, 90, 1, 32, 1, 100, 90, 1, 120, 100, 100, 9
 new const defaultShell[] = "models/pshell.mdl",
 		  shotgunShell[] = "models/shotgunshell.mdl";
 
-enum _:tempInfo { WEAPON, WEAPONS, WEAPON_ENT, EXCHANGE_PLAYER, EXCHANGE, EXCHANGE_FOR_SKIN, GIVE_PLAYER, SALE_SKIN, BUY, BUY_WEAPON, BUY_SUBMODEL, Float:COUNTDOWN };
+enum _:tempInfo { WEAPON, WEAPONS, WEAPON_ENT, EXCHANGE_PLAYER, EXCHANGE, EXCHANGE_FOR_SKIN, GIVE_PLAYER, SALE_SKIN, BUY_SKIN, BUY_WEAPON, BUY_SUBMODEL, ADD_SKIN, Float:COUNTDOWN };
 enum _:playerInfo { ACTIVE[CSW_P90 + 1], Float:MONEY, SKIN, SUBMODEL, bool:SKINS_LOADED, bool:DATA_LOADED, bool:EXCHANGE_BLOCKED, bool:MENU_BLOCKED, TEMP[tempInfo], NAME[32], SAFE_NAME[64], STEAM_ID[35] };
 enum _:playerSkinsInfo { SKIN_ID, SKIN_COUNT };
 enum _:skinsInfo { SKIN_NAME[64], SKIN_WEAPON[32], SKIN_MODEL[64], SKIN_SUBMODEL, SKIN_PRICE, SKIN_CHANCE, bool:SKIN_BUYABLE };
@@ -134,8 +134,9 @@ public plugin_init()
 
 	register_clcmd("SKIN_PRICE", "set_skin_price");
 
-	register_concmd("csgo_add_money", "cmd_add_money", ADMIN_ADMIN, "<player> <money>");
-	register_concmd("cod_reset_data", "cmd_reset_data", ADMIN_ADMIN);
+	register_concmd("csgo_add_skin", "add_skin_menu");
+	register_concmd("cod_reset_data", "cmd_reset_data", ADMIN_FLAG);
+	register_concmd("csgo_add_money", "cmd_add_money", ADMIN_FLAG, "<player> <money>");
 
 	register_logevent("log_event_operation", 3, "1=triggered");
 
@@ -576,6 +577,21 @@ public random_skin_menu(id)
 	return PLUGIN_HANDLED;
 }
 
+public add_skin_menu(id)
+{
+	if (!csgo_check_account(id) || !(get_user_flags(id) & ADMIN_FLAG)) return PLUGIN_HANDLED;
+
+	if (!playerData[id][SKINS_LOADED]) {
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_INFO_LOADING");
+
+		return PLUGIN_HANDLED;
+	}
+
+	choose_weapon_menu(id, 3);
+
+	return PLUGIN_HANDLED;
+}
+
 public choose_weapon_menu(id, type)
 {
 	new menuData[64], itemData[32], weapon[32], skin[skinsInfo], count = 0, skinCount = 0, playerSkinCount = 0;
@@ -586,6 +602,16 @@ public choose_weapon_menu(id, type)
 
 	for (new i = type != 2 ? 1 : (randomSkinPrice[WEAPON_ALL] > 0.0 ? 0 : 1); i < ArraySize(weapons); i++) {
 		ArrayGetString(weapons, i, weapon, charsmax(weapon));
+
+		if (type == 3) {
+			formatex(itemData, charsmax(itemData), "%s#%i", weapon, type);
+
+			menu_additem(menu, weapon, itemData);
+
+			count++;
+
+			continue;
+		}
 
 		skinCount = 0;
 		playerSkinCount = 0;
@@ -654,6 +680,7 @@ public choose_weapon_menu_handle(id, menu, item)
 		case 0: set_weapon_skin(id, weapon);
 		case 1: buy_weapon_skin(id, weapon);
 		case 2: random_weapon_skin(id, weapon);
+		case 3: add_weapon_skin(id, weapon);
 	}
 
 	return PLUGIN_HANDLED;
@@ -834,7 +861,7 @@ public buy_weapon_skin_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	playerData[id][TEMP][BUY] = skinId;
+	playerData[id][TEMP][BUY_SKIN] = skinId;
 	playerData[id][TEMP][BUY_SUBMODEL] = skin[SKIN_SUBMODEL];
 	playerData[id][TEMP][BUY_WEAPON] = get_weapon_id(skin[SKIN_WEAPON]);
 
@@ -847,7 +874,7 @@ public buy_weapon_skin_confirm(id)
 {
 	new skin[skinsInfo], menuData[256], itemData[32];
 
-	ArrayGetArray(skins, playerData[id][TEMP][BUY], skin);
+	ArrayGetArray(skins, playerData[id][TEMP][BUY_SKIN], skin);
 
 	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_BUY_CONFIRMATION", skin[SKIN_WEAPON], skin[SKIN_NAME], skin[SKIN_PRICE]);
 
@@ -880,7 +907,7 @@ public buy_weapon_skin_confirm_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	if (!multipleSkins && has_skin(id, playerData[id][TEMP][BUY])) {
+	if (!multipleSkins && has_skin(id, playerData[id][TEMP][BUY_SKIN])) {
 		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_ALREADY_HAVE");
 
 		return PLUGIN_HANDLED;
@@ -904,7 +931,7 @@ public buy_weapon_skin_confirm_handle(id, menu, item)
 		} case 1: {
 			new skin[skinsInfo];
 
-			ArrayGetArray(skins, playerData[id][TEMP][BUY], skin);
+			ArrayGetArray(skins, playerData[id][TEMP][BUY_SKIN], skin);
 
 			if (playerData[id][MONEY] < skin[SKIN_PRICE]) {
 				client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_NO_MONEY");
@@ -916,7 +943,7 @@ public buy_weapon_skin_confirm_handle(id, menu, item)
 
 			save_data(id);
 
-			add_skin(id, playerData[id][TEMP][BUY], skin[SKIN_WEAPON], skin[SKIN_NAME]);
+			add_skin(id, playerData[id][TEMP][BUY_SKIN], skin[SKIN_WEAPON], skin[SKIN_NAME]);
 
 			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_BUY_SUCCESS", skin[SKIN_NAME], skin[SKIN_WEAPON]);
 
@@ -1047,6 +1074,143 @@ public random_weapon_skin_handle(id, menu, item)
 	save_data(id);
 
 	skins_menu(id);
+
+	return PLUGIN_HANDLED;
+}
+
+public add_weapon_skin(id, weapon[])
+{
+	new menuData[128], skin[skinsInfo], tempId[5], count;
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_ADD_MENU");
+
+	new menu = menu_create(menuData, "add_weapon_skin_handle");
+
+	for (new i = 0; i < ArraySize(skins); i++) {
+		ArrayGetArray(skins, i, skin);
+
+		if (equal(weapon, skin[SKIN_WEAPON])) {
+			num_to_str(i, tempId, charsmax(tempId));
+
+			menu_additem(menu, skin[SKIN_NAME], tempId);
+
+			count++;
+		}
+	}
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_PREVIOUS");
+	menu_setprop(menu, MPROP_BACKNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_NEXT");
+	menu_setprop(menu, MPROP_NEXTNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
+
+	if (!count) {
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_ADD_NONE");
+
+		menu_destroy(menu);
+	} else {
+		menu_display(id, menu);
+	}
+}
+
+public add_weapon_skin_handle(id, menu, item)
+{
+	if (!is_user_connected(id) || end) return PLUGIN_HANDLED;
+
+	if (item == MENU_EXIT) {
+		menu_destroy(menu);
+
+		return PLUGIN_HANDLED;
+	}
+
+	new itemData[32], itemAccess, itemCallback;
+
+	menu_item_getinfo(menu, item, itemAccess, itemData, charsmax(itemData), _, _, itemCallback);
+
+	playerData[id][TEMP][ADD_SKIN] = str_to_num(itemData);
+
+	menu_destroy(menu);
+
+	add_weapon_skin_player(id);
+
+	return PLUGIN_HANDLED;
+}
+
+public add_weapon_skin_player(id)
+{
+	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+
+	new menuData[64], userName[32], userId[6];
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_ADD_PLAYER_MENU");
+
+	new menu = menu_create(menuData, "add_weapon_skin_player_handle");
+
+	for (new player = 1; player <= MAX_PLAYERS; player++) {
+		if (!is_user_connected(player) || is_user_hltv(player) || is_user_bot(player)) continue;
+
+		get_user_name(player, userName, charsmax(userName));
+
+		num_to_str(player, userId, charsmax(userId));
+
+		menu_additem(menu, userName, userId);
+	}
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_PREVIOUS");
+	menu_setprop(menu, MPROP_BACKNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_NEXT");
+	menu_setprop(menu, MPROP_NEXTNAME, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_EXIT");
+	menu_setprop(menu, MPROP_EXITNAME, menuData);
+
+	menu_display(id, menu);
+
+	return PLUGIN_HANDLED;
+}
+
+public add_weapon_skin_player_handle(id, menu, item)
+{
+	if (!is_user_connected(id)) return PLUGIN_HANDLED;
+
+	if (item == MENU_EXIT) {
+		menu_destroy(menu);
+
+		return PLUGIN_HANDLED;
+	}
+
+	new userName[32], itemData[6], itemAccess, itemCallback;
+
+	menu_item_getinfo(menu, item, itemAccess, itemData, charsmax(itemData), userName, charsmax(userName), itemCallback);
+
+	new player = str_to_num(itemData);
+
+	if (!is_user_connected(player)) {
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_ADD_UNAVAILABLE");
+
+		return PLUGIN_HANDLED;
+	}
+
+	if (!multipleSkins && has_skin(player, playerData[id][TEMP][ADD_SKIN])) {
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_ADD_ALREADY_HAVE");
+
+		return PLUGIN_HANDLED;
+	}
+
+	new skin[skinsInfo];
+
+	ArrayGetArray(skins, playerData[id][TEMP][ADD_SKIN], skin);
+
+	add_skin(player, playerData[id][TEMP][ADD_SKIN], skin[SKIN_WEAPON], skin[SKIN_NAME]);
+
+	client_print_color(player, player, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_ADD_SUCCESS", skin[SKIN_NAME], skin[SKIN_WEAPON]);
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_ADD_SUCCESS2", skin[SKIN_NAME], skin[SKIN_WEAPON], playerData[id][NAME]);
+
+	log_to_file("csgo-add.log", "Admin %s added skin %s (%s) to player %s", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON], playerData[player][NAME]);
 
 	return PLUGIN_HANDLED;
 }
@@ -2749,8 +2913,8 @@ public deploy_weapon_switch(id)
 
 	if (!weapon || !pev_valid(weapon)) return;
 
-	if (get_bit(id, force) && playerData[id][TEMP][BUY] > NONE) {
-		ArrayGetArray(skins, playerData[id][TEMP][BUY], skin);
+	if (get_bit(id, force) && playerData[id][TEMP][BUY_SKIN] > NONE) {
+		ArrayGetArray(skins, playerData[id][TEMP][BUY_SKIN], skin);
 
 		set_pev(id, pev_viewmodel2, skin[SKIN_MODEL]);
 		set_pev(id, pev_body, skin[SKIN_SUBMODEL]);

@@ -497,6 +497,12 @@ CSGO_CORE_WITHDRAW_CONFIRMATION=Confirmation of withdrawal of a skin from the ma
 CSGO_CORE_PURCHASE_SUCCESS=Skin^3 %s (%s)^1 has been successfully withdrawn from the market.
 CSGO_CORE_RESET_INFO=A data reset is in progress...
 CSGO_CORE_RESET_INFO2=The map will restart in 10 seconds.
+CSGO_CORE_ADD_MENU=Select \ySkin\w:
+CSGO_CORE_ADD_PLAYER_MENU=Select \yPlayer\w:
+CSGO_CORE_ADD_UNAVAILABLE=Player is not on the server anymore.
+CSGO_CORE_ADD_ALREADY_HAVE=Player already have this skin.
+CSGO_CORE_ADD_SUCCESS=Admin gave you skin^3 %s (%s)^1.
+CSGO_CORE_ADD_SUCCESS2=You gave skin^3 %s (%s)^1 to player^3 %s^1.
 
 [pl]
 CSGO_MENU_EXIT=Wyjscie
@@ -994,6 +1000,12 @@ CSGO_CORE_WITHDRAW_CONFIRMATION=Potwierdzenie wycofania skina z rynku:^n\wSkin: 
 CSGO_CORE_PURCHASE_SUCCESS=Skin^3 %s (%s)^1 zostal pomyslnie wycofany z rynku.
 CSGO_CORE_RESET_INFO=Trwa przeprowadzanie resetu danych...
 CSGO_CORE_RESET_INFO2=Za 10 sekund nastapi restart mapy.
+CSGO_CORE_ADD_MENU=Wybierz \ySkin:
+CSGO_CORE_ADD_PLAYER_MENU=Wybierz \yGracza:
+CSGO_CORE_ADD_UNAVAILABLE=Gracza nie ma juz na serwerze.
+CSGO_CORE_ADD_ALREADY_HAVE=Gracz juz ma ten skin.
+CSGO_CORE_ADD_SUCCESS=Admin dal ci skin^3 %s (%s)^1.
+CSGO_CORE_ADD_SUCCESS2=Dales skin^3 %s (%s)^1 graczowi^3 %s^1.
 
 [bp]
 CSGO_MENU_EXIT=Sair
@@ -1494,6 +1506,12 @@ CSGO_CORE_WITHDRAW_CONFIRMATION=Confirmação da retirada de um skin do mercado:
 CSGO_CORE_PURCHASE_SUCCESS=Skin^3 %s (%s)^1 foi retirado com sucesso do mercado.
 CSGO_CORE_RESET_INFO=Um reset de dados está em andamento...
 CSGO_CORE_RESET_INFO2=O mapa será reiniciado em 10 segundos.
+CSGO_CORE_ADD_MENU=Selecione a \ySkin\w:
+CSGO_CORE_ADD_PLAYER_MENU=Selecione o \rJogador\w:
+CSGO_CORE_ADD_UNAVAILABLE=Jogador não está mais no servidor.
+CSGO_CORE_ADD_ALREADY_HAVE=O jogador já tem esta skin.
+CSGO_CORE_ADD_SUCCESS=Admin lhe deu skin^3 %s (%s)^1.
+CSGO_CORE_ADD_SUCCESS2=Você deu skin^3 %s (%s)^1 ao jogador^3 %s^1.
 
 [tr]
 CSGO_MENU_EXIT=Cikis
@@ -1994,3 +2012,9 @@ CSGO_CORE_WITHDRAW_CONFIRMATION=Marketten skin cekme onayi:^n\wSkin: \y%s (%s)^n
 CSGO_CORE_PURCHASE_SUCCESS=Skin^3 %s (%s)^1 basariyla marketten cekildi.
 CSGO_CORE_RESET_INFO=Bilgi sifirlamasi yururlukte...
 CSGO_CORE_RESET_INFO2=Harita 10 saniye icinde yeniden baslatilacak
+CSGO_CORE_ADD_MENU=\rSkini \ySec\w:
+CSGO_CORE_ADD_PLAYER_MENU=Oyuncu \ySec\w:
+CSGO_CORE_ADD_UNAVAILABLE=Oyuncu artık sunucuda degil.
+CSGO_CORE_ADD_ALREADY_HAVE=Oyuncunun bu gorunumu zaten skini.
+CSGO_CORE_ADD_SUCCESS=Admin size cilt skini^3 %s (%s)^1.
+CSGO_CORE_ADD_SUCCESS2=^3%s (%s)^1 skinini^3 %s^1 oyuncusuna verdin.
