@@ -322,7 +322,7 @@ public vip_menu(id)
 
 public vip_menu_handle(id, menu, item)
 {
-	if (!is_user_alive(id) || !pev_valid(id) || item == MENU_EXIT) {
+	if (!pev_valid(id) || !is_user_alive(id) || used[id] || item == MENU_EXIT) {
 		menu_destroy(menu);
 
 		return PLUGIN_HANDLED;
@@ -399,6 +399,8 @@ public close_vip_menu(id)
 		} else {
 			client_print_color(id, id, "^4[VIP]^1 %L", id, "CSGO_VIP_RANDOM_WEAPONS_VIP");
 		}
+
+		used[id] = true;
 
 		new random = random_num(0, get_bit(id, SVIP) ? 2 : 1);
 
@@ -486,7 +488,7 @@ public vip_menu_pistol(id)
 
 public vip_menu_pistol_handle(id, menu, item)
 {
-	if (!is_user_alive(id) || !pev_valid(id) || item == MENU_EXIT) {
+	if (!pev_valid(id) || !is_user_alive(id) || used[id] || item == MENU_EXIT) {
 		menu_destroy(menu);
 
 		return PLUGIN_HANDLED;
@@ -548,6 +550,8 @@ public close_vip_menu_pistol(id)
 		} else {
 			client_print_color(id, id, "^4[VIP]^1 %L", id, "CSGO_VIP_RANDOM_PISTOL_VIP");
 		}
+
+		used[id] = true;
 
 		new random = random_num(0, 2);
 
