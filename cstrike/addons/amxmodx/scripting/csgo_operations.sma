@@ -17,13 +17,14 @@ new const commandProgress[][] = { "say /progress", "say_team /progress", "say /p
 new const commandEnd[][] = { "say /koniec", "say_team /koniec", "say /zakoncz", "say_team /zakoncz", "zakoncz", "say_team /przerwij", "say /przerwij",
 	"say_team /cancel", "say /cancel", "say_team /end", "say /end", "przerwij" };
 
-new playerData[MAX_PLAYERS + 1][playerInfo], Array:operationList, minPlayers, operations, loaded;
+new playerData[MAX_PLAYERS + 1][playerInfo], Array:operationList, minPlayers, minPlayerFilter, operations, loaded;
 
 public plugin_init()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR);
 
 	bind_pcvar_num(get_cvar_pointer("csgo_min_players"), minPlayers);
+	bind_pcvar_num(get_cvar_pointer("csgo_min_player_filter"), minPlayerFilter);
 
 	for(new i; i < sizeof commandQuest; i++) register_clcmd(commandQuest[i], "operation_menu");
 	for(new i; i < sizeof commandProgress; i++) register_clcmd(commandProgress[i], "check_operation");
@@ -379,7 +380,7 @@ stock get_operation_info(operation, info)
 
 stock add_progress(id, amount = 1)
 {
-	if (!is_user_connected(id) || get_playersnum() < minPlayers) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !getPlayersNum()) return PLUGIN_HANDLED;
 
 	playerData[id][PLAYER_PROGRESS] += amount;
 
@@ -411,3 +412,32 @@ public _csgo_get_user_operation_progress(id)
 
 public _csgo_get_user_operation_need(id)
 	return get_progress_need(id);
+
+stock getPlayersNum()
+{
+	static players[32], pCount;
+	switch(minPlayerFilter)
+	{
+		case 0: // Don't Filter
+		{
+			pCount = get_playersnum();
+		}
+		case 1: // Filter Bots
+		{
+			get_players(players, pCount, "c");
+		}
+		case 2: // Filter HLTV
+		{
+			get_players(players, pCount, "h");
+		}
+		case 3: // Filter Bots and HLTV
+		{
+			get_players(players, pCount, "ch");
+		}
+	}
+	
+	if(pCount < minPlayers)
+		return false;
+	else
+		return true;
+}

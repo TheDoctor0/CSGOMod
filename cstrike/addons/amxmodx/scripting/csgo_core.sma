@@ -84,7 +84,7 @@ enum _:typeInfo { TYPE_NAME, TYPE_STEAM_ID };
 
 new playerData[MAX_PLAYERS + 1][playerInfo], Array:playerSkins[MAX_PLAYERS + 1], Float:randomSkinPrice[WEAPON_ALL + 1], overallSkinChance[WEAPON_ALL + 1], Array:skins,
 	Array:weapons, Array:market, Handle:sql, Handle:connection, saveType, marketSkins, multipleSkins, skinChance, skinChanceSVIP, silencerAttached, Float:skinChancePerMember,
-	maxMarketSkins, Float:marketCommision, Float:killReward, Float:killHSReward, Float:bombReward, Float:defuseReward, Float:hostageReward, Float:winReward, minPlayers,
+	maxMarketSkins, Float:marketCommision, Float:killReward, Float:killHSReward, Float:bombReward, Float:defuseReward, Float:hostageReward, Float:winReward, minPlayers, minPlayerFilter,
 	bool:end, bool:sqlConnected, sqlHost[64], sqlUser[64], sqlPassword[64], sqlDatabase[64], force, resetHandle;
 
 native csgo_get_zeus(id);
@@ -105,6 +105,7 @@ public plugin_init()
 	bind_pcvar_num(create_cvar("csgo_save_type", "0"), saveType);
 	bind_pcvar_num(create_cvar("csgo_multiple_skins", "1"), multipleSkins);
 	bind_pcvar_num(create_cvar("csgo_min_players", "4"), minPlayers);
+	bind_pcvar_num(create_cvar("csgo_min_player_filter", "0"), minPlayerFilter);
 	bind_pcvar_num(create_cvar("csgo_max_market_skins", "5"), maxMarketSkins);
 	bind_pcvar_num(create_cvar("csgo_skin_chance", "20"), skinChance);
 	bind_pcvar_num(create_cvar("csgo_svip_skin_chance", "25"), skinChanceSVIP);
@@ -2286,7 +2287,7 @@ public restart_map()
 
 public client_death(killer, victim, weaponId, hitPlace, teamKill)
 {
-	if (!is_user_connected(killer) || !is_user_connected(victim) || !is_user_alive(killer) || get_user_team(victim) == get_user_team(killer) || get_playersnum() < minPlayers) return PLUGIN_CONTINUE;
+	if (!is_user_connected(killer) || !is_user_connected(victim) || !is_user_alive(killer) || get_user_team(victim) == get_user_team(killer) || !getPlayersNum()) return PLUGIN_CONTINUE;
 
 	playerData[killer][MONEY] += killReward * get_multiplier(killer);
 
@@ -2299,7 +2300,7 @@ public client_death(killer, victim, weaponId, hitPlace, teamKill)
 
 public log_event_operation()
 {
-	if (get_playersnum() < minPlayers) return PLUGIN_CONTINUE;
+	if (!getPlayersNum()) return PLUGIN_CONTINUE;
 
 	new userLog[80], userAction[64], userName[32];
 
@@ -2342,7 +2343,7 @@ public ct_win_round()
 
 public round_winner(team)
 {
-	if (get_playersnum() < minPlayers) return;
+	if (!getPlayersNum()) return;
 
 	for (new id = 1; id <= MAX_PLAYERS; id++) {
 		if (!is_user_connected(id) || is_user_hltv(id) || is_user_bot(id) || get_user_team(id) != team) continue;
@@ -2359,7 +2360,7 @@ public round_winner(team)
 
 public hostages_rescued()
 {
-	if (get_playersnum() < minPlayers) return;
+	if (!getPlayersNum()) return;
 
 	new id = get_loguser_index(), Float:money = hostageReward * get_multiplier(id);
 
@@ -3734,4 +3735,33 @@ stock explode_num(const string[], const character, output[], const maxParts)
 
 		output[currentPart++] = str_to_num(number);
 	} while (currentLength < stringLength && currentPart < maxParts);
+}
+
+stock getPlayersNum()
+{
+	static players[32], pCount;
+	switch(minPlayerFilter)
+	{
+		case 0: // Don't Filter
+		{
+			pCount = get_playersnum();
+		}
+		case 1: // Filter Bots
+		{
+			get_players(players, pCount, "c");
+		}
+		case 2: // Filter HLTV
+		{
+			get_players(players, pCount, "h");
+		}
+		case 3: // Filter Bots and HLTV
+		{
+			get_players(players, pCount, "ch");
+		}
+	}
+	
+	if(pCount < minPlayers)
+		return false;
+	else
+		return true;
 }
