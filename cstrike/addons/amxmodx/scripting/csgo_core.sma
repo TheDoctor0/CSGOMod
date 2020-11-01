@@ -135,7 +135,7 @@ public plugin_init()
 	register_clcmd("SKIN_PRICE", "set_skin_price");
 
 	register_concmd("csgo_add_skin", "add_skin_menu");
-	register_concmd("cod_reset_data", "cmd_reset_data", ADMIN_FLAG);
+	register_concmd("csgo_reset_data", "cmd_reset_data", ADMIN_FLAG);
 	register_concmd("csgo_add_money", "cmd_add_money", ADMIN_FLAG, "<player> <money>");
 
 	register_logevent("log_event_operation", 3, "1=triggered");

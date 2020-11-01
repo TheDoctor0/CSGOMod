@@ -87,7 +87,7 @@ public plugin_cfg()
 public plugin_end()
 	nvault_close(operations);
 
-public cod_reset_data()
+public csgo_reset_data()
 {
 	for (new i = 1; i <= MAX_PLAYERS; i++) rem_bit(i, loaded);
 

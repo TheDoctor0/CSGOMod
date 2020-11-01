@@ -261,7 +261,7 @@ public plugin_cfg()
 public plugin_end()
 	SQL_FreeHandle(sql);
 
-public cod_reset_data()
+public csgo_reset_data()
 {
 	for (new i = 1; i <= MAX_PLAYERS; i++) rem_bit(i, loaded);
 
