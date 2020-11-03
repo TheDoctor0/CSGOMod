@@ -364,6 +364,7 @@ public plugin_natives()
 	register_native("csgo_get_weapon_skin", "_csgo_get_weapon_skin", 1);
 	register_native("csgo_get_skin_name", "_csgo_get_skin_name", 1);
 	register_native("csgo_get_current_skin_name", "_csgo_get_current_skin_name", 1);
+	register_native("csgo_get_min_players", "_csgo_get_min_players", 0);
 }
 
 public plugin_end()
@@ -2287,7 +2288,7 @@ public restart_map()
 
 public client_death(killer, victim, weaponId, hitPlace, teamKill)
 {
-	if (!is_user_connected(killer) || !is_user_connected(victim) || !is_user_alive(killer) || get_user_team(victim) == get_user_team(killer) || !getPlayersNum()) return PLUGIN_CONTINUE;
+	if (!is_user_connected(killer) || !is_user_connected(victim) || !is_user_alive(killer) || get_user_team(victim) == get_user_team(killer) || !csgo_get_min_players()) return PLUGIN_CONTINUE;
 
 	playerData[killer][MONEY] += killReward * get_multiplier(killer);
 
@@ -2300,7 +2301,7 @@ public client_death(killer, victim, weaponId, hitPlace, teamKill)
 
 public log_event_operation()
 {
-	if (!getPlayersNum()) return PLUGIN_CONTINUE;
+	if (!csgo_get_min_players()) return PLUGIN_CONTINUE;
 
 	new userLog[80], userAction[64], userName[32];
 
@@ -2343,7 +2344,7 @@ public ct_win_round()
 
 public round_winner(team)
 {
-	if (!getPlayersNum()) return;
+	if (!csgo_get_min_players()) return;
 
 	for (new id = 1; id <= MAX_PLAYERS; id++) {
 		if (!is_user_connected(id) || is_user_hltv(id) || is_user_bot(id) || get_user_team(id) != team) continue;
@@ -2360,7 +2361,7 @@ public round_winner(team)
 
 public hostages_rescued()
 {
-	if (!getPlayersNum()) return;
+	if (!csgo_get_min_players()) return;
 
 	new id = get_loguser_index(), Float:money = hostageReward * get_multiplier(id);
 
@@ -3356,6 +3357,35 @@ public _csgo_get_current_skin_name(id, dataReturn[], dataLength)
 	}
 }
 
+public _csgo_get_min_players()
+{
+	static players[32], pCount;
+	switch(minPlayerFilter)
+	{
+		case 0: // Don't Filter
+		{
+			pCount = get_playersnum();
+		}
+		case 1: // Filter Bots
+		{
+			get_players(players, pCount, "c");
+		}
+		case 2: // Filter HLTV
+		{
+			get_players(players, pCount, "h");
+		}
+		case 3: // Filter Bots and HLTV
+		{
+			get_players(players, pCount, "ch");
+		}
+	}
+	
+	if(pCount < minPlayers)
+		return false;
+	else
+		return true;
+}
+
 stock get_weapon_skin_name(id, ent, dataReturn[], dataLength, weapon = 0, check = 0)
 {
 	static ownerName[32], weaponName[32], skinWeapon[32], defaultName[32], weaponOwner, weaponSkin;
@@ -3735,33 +3765,4 @@ stock explode_num(const string[], const character, output[], const maxParts)
 
 		output[currentPart++] = str_to_num(number);
 	} while (currentLength < stringLength && currentPart < maxParts);
-}
-
-stock getPlayersNum()
-{
-	static players[32], pCount;
-	switch(minPlayerFilter)
-	{
-		case 0: // Don't Filter
-		{
-			pCount = get_playersnum();
-		}
-		case 1: // Filter Bots
-		{
-			get_players(players, pCount, "c");
-		}
-		case 2: // Filter HLTV
-		{
-			get_players(players, pCount, "h");
-		}
-		case 3: // Filter Bots and HLTV
-		{
-			get_players(players, pCount, "ch");
-		}
-	}
-	
-	if(pCount < minPlayers)
-		return false;
-	else
-		return true;
 }

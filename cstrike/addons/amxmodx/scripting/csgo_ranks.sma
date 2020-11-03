@@ -207,7 +207,7 @@ enum _:winners { THIRD, SECOND, FIRST };
 
 new playerData[MAX_PLAYERS + 1][playerInfo], sprites[MAX_RANKS + 1], Handle:sql, bool:sqlConnected, bool:mapChange,
 	bool:block, loaded, hudLoaded, visit, hud, aimHUD, defaultInfo, round, hudSite[64], hudAccount, hudClan, hudOperation,
-	iconFlags[8], unrankedKills, minPlayers, minPlayerFilter, saveType, Float:winnerReward;
+	iconFlags[8], unrankedKills, saveType, Float:winnerReward;
 
 public plugin_init()
 {
@@ -222,8 +222,6 @@ public plugin_init()
 	bind_pcvar_num(create_cvar("csgo_ranks_hud_clan", "0"), hudClan);
 	bind_pcvar_num(create_cvar("csgo_ranks_hud_operation", "0"), hudOperation);
 
-	bind_pcvar_num(get_cvar_pointer("csgo_min_players"), minPlayers);
-	bind_pcvar_num(get_cvar_pointer("csgo_min_player_filter"), minPlayerFilter);
 	bind_pcvar_num(get_cvar_pointer("csgo_save_type"), saveType);
 
 	for (new i; i < sizeof commandMenu; i++) register_clcmd(commandMenu[i], "cmd_menu");
@@ -791,7 +789,7 @@ public client_death(killer, victim, weapon, hitPlace, TK)
 
 public bomb_explode(planter, defuser)
 {
-	if (!getPlayersNum()) return;
+	if (!csgo_get_min_players()) return;
 
 	playerData[planter][KILLS] += 3;
 	playerData[planter][ELO_RANK] += 3.0;
@@ -801,7 +799,7 @@ public bomb_explode(planter, defuser)
 
 public bomb_defused(defuser)
 {
-	if (!getPlayersNum()) return;
+	if (!csgo_get_min_players()) return;
 
 	playerData[defuser][KILLS] += 3;
 	playerData[defuser][ELO_RANK] += 3.0;
@@ -811,7 +809,7 @@ public bomb_defused(defuser)
 
 public hostages_rescued()
 {
-	if (!getPlayersNum()) return;
+	if (!csgo_get_min_players()) return;
 
 	new rescuer = get_loguser_index();
 
@@ -1720,31 +1718,3 @@ stock is_leap_year(const year)
 	return (((year % 4) == 0) && (((year % 100) != 0) || ((year % 400) == 0)));
 }
 
-stock getPlayersNum()
-{
-	static players[32], pCount;
-	switch(minPlayerFilter)
-	{
-		case 0: // Don't Filter
-		{
-			pCount = get_playersnum();
-		}
-		case 1: // Filter Bots
-		{
-			get_players(players, pCount, "c");
-		}
-		case 2: // Filter HLTV
-		{
-			get_players(players, pCount, "h");
-		}
-		case 3: // Filter Bots and HLTV
-		{
-			get_players(players, pCount, "ch");
-		}
-	}
-	
-	if(pCount < minPlayers)
-		return false;
-
-	return true;
-}

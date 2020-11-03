@@ -293,6 +293,14 @@ native csgo_get_user_zeus(id);
 native csgo_get_user_molotov(id);
 
 /**
+ * Checks if player count meets the required number
+ * after the filtering is done by csgo_min_player_filter
+ *
+ * @return          true if conditions are met, false otherwise
+ */
+native csgo_get_min_players();
+
+/**
  * Multiforward called when player has logged in.
  *
  * @param id        Player index
