@@ -17,13 +17,11 @@ new const commandProgress[][] = { "say /progress", "say_team /progress", "say /p
 new const commandEnd[][] = { "say /koniec", "say_team /koniec", "say /zakoncz", "say_team /zakoncz", "zakoncz", "say_team /przerwij", "say /przerwij",
 	"say_team /cancel", "say /cancel", "say_team /end", "say /end", "przerwij" };
 
-new playerData[MAX_PLAYERS + 1][playerInfo], Array:operationList, minPlayers, operations, loaded;
+new playerData[MAX_PLAYERS + 1][playerInfo], Array:operationList, operations, loaded;
 
 public plugin_init()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR);
-
-	bind_pcvar_num(get_cvar_pointer("csgo_min_players"), minPlayers);
 
 	for(new i; i < sizeof commandQuest; i++) register_clcmd(commandQuest[i], "operation_menu");
 	for(new i; i < sizeof commandProgress; i++) register_clcmd(commandProgress[i], "check_operation");
@@ -87,7 +85,7 @@ public plugin_cfg()
 public plugin_end()
 	nvault_close(operations);
 
-public cod_reset_data()
+public csgo_reset_data()
 {
 	for (new i = 1; i <= MAX_PLAYERS; i++) rem_bit(i, loaded);
 
@@ -379,7 +377,7 @@ stock get_operation_info(operation, info)
 
 stock add_progress(id, amount = 1)
 {
-	if (!is_user_connected(id) || get_playersnum() < minPlayers) return PLUGIN_HANDLED;
+	if (!is_user_connected(id) || !csgo_get_min_players()) return PLUGIN_HANDLED;
 
 	playerData[id][PLAYER_PROGRESS] += amount;
 

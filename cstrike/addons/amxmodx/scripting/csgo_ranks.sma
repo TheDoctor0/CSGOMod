@@ -207,7 +207,7 @@ enum _:winners { THIRD, SECOND, FIRST };
 
 new playerData[MAX_PLAYERS + 1][playerInfo], sprites[MAX_RANKS + 1], Handle:sql, bool:sqlConnected, bool:mapChange,
 	bool:block, loaded, hudLoaded, visit, hud, aimHUD, defaultInfo, round, hudSite[64], hudAccount, hudClan, hudOperation,
-	iconFlags[8], unrankedKills, minPlayers, saveType, Float:winnerReward;
+	iconFlags[8], unrankedKills, saveType, Float:winnerReward;
 
 public plugin_init()
 {
@@ -222,7 +222,6 @@ public plugin_init()
 	bind_pcvar_num(create_cvar("csgo_ranks_hud_clan", "0"), hudClan);
 	bind_pcvar_num(create_cvar("csgo_ranks_hud_operation", "0"), hudOperation);
 
-	bind_pcvar_num(get_cvar_pointer("csgo_min_players"), minPlayers);
 	bind_pcvar_num(get_cvar_pointer("csgo_save_type"), saveType);
 
 	for (new i; i < sizeof commandMenu; i++) register_clcmd(commandMenu[i], "cmd_menu");
@@ -261,7 +260,7 @@ public plugin_cfg()
 public plugin_end()
 	SQL_FreeHandle(sql);
 
-public cod_reset_data()
+public csgo_reset_data()
 {
 	for (new i = 1; i <= MAX_PLAYERS; i++) rem_bit(i, loaded);
 
@@ -790,7 +789,7 @@ public client_death(killer, victim, weapon, hitPlace, TK)
 
 public bomb_explode(planter, defuser)
 {
-	if (get_playersnum() < minPlayers) return;
+	if (!csgo_get_min_players()) return;
 
 	playerData[planter][KILLS] += 3;
 	playerData[planter][ELO_RANK] += 3.0;
@@ -800,7 +799,7 @@ public bomb_explode(planter, defuser)
 
 public bomb_defused(defuser)
 {
-	if (get_playersnum() < minPlayers) return;
+	if (!csgo_get_min_players()) return;
 
 	playerData[defuser][KILLS] += 3;
 	playerData[defuser][ELO_RANK] += 3.0;
@@ -810,7 +809,7 @@ public bomb_defused(defuser)
 
 public hostages_rescued()
 {
-	if (get_playersnum() < minPlayers) return;
+	if (!csgo_get_min_players()) return;
 
 	new rescuer = get_loguser_index();
 
@@ -1718,3 +1717,4 @@ stock is_leap_year(const year)
 {
 	return (((year % 4) == 0) && (((year % 100) != 0) || ((year % 400) == 0)));
 }
+
