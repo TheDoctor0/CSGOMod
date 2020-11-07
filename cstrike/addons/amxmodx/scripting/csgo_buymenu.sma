@@ -578,7 +578,7 @@ public clcmd_buy_weapon_handle(id, menu, item)
 
 	menu_item_getinfo(menu, item, itemAccess, itemData, charsmax(itemData), _, _, itemCallback);
 
-	engclient_cmd(id, weaponCommands[str_to_num(itemData)]);
+	client_cmd(id, weaponCommands[str_to_num(itemData)]);
 
 	return PLUGIN_HANDLED;
 }
