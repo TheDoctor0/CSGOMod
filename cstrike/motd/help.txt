@@ -1,0 +1,53 @@
+<html>
+<head>
+<style type="text/css">
+body {
+background-color: #161616;
+font-family:Verdana,Tahoma;
+}
+</style>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1257">
+</head>
+<font size="2" color="#008000"><b><center>GamePlay</center></b></font><br />
+<font size="1" color="#dadada">
+<UL>
+<LI TYPE=square>Īn Counter-Strike jucatorii trebuie sa</LI><br>
+<LI TYPE=square>aleaga īntre terori?ti ?i for?ele speciale anti-tero,</LI><br>
+<LI TYPE=square>fiecare opozi?ie avānd 4 tipuri de jucatori diferi?i.</LI><br>
+<LI TYPE=square></LI><br>
+<LI TYPE=square>Fiecare jucator prime?te ini?ial o suma de bani</LI><br>
+<LI TYPE=square>setata de administratorul server-ului,</LI><br>
+<LI TYPE=square>cu care poate cumpara echipamente ($800 pe modul Competitive).</LI><br>
+<LI TYPE=square>Ei primesc ini?ial un pistol (Heckler & Koch USP 45 pentru anti-tero ?i</LI><br>
+<LI TYPE=square>Glock 18c pentru terori?ti).</LI><br>
+<LI TYPE=square></LI><br>
+<LI TYPE=square>La īnceputul rundei, jucatorii nu se pot deplasa sau trage pentru cāteva secunde,</LI><br>
+<LI TYPE=square>īn acest timp ei pot cumpara armament ?i echipamente.</LI><br>
+<LI TYPE=square></LI><br>
+<LI TYPE=square>Echipele sunt puse la pozi?ii diferite,</LI><br> 
+<LI TYPE=square>de multe ori baze sunt plasate la capetele opuse ale har?ii.</LI><br>
+<LI TYPE=square></LI><br>
+<LI TYPE=square>Membrii echipei primesc bonusuri īn bani daca ucid un membru oponent,</LI><br> 
+<LI TYPE=square>daca salveaza un ostatic,</LI><br>
+<LI TYPE=square>daca membrul este terorist ?i plaseaza o bomba sau daca</LI><br> 
+<LI TYPE=square>membrul este anti-tero ?i dezamorseaza bomba.</LI><br> 
+<LI TYPE=square>De asemenea el prime?te la</LI><br> 
+<LI TYPE=square>urmatoarea runda mai mul?i bani daca echipa respectiva cā?tiga.</LI><br>
+<LI TYPE=square></LI><br>
+<LI TYPE=square>Jucatorii uci?i īn lupta intra īn mod de spectator unde pot "zbura"</LI><br> 
+<LI TYPE=square>liberi dar nu pot comunica cu cei vii</LI><br> 
+<LI TYPE=square>(excep?ie daca acest lucru este setat de administrator īn consola).</LI><br> 
+<LI TYPE=square>La īnceputul rundei urmatoare,</LI><br>
+<LI TYPE=square>ei primesc din nou echipamentul ini?ial.</LI><br>
+<LI TYPE=square></LI><br>
+<LI TYPE=square>Obiectivele ambelor echipe difera de tipul de harta ales.</LI><br>
+<LI TYPE=square></LI><br>
+<LI TYPE=square>Tabela de scor arata scorul echipelor conform</LI><br> 
+<LI TYPE=square>statisticilor pentru fiecare jucator numele,</LI><br> 
+<LI TYPE=square>scorul (cā?i jucatori a ucis), deaths (de cāte ori a murit)</LI><br> 
+<LI TYPE=square>?i ping-ul (sau LAG-ul īn milisecunde).</LI><br> 
+<LI TYPE=square>Tabela de scor indica de asemenea ?i daca un jucator este mort, VIP,</LI><br> 
+<LI TYPE=square>sau ?ine bomba, de?i echipa opusa nu poate vedea decāt daca jucatorul este mort</LI><br> 
+<LI TYPE=square>(sau daca este VIP numai pe unele servere).</LI><br>
+</body>
+</html>

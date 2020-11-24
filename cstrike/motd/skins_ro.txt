@@ -1,0 +1,46 @@
+﻿
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta charset="UTF-8">
+</head>
+<body style="color: #fff" bgcolor="black">
+<font size="4" color="orange"><b>Dupa ce intri pe server trebuie sa te inregistrezi.<br>
+To do this type <font color="#f00">/account</font>.</b></font><br>
+<br>
+Dupa conectare, toate informatiile necesare vor aparea în coltul din dreapta sus.<br>
+<br>
+<b><font color ="#ff0000">Pentru fiecare ucidere și obiectiv al hartii, veti obtine un euro pentru care puteti obtine skin-uri!</font></b><br>
+<br>
+Puteți utiliza /menu pentru a accesa toate comenzile disponibile.<br>
+<br>
+<font size="4" color="orange"><b>1. Seteaza Skin (/set)</b></font><br>
+In acest meniu va puteti selecta skin-urile si le puteti pune pe armele alese.<br>
+<br>
+<font size="4" color="orange"><b>2. Cumpara Skin (/kup)</b></font><br>
+Acesta este un magazin unde puteti cumpara skin-uri la un anumit pret.<br>
+<br>
+<font size="4" color="orange"><b>3. Trage un Skin (/draw)</b></font><br>
+Acesta este locul unde poti trage un skin la intamplare. Amintiti-va, nu fiecare extragere va da un skin.<br>
+<br>
+<font size="4" color="orange"><b>4. Magazin de Skin-uri (/market)</b></font><br>
+In acest meniu puteti să vă scoateti skin-urile la vanzare sau sa le cumparati de la alti jucatori.<br>
+<br>
+<font size="4" color="orange"><b>5. Operatiuni (/operations)</b></font><br>
+Aici puteti efectua diverse operatiuni - misiuni pentru care veti primi fonduri suplimentare.<br>
+<br>
+<font size="4" color="orange"><b>6. Clanuri (/clans)</b></font><br>
+Clanurile sunt propriile tale echipe pentru jucatori, care iti ofera bonusuri speciale.<br>
+<br>
+<font size="4" color="orange"><b>7. Transfera Bani (/transfer)</b></font><br>
+Optiunea de a transfera euro catre alti jucatori.<br>
+<br>
+<font size="4" color="orange"><b>8. Schimbarea Skin-urilor (/exchange)</b></font><br>
+Cineva are o piele pe care o vrei? In acest meniu puteti tranzactiona cu el.<br>
+<br>
+<font size="4" color="orange"><b>9. Ofera un Skin (/give)</b></font><br>
+Dacă ai o inima buna, poti da cuiva pielea de care nu ai nevoie.<br>
+<br>
+<font size="4" color="orange"><b>10. Setari HUD (/hud)</b></font><br>
+Puteti modifica setarile de afisare HUD aici.<br>
+<br>
+</body></html>
