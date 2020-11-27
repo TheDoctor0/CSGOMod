@@ -76,7 +76,7 @@ new const defaultShell[] = "models/pshell.mdl",
 		  shotgunShell[] = "models/shotgunshell.mdl";
 
 enum _:tempInfo { WEAPON, WEAPONS, WEAPON_ENT, EXCHANGE_PLAYER, EXCHANGE, EXCHANGE_FOR_SKIN, GIVE_PLAYER, SALE_SKIN, BUY_SKIN, BUY_WEAPON, BUY_SUBMODEL, ADD_SKIN, Float:COUNTDOWN };
-enum _:playerInfo { ACTIVE[CSW_P90 + 1], Float:MONEY, SKIN, SUBMODEL, bool:SKINS_LOADED, bool:DATA_LOADED, bool:EXCHANGE_BLOCKED, bool:MENU_BLOCKED, TEMP[tempInfo], NAME[32], SAFE_NAME[64], STEAM_ID[35] };
+enum _:playerInfo { ACTIVE[CSW_P90 + 1], Float:MONEY, SKIN, SUBMODEL, bool:SKINS_LOADED, bool:DATA_LOADED, bool:EXCHANGE_BLOCKED, bool:MENU_BLOCKED, bool:SKINS_BLOCKED, bool:HUD_BLOCKED, TEMP[tempInfo], NAME[32], SAFE_NAME[64], STEAM_ID[35] };
 enum _:playerSkinsInfo { SKIN_ID, SKIN_COUNT };
 enum _:skinsInfo { SKIN_NAME[64], SKIN_WEAPON[32], SKIN_MODEL[64], SKIN_SUBMODEL, SKIN_PRICE, SKIN_CHANCE, bool:SKIN_BUYABLE };
 enum _:marketInfo { MARKET_ID, MARKET_SKIN, MARKET_OWNER, Float:MARKET_PRICE };
@@ -351,6 +351,12 @@ public plugin_cfg()
 		hasError = true;
 	}
 
+	formatex(queryData, charsmax(queryData), "ALTER TABLE `csgo_data` ADD COLUMN hud INT NOT NULL DEFAULT 0, ADD COLUMN skins INT NOT NULL DEFAULT 0;");
+
+	query = SQL_PrepareQuery(connection, queryData);
+
+	SQL_Execute(query);
+
 	SQL_FreeHandle(query);
 
 	if (!hasError) sqlConnected = true;
@@ -363,6 +369,7 @@ public plugin_natives()
 	register_native("csgo_set_money", "_csgo_set_money", 1);
 
 	register_native("csgo_get_menu", "_csgo_get_menu", 1);
+	register_native("csgo_get_hud", "_csgo_get_hud", 1);
 	register_native("csgo_get_skin", "_csgo_get_skin", 1);
 	register_native("csgo_get_weapon_skin", "_csgo_get_weapon_skin", 1);
 	register_native("csgo_get_skin_name", "_csgo_get_skin_name", 1);
@@ -404,7 +411,7 @@ public client_putinserver(id)
 
 	ArrayClear(playerSkins[id]);
 
-	for (new i = SKINS_LOADED; i <= MENU_BLOCKED; i++) playerData[id][i] = false;
+	for (new i = SKINS_LOADED; i <= SKINS_BLOCKED; i++) playerData[id][i] = false;
 
 	if (is_user_hltv(id) || is_user_bot(id)) return;
 
@@ -469,6 +476,12 @@ public skins_menu(id)
 	formatex(menuData, charsmax(menuData), "%L", id, playerData[id][EXCHANGE_BLOCKED] ? "CSGO_CORE_SKINS_ITEM_EXCHANGE_DISABLED" : "CSGO_CORE_SKINS_ITEM_EXCHANGE_ENABLED");
 	menu_additem(menu, menuData);
 
+	formatex(menuData, charsmax(menuData), "%L", id, playerData[id][HUD_BLOCKED] ? "CSGO_CORE_SKINS_ITEM_HUD_DISABLED" : "CSGO_CORE_SKINS_ITEM_HUD_ENABLED");
+	menu_additem(menu, menuData);
+
+	formatex(menuData, charsmax(menuData), "%L", id, playerData[id][SKINS_BLOCKED] ? "CSGO_CORE_SKINS_ITEM_SKINS_DISABLED" : "CSGO_CORE_SKINS_ITEM_SKINS_ENABLED");
+	menu_additem(menu, menuData);
+
 	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_MENU_PREVIOUS");
 	menu_setprop(menu, MPROP_BACKNAME, menuData);
 
@@ -511,6 +524,24 @@ public skins_menu_handle(id, menu, item)
 			playerData[id][EXCHANGE_BLOCKED] = !playerData[id][EXCHANGE_BLOCKED];
 
 			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, playerData[id][EXCHANGE_BLOCKED] ? "CSGO_CORE_SKINS_EXCHANGE_DISABLED" : "CSGO_CORE_SKINS_EXCHANGE_ENABLED");
+
+			save_data(id);
+
+			skins_menu(id);
+		} case 9: {
+			playerData[id][HUD_BLOCKED] = !playerData[id][HUD_BLOCKED];
+
+			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, playerData[id][HUD_BLOCKED] ? "CSGO_CORE_SKINS_HUD_DISABLED" : "CSGO_CORE_SKINS_HUD_ENABLED");
+
+			save_data(id);
+
+			skins_menu(id);
+		} case 10: {
+			playerData[id][SKINS_BLOCKED] = !playerData[id][SKINS_BLOCKED];
+
+			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, playerData[id][SKINS_BLOCKED] ? "CSGO_CORE_SKINS_SKINS_DISABLED" : "CSGO_CORE_SKINS_SKINS_ENABLED");
+
+			reset_skin(id);
 
 			save_data(id);
 
@@ -2492,6 +2523,10 @@ public weapon_deploy_post(ent)
 
 	weapon = weapon_entity(ent);
 	playerData[id][TEMP][WEAPON] = weapon;
+	playerData[id][SKIN] = NONE;
+	playerData[id][SUBMODEL] = 0;
+
+	if (playerData[id][SKINS_BLOCKED]) return HAM_IGNORED;
 
 	if (weapon == CSW_P228 && csgo_get_user_zeus(id)) return HAM_IGNORED;
 
@@ -2510,7 +2545,7 @@ public weapon_send_weapon_anim_post(ent, animation, skipLocal)
 
 	static weapon, id; id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
-	if (!pev_valid(id) || !is_user_alive(id)) return HAM_IGNORED;
+	if (!pev_valid(id) || !is_user_alive(id) || playerData[id][SKINS_BLOCKED]) return HAM_IGNORED;
 
 	weapon = weapon_entity(ent);
 
@@ -2530,7 +2565,7 @@ public weapon_primary_attack(ent)
 
 	static weapon, id; id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
-	if (!pev_valid(id) || !is_user_alive(id)) return HAM_IGNORED;
+	if (!pev_valid(id) || !is_user_alive(id) || playerData[id][SKINS_BLOCKED]) return HAM_IGNORED;
 
 	weapon = weapon_entity(ent);
 
@@ -2552,7 +2587,7 @@ public m4a1_secondary_attack(ent)
 
 	static skin, id; id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
-	if (!pev_valid(id) || !is_user_alive(id)) return HAM_IGNORED;
+	if (!pev_valid(id) || !is_user_alive(id) || playerData[id][SKINS_BLOCKED]) return HAM_IGNORED;
 
 	skin = get_weapon_skin(id, weapon_entity(ent));
 
@@ -2577,7 +2612,7 @@ public trace_attack_post(ent, attacker, Float:damage, Float:direction[3], ptr, d
 {
 	static weapon, Float:vectorEnd[3];
 
-	if (!pev_valid(attacker)) return HAM_IGNORED;
+	if (!pev_valid(attacker) || playerData[attacker][SKINS_BLOCKED]) return HAM_IGNORED;
 
 	weapon = get_pdata_cbase(attacker, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
 
@@ -2676,7 +2711,7 @@ public update_client_data_post(id, sendWeapons, handleCD)
 
 	target = (specMode = pev(id, pev_iuser1)) ? pev(id, pev_iuser2) : id;
 
-	if (!pev_valid(target) || !is_user_alive(target)) return FMRES_IGNORED;
+	if (!pev_valid(target) || !is_user_alive(target) || playerData[id][SKINS_BLOCKED]) return FMRES_IGNORED;
 
 	ent = get_pdata_cbase(target, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
 
@@ -3183,10 +3218,12 @@ public load_data_handle(failState, Handle:query, error[], errorNum, playerId[], 
 
 		if (SQL_ReadResult(query, SQL_FieldNameToNum(query, "exchange"))) playerData[id][EXCHANGE_BLOCKED] = true;
 		if (SQL_ReadResult(query, SQL_FieldNameToNum(query, "menu"))) playerData[id][MENU_BLOCKED] = true;
+		if (SQL_ReadResult(query, SQL_FieldNameToNum(query, "hud"))) playerData[id][HUD_BLOCKED] = true;
+		if (SQL_ReadResult(query, SQL_FieldNameToNum(query, "skins"))) playerData[id][SKINS_BLOCKED] = true;
 	} else {
 		new queryData[256];
 
-		formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_data` (`name`, `steamid`, `money`, `exchange`, `menu`, `online`) VALUES (^"%s^",^"%s^", '0', '0', '0', '0');",
+		formatex(queryData, charsmax(queryData), "INSERT INTO `csgo_data` (`name`, `steamid`, `money`, `exchange`, `menu`, `hud`, `skins`, `online`) VALUES (^"%s^",^"%s^", '0', '0', '0', '0', '0', '0');",
 			playerData[id][SAFE_NAME], playerData[id][STEAM_ID]);
 
 		SQL_ThreadQuery(sql, "ignore_handle", queryData);
@@ -3205,12 +3242,12 @@ stock save_data(id, end = 0)
 
 	switch (saveType) {
 		case SAVE_NAME: {
-			formatex(queryData, charsmax(queryData), "UPDATE `csgo_data` SET `money` = %f, `exchange` = %i, `menu` = %i, `online` = %i, `steamid` = ^"%s^" WHERE `name` = ^"%s^";",
-				playerData[id][MONEY], playerData[id][EXCHANGE_BLOCKED], playerData[id][MENU_BLOCKED], end ? 0 : 1, playerData[id][STEAM_ID], playerData[id][SAFE_NAME]);
+			formatex(queryData, charsmax(queryData), "UPDATE `csgo_data` SET `money` = %f, `exchange` = %i, `menu` = %i,  `hud` = %i, `skins` = %i, `online` = %i, `steamid` = ^"%s^" WHERE `name` = ^"%s^";",
+				playerData[id][MONEY], playerData[id][EXCHANGE_BLOCKED], playerData[id][MENU_BLOCKED], playerData[id][HUD_BLOCKED], playerData[id][SKINS_BLOCKED], end ? 0 : 1, playerData[id][STEAM_ID], playerData[id][SAFE_NAME]);
 		}
 		case SAVE_STEAM_ID: {
-			formatex(queryData, charsmax(queryData), "UPDATE `csgo_data` SET `money` = %f, `exchange` = %i, `menu` = %i, `online` = %i, `name` = ^"%s^" WHERE `steamid` = ^"%s^";",
-				playerData[id][MONEY], playerData[id][EXCHANGE_BLOCKED], playerData[id][MENU_BLOCKED], end ? 0 : 1, playerData[id][SAFE_NAME], playerData[id][STEAM_ID]);
+			formatex(queryData, charsmax(queryData), "UPDATE `csgo_data` SET `money` = %f, `exchange` = %i, `menu` = %i, `hud` = %i, `skins` = %i, `online` = %i, `name` = ^"%s^" WHERE `steamid` = ^"%s^";",
+				playerData[id][MONEY], playerData[id][EXCHANGE_BLOCKED], playerData[id][MENU_BLOCKED], playerData[id][HUD_BLOCKED], playerData[id][SKINS_BLOCKED], end ? 0 : 1, playerData[id][SAFE_NAME], playerData[id][STEAM_ID]);
 		}
 	}
 
@@ -3329,6 +3366,9 @@ public _csgo_set_money(id, Float:amount)
 
 public _csgo_get_menu(id)
 	return playerData[id][MENU_BLOCKED];
+
+public _csgo_get_hud(id)
+	return !playerData[id][HUD_BLOCKED];
 
 public _csgo_get_skin(id)
 	return playerData[id][SKIN];

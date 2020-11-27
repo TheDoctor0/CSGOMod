@@ -134,6 +134,15 @@ native csgo_get_user_operation_need(id);
 native csgo_get_menu(id);
 
 /**
+ * Checks if player has visible hud.
+ *
+ * @param id        Player index
+ *
+ * @return          1 if player has visible hud 0 otherwise
+ */
+native csgo_get_hud(id);
+
+/**
  * Returns player skin id for current weapon.
  *
  * @param id        Player index

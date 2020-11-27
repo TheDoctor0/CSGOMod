@@ -577,7 +577,7 @@ public display_hud(id)
 {
 	id -= TASK_HUD;
 
-	if (!pev_valid(id) || !is_user_connected(id) || is_user_bot(id) || !get_bit(id, hudLoaded)) return PLUGIN_CONTINUE;
+	if (!pev_valid(id) || !is_user_connected(id) || is_user_bot(id) || !get_bit(id, hudLoaded) || !csgo_get_hud(id)) return PLUGIN_CONTINUE;
 
 	static address[64], clan[64], operation[64], skin[64], statTrak[64], account[64], weaponStatTrak = -1, target;
 
