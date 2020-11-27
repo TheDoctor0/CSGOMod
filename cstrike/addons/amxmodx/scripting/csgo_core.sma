@@ -84,8 +84,8 @@ enum _:typeInfo { TYPE_NAME, TYPE_STEAM_ID };
 
 new playerData[MAX_PLAYERS + 1][playerInfo], Array:playerSkins[MAX_PLAYERS + 1], Float:randomSkinPrice[WEAPON_ALL + 1], overallSkinChance[WEAPON_ALL + 1], Array:skins,
 	Array:weapons, Array:market, Handle:sql, Handle:connection, saveType, marketSkins, multipleSkins, skinChance, skinChanceSVIP, silencerAttached, Float:skinChancePerMember,
-	maxMarketSkins, Float:marketCommision, Float:killReward, Float:killHSReward, Float:bombReward, Float:defuseReward, Float:hostageReward, Float:winReward, minPlayers, minPlayerFilter,
-	bool:end, bool:sqlConnected, sqlHost[64], sqlUser[64], sqlPassword[64], sqlDatabase[64], force, resetHandle;
+	maxMarketSkins, Float:marketCommision, Float:killReward, Float:killHSReward, Float:bombReward, Float:defuseReward, Float:hostageReward, Float:winReward, Float:botMultiplier,
+	Float:vipMultiplier, Float:svipMultiplier, minPlayers, minPlayerFilter, bool:end, bool:sqlConnected, sqlHost[64], sqlUser[64], sqlPassword[64], sqlDatabase[64], force, resetHandle;
 
 native csgo_get_zeus(id);
 
@@ -118,6 +118,9 @@ public plugin_init()
 	bind_pcvar_float(create_cvar("csgo_defuse_reward", "2.0"), defuseReward);
 	bind_pcvar_float(create_cvar("csgo_hostages_reward", "2.0"), hostageReward);
 	bind_pcvar_float(create_cvar("csgo_round_reward", "0.5"), winReward);
+	bind_pcvar_float(create_cvar("csgo_multiplier_vip", "1.25"), vipMultiplier);
+	bind_pcvar_float(create_cvar("csgo_multiplier_svip", "1.5"), svipMultiplier);
+	bind_pcvar_float(create_cvar("csgo_multiplier_bot", "0.5"), botMultiplier);
 
 	for (new i; i < sizeof commandSkins; i++) register_clcmd(commandSkins[i], "skins_menu");
 	for (new i; i < sizeof commandHelp; i++) register_clcmd(commandHelp[i], "skins_help");
@@ -2290,9 +2293,9 @@ public client_death(killer, victim, weaponId, hitPlace, teamKill)
 {
 	if (!is_user_connected(killer) || !is_user_connected(victim) || !is_user_alive(killer) || get_user_team(victim) == get_user_team(killer) || !csgo_get_min_players()) return PLUGIN_CONTINUE;
 
-	playerData[killer][MONEY] += killReward * get_multiplier(killer);
+	playerData[killer][MONEY] += killReward * get_multiplier(killer, victim);
 
-	if (hitPlace == HIT_HEAD) playerData[killer][MONEY] += killHSReward * get_multiplier(killer);
+	if (hitPlace == HIT_HEAD) playerData[killer][MONEY] += killHSReward * get_multiplier(killer, victim);
 
 	save_data(killer);
 
@@ -3379,7 +3382,7 @@ public _csgo_get_min_players()
 			get_players(players, pCount, "ch");
 		}
 	}
-	
+
 	if(pCount < minPlayers)
 		return false;
 	else
@@ -3439,10 +3442,11 @@ stock get_weapon_skin_name(id, ent, dataReturn[], dataLength, weapon = 0, check 
 	return false;
 }
 
-stock Float:get_multiplier(id)
+stock Float:get_multiplier(id, target = 0)
 {
-	if (csgo_get_user_svip(id)) return 1.5;
-	else if (csgo_get_user_vip(id)) return 1.25;
+	if (is_user_bot(target)) return botMultiplier;
+	else if (csgo_get_user_svip(id)) return svipMultiplier;
+	else if (csgo_get_user_vip(id)) return vipMultiplier;
 	else return 1.0;
 }
 
