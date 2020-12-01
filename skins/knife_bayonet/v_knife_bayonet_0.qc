@@ -41,17 +41,6 @@ studio "smd\freehand"
 studio "smd\gamma_doppler"
 studio "smd\gamma_doppler_emerald"
 studio "smd\lore"
-studio "smd\marble_fade"
-studio "smd\night"
-studio "smd\rust_coat"
-studio "smd\safari_mesh"
-studio "smd\scorched"
-studio "smd\slaughter"
-studio "smd\stained"
-studio "smd\tiger_tooth"
-studio "smd\tiger_tooth_2"
-studio "smd\ultraviolet"
-studio "smd\urban_masked"
 // end
 }
 
