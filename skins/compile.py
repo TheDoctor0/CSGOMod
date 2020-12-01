@@ -73,6 +73,8 @@ qc_template = "template.qc"
 default_skin = "default.bmp"
 max_per_file = 40
 
+print('Compiling models...')
+
 if not path.exists(compiled_directory):
     os.mkdir(compiled_directory)
 
@@ -234,4 +236,4 @@ with open(path.join(compiled_directory, skins_ini), 'w+') as generated_ini:
         for model_file in model_files:
             shutil.move(model_file, path.join(compiled_directory, model_file))
 
-print('Finished compiling skins and generating `csgo_skins.ini`.')
+print('Finished compiling models and generating `csgo_skins.ini`.')
