@@ -61,11 +61,6 @@ new const commandSell[][] = { "wystaw", "say /wystaw", "say_team /wystaw", "say 
 new const commandPurchase[][] = { "wykup", "say /wykup", "say_team /wykup", "say /purchase", "say_team /purchase" };
 new const commandWithdraw[][] = { "wycofaj", "say /wycofaj", "say_team /wycofaj", "say /withdraw", "say_team /withdraw" };
 
-new const defaultModels[][] = { "", "models/v_p228.mdl", "", "models/v_scout.mdl", "", "models/v_xm1014.mdl", "", "models/v_mac10.mdl", "models/v_aug.mdl", "",
-	"models/v_elite.mdl", "models/v_fiveseven.mdl", "models/v_ump45.mdl", "models/csgo_ozone/sg550/v_sg550.mdl", "models/csgo_ozone/galil/v_galil.mdl", "models/v_famas.mdl",
-	"models/v_usp.mdl","models/v_glock18.mdl", "models/v_awp.mdl", "models/v_mp5.mdl", "models/v_m249.mdl", "models/v_m3.mdl",  "models/v_m4a1.mdl", "models/v_tmp.mdl",
-	"models/v_g3sg1.mdl", "", "models/v_deagle.mdl", "models/v_sg552.mdl", "models/v_ak47.mdl", "models/v_knife.mdl", "models/v_p90.mdl" };
-
 new const ammoType[][] = { "", "357sig", "", "762nato", "", "buckshot", "", "45acp", "556nato", "", "9mm", "57mm", "45acp", "556nato", "556nato", "556nato",
 						"45acp", "9mm", "338magnum", "9mm", "556natobox", "buckshot", "556nato", "9mm", "762nato", "", "50ae", "556nato", "762nato", "", "57mm" };
 
@@ -75,17 +70,20 @@ new const maxBPAmmo[] = { -1, 52, -1, 90, 1, 32, 1, 100, 90, 1, 120, 100, 100, 9
 new const defaultShell[] = "models/pshell.mdl",
 		  shotgunShell[] = "models/shotgunshell.mdl";
 
-enum _:tempInfo { WEAPON, WEAPONS, WEAPON_ENT, EXCHANGE_PLAYER, EXCHANGE, EXCHANGE_FOR_SKIN, GIVE_PLAYER, SALE_SKIN, BUY_SKIN, BUY_WEAPON, BUY_SUBMODEL, ADD_SKIN, Float:COUNTDOWN };
-enum _:playerInfo { ACTIVE[CSW_P90 + 1], Float:MONEY, SKIN, SUBMODEL, bool:SKINS_LOADED, bool:DATA_LOADED, bool:EXCHANGE_BLOCKED, bool:MENU_BLOCKED, bool:SKINS_BLOCKED, bool:HUD_BLOCKED, TEMP[tempInfo], NAME[32], SAFE_NAME[64], STEAM_ID[35] };
+enum _:tempInfo { WEAPON, WEAPONS, WEAPON_ENT, EXCHANGE_PLAYER, EXCHANGE, EXCHANGE_FOR_SKIN, GIVE_PLAYER, SALE_SKIN, BUY_SKIN,
+	BUY_WEAPON, BUY_SUBMODEL, ADD_SKIN, Float:COUNTDOWN };
+enum _:playerInfo { ACTIVE[CSW_P90 + 1], Float:MONEY, SKIN, SUBMODEL, bool:SKINS_LOADED, bool:DATA_LOADED, bool:EXCHANGE_BLOCKED,
+	bool:MENU_BLOCKED, bool:SKINS_BLOCKED, bool:HUD_BLOCKED, TEMP[tempInfo], NAME[32], SAFE_NAME[64], STEAM_ID[35] };
 enum _:playerSkinsInfo { SKIN_ID, SKIN_COUNT };
 enum _:skinsInfo { SKIN_NAME[64], SKIN_WEAPON[32], SKIN_MODEL[64], SKIN_SUBMODEL, SKIN_PRICE, SKIN_CHANCE, bool:SKIN_BUYABLE };
 enum _:marketInfo { MARKET_ID, MARKET_SKIN, MARKET_OWNER, Float:MARKET_PRICE };
 enum _:typeInfo { TYPE_NAME, TYPE_STEAM_ID };
 
-new playerData[MAX_PLAYERS + 1][playerInfo], Array:playerSkins[MAX_PLAYERS + 1], Float:randomSkinPrice[WEAPON_ALL + 1], overallSkinChance[WEAPON_ALL + 1], Array:skins,
-	Array:weapons, Array:market, Handle:sql, Handle:connection, saveType, marketSkins, multipleSkins, skinChance, skinChanceSVIP, silencerAttached, Float:skinChancePerMember,
-	maxMarketSkins, Float:marketCommision, Float:killReward, Float:killHSReward, Float:bombReward, Float:defuseReward, Float:hostageReward, Float:winReward, Float:botMultiplier,
-	Float:vipMultiplier, Float:svipMultiplier, minPlayers, minPlayerFilter, bool:end, bool:sqlConnected, sqlHost[64], sqlUser[64], sqlPassword[64], sqlDatabase[64], force, resetHandle;
+new playerData[MAX_PLAYERS + 1][playerInfo], Array:playerSkins[MAX_PLAYERS + 1], Float:randomSkinPrice[WEAPON_ALL + 1], overallSkinChance[WEAPON_ALL + 1],
+	Array:skins, Array:weapons, Array:market, Handle:sql, Handle:connection, saveType, marketSkins, multipleSkins, skinChance, skinChanceSVIP, silencerAttached,
+	Float:skinChancePerMember, maxMarketSkins, Float:marketCommision, Float:killReward, Float:killHSReward, Float:bombReward, Float:defuseReward, Float:hostageReward,
+	Float:winReward, Float:botMultiplier, Float:vipMultiplier, Float:svipMultiplier, minPlayers, minPlayerFilter, bool:end, bool:sqlConnected, sqlHost[64], sqlUser[64],
+	sqlPassword[64], sqlDatabase[64], skinsPath[64], force, resetHandle;
 
 native csgo_get_zeus(id);
 
@@ -101,6 +99,8 @@ public plugin_init()
 	bind_pcvar_string(create_cvar("csgo_sql_user", "user", FCVAR_SPONLY | FCVAR_PROTECTED), sqlUser, charsmax(sqlUser));
 	bind_pcvar_string(create_cvar("csgo_sql_pass", "password", FCVAR_SPONLY | FCVAR_PROTECTED), sqlPassword, charsmax(sqlPassword));
 	bind_pcvar_string(create_cvar("csgo_sql_db", "database", FCVAR_SPONLY | FCVAR_PROTECTED), sqlDatabase, charsmax(sqlDatabase));
+
+	bind_pcvar_string(create_cvar("csgo_skins_path", "models/csgo_ozone_v2"), skinsPath, charsmax(skinsPath));
 
 	bind_pcvar_num(create_cvar("csgo_save_type", "0"), saveType);
 	bind_pcvar_num(create_cvar("csgo_multiple_skins", "1"), multipleSkins);
@@ -2522,6 +2522,7 @@ public weapon_deploy_post(ent)
 	if (!pev_valid(id) || !is_user_alive(id)) return HAM_IGNORED;
 
 	weapon = weapon_entity(ent);
+
 	playerData[id][TEMP][WEAPON] = weapon;
 	playerData[id][SKIN] = NONE;
 	playerData[id][SUBMODEL] = 0;
@@ -2949,7 +2950,9 @@ public deploy_weapon_switch(id)
 
 	if (!pev_valid(id) || !is_user_alive(id)) return;
 
-	static skin[skinsInfo], weapon; weapon = get_pdata_cbase(id, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
+	static skin[skinsInfo], defaultSkin[128], weaponName[32], weapon;
+
+	weapon = get_pdata_cbase(id, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
 
 	if (!weapon || !pev_valid(weapon)) return;
 
@@ -2964,7 +2967,11 @@ public deploy_weapon_switch(id)
 		set_pev(id, pev_viewmodel2, skin[SKIN_MODEL]);
 		set_pev(id, pev_body, skin[SKIN_SUBMODEL]);
 	} else {
-		set_pev(id, pev_viewmodel2, defaultModels[playerData[id][TEMP][WEAPON]]);
+		get_weaponname(playerData[id][TEMP][WEAPON], weaponName, charsmax(weaponName));
+
+		formatex(defaultSkin, charsmax(defaultSkin), "%s/%s/v_%s_0.mdl", skinsPath, weaponName[7], weaponName[7]);
+
+		set_pev(id, pev_viewmodel2, defaultSkin);
 		set_pev(id, pev_body, 0);
 	}
 
@@ -3402,31 +3409,16 @@ public _csgo_get_current_skin_name(id, dataReturn[], dataLength)
 
 public _csgo_get_min_players()
 {
-	static players[32], pCount;
-	switch(minPlayerFilter)
-	{
-		case 0: // Don't Filter
-		{
-			pCount = get_playersnum();
-		}
-		case 1: // Filter Bots
-		{
-			get_players(players, pCount, "c");
-		}
-		case 2: // Filter HLTV
-		{
-			get_players(players, pCount, "h");
-		}
-		case 3: // Filter Bots and HLTV
-		{
-			get_players(players, pCount, "ch");
-		}
+	static players[32], playersCount;
+
+	switch (minPlayerFilter) {
+		case 0: playersCount = get_playersnum();
+		case 1: get_players(players, playersCount, "c");
+		case 2: get_players(players, playersCount, "h");
+		case 3: get_players(players, playersCount, "ch");
 	}
 
-	if(pCount < minPlayers)
-		return false;
-	else
-		return true;
+	return minPlayers >= playersCount;
 }
 
 stock get_weapon_skin_name(id, ent, dataReturn[], dataLength, weapon = 0, check = 0)
