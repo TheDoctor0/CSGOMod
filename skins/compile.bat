@@ -7,6 +7,6 @@ ECHO Input models directory name (or leave empty to use default) and press Enter
 SET directory=
 SET /P directory=
 python3 compile.py %directory%
-PING -N 2 127.0.0.1 >nul
+PING -P 2 127.0.0.1 >nul
 PAUSE
 EXIT

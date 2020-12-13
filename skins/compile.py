@@ -62,7 +62,7 @@ weapons = {
     "thighpack": False,
 }
 
-models_directory = f"models/{sys.argv[1] if len(sys.argv) > 1 and len(sys.argv[1]) else 'csgo_ozone'}"
+models_directory = f"models/{sys.argv[1] if len(sys.argv) > 1 and len(sys.argv[1]) else 'csgo_ozone_v2'}"
 compiler = "studiomdl.exe"
 compiled_directory = "_compiled"
 skins_directory = "skins"
@@ -84,15 +84,13 @@ with open(path.join(compiled_directory, skins_ini), 'w+') as generated_ini:
 ; "Skin Name" "Model Path" "Submodel Index" "Price" "Odds" "Buyable"
 ;
 ; NOTES:
-; 1. Skin names must be unique.
+; 1. Skin names must be unique for single weapon.
 ;
-; 2. Submodels are always numbered from 0.
-;
-; 3. The odds must be greater than 1 - if the undefined odds will be set to 1.
+; 2. The odds must be greater than 1 - if not defined odds will be set to 1.
 ; The greater the odds, the greater the probability of a particular skin being drawn
 ; and the smaller the chance of others being drawn.
 ;
-; 4. Non-buyable skins are not available for purchase or in draw.
+; 3. Non-buyable skins are not available for purchase or in draw.
 
 ; Optional possibility to draw any skin (set to 0.0 to disable)""")
 
@@ -127,7 +125,7 @@ with open(path.join(compiled_directory, skins_ini), 'w+') as generated_ini:
             for index, skin_name in enumerate(existing_skins, start=0):
                 if index > 0:
                     generated_ini.write(f'"{skin_name}"'
-                                        f'\t\t"{f"{models_directory}/v_{weapon}_{index}.mdl"}"'
+                                        f'\t\t"{f"{models_directory}/{weapon}/v_{weapon}_{index}.mdl"}"'
                                         f'\t\t"0"'
                                         f'\t\t"{weapons.get(weapon).get("skin")}"'
                                         f'\t\t"1"'
@@ -163,6 +161,14 @@ with open(path.join(compiled_directory, skins_ini), 'w+') as generated_ini:
         os.mkdir(weapon_smd_directory)
 
         skins = glob.glob(path.join(weapon, skins_directory, "*.bmp"))
+
+        if 'knife_' in weapon:
+            generated_ini.write(f'"{weapon.replace("knife_", "").replace("_", "").title()} | Vanilla"'
+                                f'\t\t"{f"{models_directory}/{weapon}/v_{weapon}_0.mdl"}"'
+                                f'\t\t"0"'
+                                f'\t\t"{weapon_data.get("skin")}"'
+                                f'\t\t"1"'
+                                f'\t\t"1"\n')
 
         for index, skin in enumerate(skins, start=1):
             smd = skin.replace(skins_directory, smd_directory).replace(".bmp", ".smd")
@@ -203,7 +209,7 @@ with open(path.join(compiled_directory, skins_ini), 'w+') as generated_ini:
             if weapon in ["m4a4", "knife"]:
                 prefix = f'{weapon.title()} | '
             elif "knife_" in weapon:
-                prefix = f'{weapon.replace("knife_", "").title()} | '
+                prefix = f'{weapon.replace("knife_", "").replace("_", " ").title()} | '
             else:
                 prefix = ""
 
@@ -214,7 +220,7 @@ with open(path.join(compiled_directory, skins_ini), 'w+') as generated_ini:
                 .title()
 
             generated_ini.write(f'"{prefix}{skin_name}"'
-                                f'\t\t"{f"{models_directory}/v_{weapon}_{order}.mdl"}"'
+                                f'\t\t"{f"{models_directory}/{weapon}/v_{weapon}_{order}.mdl"}"'
                                 f'\t\t"{index - order * max_per_file}"'
                                 f'\t\t"{weapon_data.get("skin")}"'
                                 f'\t\t"1"'
