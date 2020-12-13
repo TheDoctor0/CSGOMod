@@ -1,3 +1,4 @@
+
 # CSGOMod
 Counter-Strike: Global Offensive mod for CS 1.6 (AMXX 1.8.3 / 1.9 / 1.10).
 
@@ -9,9 +10,9 @@ Feel free to suggest new functionality, changes and of course please report any 
 Mod was tested on AMXX builds:
 - 1.8.3-dev+5142
 - 1.9-dev+5235
-- 1.10-dev+5407
+- 1.10-dev+5407 (recommended)
 
-In both cases with ReHLDS and ReGameDLL also installed.
+In both cases with ReHLDS and ReGameDLL also installed - [BasePack](https://github.com/AMXX-pl/BasePack).
 
 ## Installation
 1. Download `csgo_mod.zip` from the lastest [release pack](https://github.com/TheDoctor0/CSGOMod/releases/latest).
@@ -54,14 +55,17 @@ To use those commands you need **ADMIN_ADMIN** access, so better add yourself *"
 ## Documentation
 Online documentation is available on [csgomod-docs.5v.pl](http://csgomod-docs.5v.pl/). You can also find it in [csgomod.inc](https://github.com/TheDoctor0/CSGOMod/blob/master/cstrike/addons/amxmodx/scripting/include/csgomod.inc).
 
+## Skins
+TODO
+
 ## Known issues
 1. Server may crash on map `csgo_dust2_new` with message `FATAL ERROR (shutting down): Cache_TryAlloc: x is greater then free hunk`.
 
-Solution: Add `-heapsize 65536` to server starting options.
+	**Solution:** Add `-heapsize 65536` to server starting options.
 
 2. After few mapchanges client may crash with error `Texture overflow: GL_MAXTEXTURES`.
 
-Solution: This is a bug in GoldSource itself that is being tracked [here](https://github.com/ValveSoftware/halflife/issues/2234) and will be fixed in next release.
+	**Solution:** This is a bug in GoldSource itself that is being tracked [here](https://github.com/ValveSoftware/halflife/issues/2234) and will probably be fixed in next release.
 
 ## Servers
 List of servers that are using this mod is available [HERE](https://www.gametracker.com/search/?search_by=server_variable&search_by2=csgo_version&query=&loc=_all&sort=&order=).
