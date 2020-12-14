@@ -39,6 +39,8 @@
 #define WEAPONTYPE_M4A1		5
 #define WEAPONTYPE_USP		6
 
+#define VALID_PDATA 2
+
 #define WEAPON_ALL	31
 
 #define UNSILENCED 	0
@@ -2515,7 +2517,7 @@ public event_money(id)
 
 public weapon_deploy_post(ent)
 {
-	if (!pev_valid(ent)) return HAM_IGNORED;
+	if (pev_valid(ent) != VALID_PDATA) return HAM_IGNORED;
 
 	static weapon, id; id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
@@ -2542,7 +2544,7 @@ public weapon_deploy_post(ent)
 
 public weapon_send_weapon_anim_post(ent, animation, skipLocal)
 {
-	if (!pev_valid(ent)) return HAM_IGNORED;
+	if (pev_valid(ent) != VALID_PDATA) return HAM_IGNORED;
 
 	static weapon, id; id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
@@ -2562,7 +2564,7 @@ public weapon_send_weapon_anim_post(ent, animation, skipLocal)
 
 public weapon_primary_attack(ent)
 {
-	if (!pev_valid(ent)) return HAM_IGNORED;
+	if (pev_valid(ent) != VALID_PDATA) return HAM_IGNORED;
 
 	static weapon, id; id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
@@ -2584,7 +2586,7 @@ public weapon_primary_attack(ent)
 
 public m4a1_secondary_attack(ent)
 {
-	if (!pev_valid(ent)) return HAM_IGNORED;
+	if (pev_valid(ent) != VALID_PDATA) return HAM_IGNORED;
 
 	static skin, id; id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
@@ -2613,7 +2615,7 @@ public trace_attack_post(ent, attacker, Float:damage, Float:direction[3], ptr, d
 {
 	static weapon, Float:vectorEnd[3];
 
-	if (!pev_valid(attacker) || playerData[attacker][SKINS_BLOCKED]) return HAM_IGNORED;
+	if (pev_valid(attacker) != VALID_PDATA || playerData[attacker][SKINS_BLOCKED]) return HAM_IGNORED;
 
 	weapon = get_pdata_cbase(attacker, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
 
@@ -2652,7 +2654,7 @@ public player_spawn(id)
 
 public add_player_item(id, ent)
 {
-	if (!pev_valid(ent) || !is_user_connected(id) || is_user_bot(id) || is_user_hltv(id)) return HAM_IGNORED;
+	if (pev_valid(ent) != VALID_PDATA || !is_user_connected(id) || is_user_bot(id) || is_user_hltv(id)) return HAM_IGNORED;
 
 	new owner = entity_get_int(ent, EV_INT_iuser1);
 
@@ -2712,11 +2714,11 @@ public update_client_data_post(id, sendWeapons, handleCD)
 
 	target = (specMode = pev(id, pev_iuser1)) ? pev(id, pev_iuser2) : id;
 
-	if (!pev_valid(target) || !is_user_alive(target) || playerData[id][SKINS_BLOCKED]) return FMRES_IGNORED;
+	if (pev_valid(target) != VALID_PDATA || !is_user_alive(target) || playerData[id][SKINS_BLOCKED]) return FMRES_IGNORED;
 
 	ent = get_pdata_cbase(target, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
 
-	if (!ent || !pev_valid(ent)) return FMRES_IGNORED;
+	if (!ent || pev_valid(ent) != VALID_PDATA) return FMRES_IGNORED;
 
 	weapon = weapon_entity(ent);
 
@@ -2948,13 +2950,13 @@ public deploy_weapon_switch(id)
 {
 	id -= TASK_DEPLOY;
 
-	if (!pev_valid(id) || !is_user_alive(id)) return;
+	if (pev_valid(id) != VALID_PDATA || !is_user_alive(id)) return;
 
 	static skin[skinsInfo], defaultSkin[128], weaponName[32], weapon;
 
 	weapon = get_pdata_cbase(id, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
 
-	if (!weapon || !pev_valid(weapon)) return;
+	if (!weapon || pev_valid(weapon) != VALID_PDATA) return;
 
 	if (get_bit(id, force) && playerData[id][TEMP][BUY_SKIN] > NONE) {
 		ArrayGetArray(skins, playerData[id][TEMP][BUY_SKIN], skin);
@@ -3085,7 +3087,7 @@ stock weapon_shoot_info(ent, animation, const soundEmpty[], const soundFire[], a
 {
 	static id, clip;
 
-	if (!pev_valid(ent)) return HAM_IGNORED;
+	if (pev_valid(ent) != VALID_PDATA) return HAM_IGNORED;
 
 	id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 	clip = get_pdata_int(ent, OFFSET_CLIP, OFFSET_ITEM_LINUX);
@@ -3153,6 +3155,8 @@ stock eject_brass(id, ent)
 		shotgunShell = engfunc(EngFunc_PrecacheModel, shotgunShell);
 	}
 
+	if (pev_valid(ent) != VALID_PDATA) return;
+
 	switch (weapon_entity(ent)) {
 		case CSW_M3, CSW_XM1014: set_pdata_int(ent, OFFSET_SHELL, shotgunShell, OFFSET_ITEM_LINUX);
 		case CSW_ELITE: return;
@@ -3170,7 +3174,7 @@ public eject_shell(id)
 {
 	id -= TASK_SHELL;
 
-	if (!is_user_alive(id)) return;
+	if (!is_user_alive(id) || pev_valid(id) != VALID_PDATA) return;
 
 	set_pdata_float(id, OFFSET_EJECT, get_gametime(), OFFSET_PLAYER_LINUX);
 }
