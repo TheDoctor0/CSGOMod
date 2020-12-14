@@ -255,14 +255,22 @@ public molotov_deploy_model(weapon)
 }
 
 public player_spawned(id)
-	if (get_bit(id, molotov)) set_task(0.1, "player_spawned_post", id);
+{
+	if (!get_bit(id, molotov)) return;
+
+	set_task(0.1, "player_spawned_post", id);
+}
 
 public player_spawned_post(id)
-	fm_give_item(id, molotovWeaponName);
-
-public grenade_throw(id, ent, wid)
 {
-	if (!molotovEnabled || !is_user_connected(id) || !pev_valid(ent) || wid != CSW_HEGRENADE || !get_bit(id, molotov)) return PLUGIN_CONTINUE;
+	if (!is_user_alive(id)) return;
+
+	fm_give_item(id, molotovWeaponName);
+}
+
+public grenade_throw(id, ent, weapon)
+{
+	if (!molotovEnabled || !is_user_connected(id) || !pev_valid(ent) || weapon != CSW_HEGRENADE || !get_bit(id, molotov)) return PLUGIN_CONTINUE;
 
 	rem_bit(id, molotov);
 
@@ -282,25 +290,23 @@ public sound_emit(ent, channel, sample[])
 
 	pev(ent, pev_model, modelName, charsmax(modelName));
 
-	if (contain(modelName, "w_molotov.mdl") != -1) {
+	if (contain(modelName, models[WorldModelBroken]) != -1) {
+		return FMRES_SUPERCEDE;
+	}
+
+	if (contain(modelName, models[WorldModel]) != -1) {
 		emit_sound(ent, CHAN_AUTO, "debris/glass2.wav", VOL_NORM, ATTN_STATIC, 0, PITCH_LOW);
 
-		new Float:friction, Float:velocity[3];
-
-		pev(ent, pev_friction, friction);
-		friction *= 1.15;
-		set_pev(ent, pev_friction, friction);
+		new Float:velocity[3];
 
 		pev(ent, pev_velocity, velocity);
-		velocity[0] *= 0.3;
-		velocity[1] *= 0.3;
-		velocity[2] *= 0.3;
+		velocity[0] *= 0.01;
+		velocity[1] *= 0.01;
+		velocity[2] *= 0.01;
 		set_pev(ent, pev_velocity, velocity);
 
 		molotov_explode(ent);
 
-		return FMRES_SUPERCEDE;
-	} else if (contain(modelName, "w_broken_molotov.mdl") != -1) {
 		return FMRES_SUPERCEDE;
 	}
 
@@ -309,16 +315,25 @@ public sound_emit(ent, channel, sample[])
 
 stock molotov_explode(ent)
 {
+	if (reset) {
+		set_pev(ent, pev_flags, pev(ent, pev_flags) | FL_KILLME);
+
+		return PLUGIN_HANDLED;
+	}
+
 	new Float:tempOrigin[3], origin[3], data[7], owner = pev(ent, pev_owner);
-	new ent2 = engfunc(EngFunc_CreateNamedEntity, engfunc(EngFunc_AllocString, "info_target"));
 
 	set_pev(ent, pev_classname, "molotov");
-	set_pev(ent2, pev_classname, "molotov");
 
 	pev(ent, pev_origin, tempOrigin);
 
+	new entFire = engfunc(EngFunc_CreateNamedEntity, engfunc(EngFunc_AllocString, "info_target"));
+
+	set_pev(entFire, pev_classname, "molotov_fire");
+	set_pev(entFire, pev_origin, tempOrigin);
+
 	data[0] = ent;
-	data[1] = ent2;
+	data[1] = entFire;
 	data[2] = owner;
 	data[3] = pev(ent, pev_team);
 	data[4] = origin[0] = floatround(tempOrigin[0]);
@@ -328,19 +343,13 @@ stock molotov_explode(ent)
 	engfunc(EngFunc_SetModel, ent, models[WorldModelBroken]);
 	entity_set_int(ent, EV_INT_solid, SOLID_NOT);
 
-	if (reset) {
-		set_pev(ent, pev_flags, pev(ent, pev_flags) | FL_KILLME);
-
-		return PLUGIN_HANDLED;
-	}
-
 	if (extinguish_molotov(data)) return PLUGIN_CONTINUE;
 
-	random_fire(origin, ent2);
+	random_fire(origin, entFire);
 
 	if (++molotovOffset[owner] == 10) molotovOffset[owner] = 0;
 
-	emit_sound(data[1], CHAN_AUTO, sounds[Explode], VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
+	emit_sound(ent, CHAN_AUTO, sounds[Explode], VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
 
 	set_task(0.1, "fire_damage", TASK_BASE1 + (TASK_OFFSET * (owner - 1)) + molotovOffset[owner], data, sizeof(data), "a", floatround(molotovFireTime / 0.1, floatround_floor));
 	set_task(1.0, "fire_sound", TASK_BASE2 + (TASK_OFFSET * (owner - 1)) + molotovOffset[owner], data, sizeof(data), "a", floatround(molotovFireTime) - 1);
@@ -352,24 +361,32 @@ stock molotov_explode(ent)
 
 public fire_sound(data[])
 {
-	if (pev_valid(data[1])) {
-		if (is_user_connected(data[2]) && pev_valid(data[2])) {
-			emit_sound(data[1], CHAN_AUTO, sounds[Fire], VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
-		} else {
-			fire_stop(data);
-		}
+	new ent = data[0];
+
+	if (!pev_valid(ent)) return;
+
+	new owner = data[2];
+
+	if (pev_valid(owner) && is_user_connected(owner)) {
+		emit_sound(ent, CHAN_AUTO, sounds[Fire], VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
+	} else {
+		fire_stop(data);
 	}
 }
 
 public fire_stop(data[])
 {
-	if (pev_valid(data[0])) set_pev(data[0], pev_flags, pev(data[0], pev_flags) | FL_KILLME);
-	if (pev_valid(data[1])) set_pev(data[1], pev_flags, pev(data[1], pev_flags) | FL_KILLME);
+	new ent = data[0], entFire = data[1];
+
+	if (pev_valid(ent)) set_pev(ent, pev_flags, pev(ent, pev_flags) | FL_KILLME);
+	if (pev_valid(entFire)) set_pev(entFire, pev_flags, pev(entFire, pev_flags) | FL_KILLME);
 }
 
 public fire_damage(data[])
 {
-	if (extinguish_molotov(data) || !pev_valid(data[2]) || !is_user_connected(data[2])) return;
+	new ent = data[0], entFire = data[1], owner = data[2];
+
+	if (extinguish_molotov(data) || !pev_valid(ent) || !pev_valid(entFire) || !pev_valid(owner) || !is_user_connected(owner)) return;
 
 	new Float:newOrigin[3], origin[3];
 
@@ -377,21 +394,21 @@ public fire_damage(data[])
 	origin[1] = data[5];
 	origin[2] = data[6];
 
-	random_fire(origin, data[1]);
+	random_fire(origin, entFire);
 
 	IVecFVec(origin, newOrigin);
 
-	radius_damage2(data[2], data[3], newOrigin, molotovFireDamage, molotovRadius, DMG_BURN, false);
+	radius_damage2(owner, data[3], newOrigin, molotovFireDamage, molotovRadius);
 }
 
 public _csgo_get_user_molotov(id)
 	return get_bit(id, molotov);
 
-stock radius_damage2(attacker, team, Float:origin[3], Float:damage, Float:range, damageType, bool:calculation = true)
+stock radius_damage2(attacker, team, Float:origin[3], Float:damage, Float:range)
 {
 	new Float:tempOrigin[3], Float:distance, Float:tempDamange, i;
 
-	while (i++ < MAX_PLAYERS) {
+	for (new i = 1; i <= MAX_PLAYERS; i++) {
 		if (!is_user_alive(i) || (attacker != i && team == get_user_team(i))) continue;
 
 		pev(i, pev_origin, tempOrigin);
@@ -399,19 +416,20 @@ stock radius_damage2(attacker, team, Float:origin[3], Float:damage, Float:range,
 
 		if (distance > range) continue;
 
-		if (calculation) tempDamange = damage - (damage / range) * distance;
-		else tempDamange = damage;
+		tempDamange = damage;
 
 		if (pev(i, pev_health) <= tempDamange) kill(attacker, i, team);
-		else fm_fakedamage(i, "molotov", tempDamange, damageType);
+		else fm_fakedamage(i, "molotov", tempDamange, DMG_BURN);
 	}
 }
 
 stock extinguish_molotov(data[])
 {
-	if (!is_valid_ent(data[1])) return false;
+	new ent = data[0], entFire = data[1], owner = data[2];
 
-	new entList[64], foundGrenades = find_sphere_class(data[1], "grenade", molotovRadius * 0.75, entList, charsmax(entList));
+	if (!pev_valid(ent) || !pev_valid(owner) || !is_user_connected(owner)) return false;
+
+	new entList[64], foundGrenades = find_sphere_class(ent, "grenade", molotovRadius * 0.75, entList, charsmax(entList));
 
 	for (new i = 0; i < foundGrenades; i++) {
 		if (grenade_is_smoke(entList[i])) {
@@ -434,15 +452,17 @@ stock extinguish_molotov(data[])
 			pev(entList[i], pev_dmgtime, dmgTime);
 			set_pev(entList[i], pev_dmgtime, dmgTime - 3.0);
 
-			remove_task(TASK_BASE1 + (TASK_OFFSET * (data[2] - 1)) + molotovOffset[data[2]]);
-			remove_task(TASK_BASE2 + (TASK_OFFSET * (data[2] - 1)) + molotovOffset[data[2]]);
+			remove_task(TASK_BASE1 + (TASK_OFFSET * (owner - 1)) + molotovOffset[owner]);
+			remove_task(TASK_BASE2 + (TASK_OFFSET * (owner - 1)) + molotovOffset[owner]);
 
-			if (pev_valid(data[0])) set_pev(data[0], pev_flags, pev(data[0], pev_flags) | FL_KILLME);
+			if (pev_valid(ent)) {
+				emit_sound(ent, CHAN_AUTO, sounds[Extinguish], VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
 
-			if (pev_valid(data[1])) {
-				emit_sound(data[1], CHAN_AUTO, sounds[Extinguish], VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
+				set_pev(ent, pev_flags, pev(ent, pev_flags) | FL_KILLME);
+			}
 
-				set_pev(data[1], pev_flags, pev(data[1], pev_flags) | FL_KILLME);
+			if (pev_valid(entFire)) {
+				set_pev(entFire, pev_flags, pev(entFire, pev_flags) | FL_KILLME);
 			}
 
 			return true;
@@ -475,15 +495,15 @@ stock random_fire(original[3], ent)
 			else origin[2] = ground_z(origin, ent);
 		}
 
-		new rand = random_num(5, 15);
+		new random = random_num(5, 15);
 
 		message_begin(MSG_BROADCAST, SVC_TEMPENTITY);
 		write_byte(TE_SPRITE);
 		write_coord(origin[0]);
 		write_coord(origin[1]);
-		write_coord(origin[2] + rand * 5);
+		write_coord(origin[2] + random * 5);
 		write_short(fireSprite);
-		write_byte(rand);
+		write_byte(random);
 		write_byte(100);
 		message_end();
 	}
@@ -602,7 +622,7 @@ stock ground_z(origin[3], ent, skip = 0, recursion = 0)
 
 stock grenade_is_smoke(ent)
 {
-	if (!is_valid_ent(ent)) return false;
+	if (!pev_valid(ent)) return false;
 
 	new entModel[64];
 
@@ -622,7 +642,7 @@ stock remove_molotovs(id = 0)
 
 		pev(i, pev_classname, className, charsmax(className));
 
-		if (equal(className, "molotov")) engfunc(EngFunc_RemoveEntity, i);
+		if (contain(className, "molotov") != -1) engfunc(EngFunc_RemoveEntity, i);
 	}
 }
 

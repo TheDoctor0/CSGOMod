@@ -102,7 +102,7 @@ public think_grenade(ent)
 			} else {
 				set_pev(ent, pev_flags, (pev(ent, pev_flags) | FL_KILLME));
 			}
-		} else if(!pev(ent, pev_iuser4)) {
+		} else if (!pev(ent, pev_iuser4)) {
 			return HAM_IGNORED;
 		}
 
