@@ -189,15 +189,7 @@ public buy_molotov(id)
 
 	set_bit(id, molotov);
 
-	cs_set_user_money(id, money - molotovPrice);
-
-	if (get_user_weapon(id) == CSW_HEGRENADE && pev_valid(id) == VALID_PDATA) {
-		new weapon = get_pdata_cbase(id, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
-
-		ExecuteHamB(Ham_Item_Deploy, weapon);
-	} else {
-		fm_give_item(id, molotovWeaponName);
-	}
+	fm_give_item(id, molotovWeaponName);
 
 	emit_sound(id, CHAN_AUTO, "items/9mmclip1.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
 
@@ -428,7 +420,7 @@ stock extinguish_molotov(data[])
 {
 	new ent = data[0], entFire = data[1], owner = data[2];
 
-	if (!pev_valid(ent) || !pev_valid(owner) || !is_user_connected(owner)) return false;
+	if (!pev_valid(ent) || !pev_valid(entFire) || !pev_valid(owner) || !is_user_connected(owner)) return false;
 
 	new entList[64], foundGrenades = find_sphere_class(ent, "grenade", molotovRadius * 0.75, entList, charsmax(entList));
 

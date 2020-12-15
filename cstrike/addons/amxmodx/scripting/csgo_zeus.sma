@@ -174,13 +174,7 @@ public buy_zeus(id)
 
 	cs_set_user_money(id, money - zeusPrice);
 
-	if (get_user_weapon(id) == CSW_P228) {
-		new weapon = get_pdata_cbase(id, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
-
-		ExecuteHamB(Ham_Item_Deploy, weapon);
-	} else {
-		fm_give_item(id, zeusWeaponName);
-	}
+	fm_give_item(id, zeusWeaponName);
 
 	emit_sound(id, CHAN_AUTO, "items/9mmclip1.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
 
