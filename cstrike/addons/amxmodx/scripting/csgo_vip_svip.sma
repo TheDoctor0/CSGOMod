@@ -735,7 +735,7 @@ public handle_ammo(iMsgId, iMsgDest, id)
 	if (is_user_alive(id) && ammoID && ammoID <= ammo_9mm && get_bit(id, SVIP)) {
 		new ammo = maxBPAmmo[ammoID];
 
-		if (get_msg_arg_int(2) < ammo) {
+		if (get_msg_arg_int(2) < ammo && pev_valid(id) == VALID_PDATA) {
 			set_msg_arg_int(2, ARG_BYTE, ammo);
 			set_pdata_int(id, OFFSET_AMMO + ammoID, ammo, OFFSET_PLAYER_LINUX);
 		}
@@ -759,7 +759,7 @@ stock strip_weapons(id, type, bool:switchIfActive = true)
 
 stock get_weapon_from_slot(id, slot, &entity)
 {
-	if (!( 1 <= slot <= 5 )) return 0;
+	if (!( 1 <= slot <= 5 ) || pev_valid(id) != VALID_PDATA) return 0;
 
 	entity = get_pdata_cbase(id, OFFSET_ITEM_SLOT + slot, OFFSET_PLAYER_LINUX);
 
@@ -771,8 +771,10 @@ stock ham_strip_user_weapon(id, weaponId, slot = 0, bool:switchIfActive = true)
 	new weapon;
 
 	if (!slot) {
-		slot = weaponSlots[weaponId]
+		slot = weaponSlots[weaponId];
 	}
+
+	if (pev_valid(id) != VALID_PDATA) return 0;
 
 	weapon = get_pdata_cbase(id, OFFSET_ITEM_SLOT + slot, OFFSET_PLAYER_LINUX);
 

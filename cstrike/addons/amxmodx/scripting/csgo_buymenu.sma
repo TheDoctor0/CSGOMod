@@ -34,7 +34,7 @@ public plugin_init()
 
 	register_event("HLTV", "round_start", "a", "1=0", "2=0");
 
-	register_forward(FM_KeyValue, "key_value", true);
+	register_forward(FM_KeyValue, "key_value", 1);
 }
 
 public key_value(ent, keyValueId)

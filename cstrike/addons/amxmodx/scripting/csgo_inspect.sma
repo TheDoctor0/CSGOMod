@@ -61,7 +61,7 @@ public plugin_init()
 
 public deagle_reload(weapon)
 {
-	if (!pev_valid(weapon)) return HAM_IGNORED;
+	if (pev_valid(weapon) != VALID_PDATA) return HAM_IGNORED;
 
 	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
@@ -78,7 +78,7 @@ public deagle_reload(weapon)
 
 public deagle_override(weapon)
 {
-	if (!pev_valid(weapon)) return HAM_IGNORED;
+	if (pev_valid(weapon) != VALID_PDATA) return HAM_IGNORED;
 
 	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
@@ -95,7 +95,7 @@ public deagle_override(weapon)
 
 public knife_override(weapon)
 {
-	if (!pev_valid(weapon)) return HAM_IGNORED;
+	if (pev_valid(weapon) != VALID_PDATA) return HAM_IGNORED;
 
 	set_pdata_float(weapon, OFFSET_WEAPON_IDLE, 0.8, OFFSET_ITEM_LINUX);
 
@@ -107,7 +107,7 @@ public deagle_enable(id)
 
 public inspect_weapon(id)
 {
-	if (!pev_valid(id) || !is_user_alive(id) || cs_get_user_shield(id) || cs_get_user_zoom(id) > 1) return PLUGIN_HANDLED;
+	if (pev_valid(id) != VALID_PDATA || !is_user_alive(id) || cs_get_user_shield(id) || cs_get_user_zoom(id) > 1) return PLUGIN_HANDLED;
 
 	new weaponId = get_user_weapon(id);
 	static weapon; weapon = get_pdata_cbase(id, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);

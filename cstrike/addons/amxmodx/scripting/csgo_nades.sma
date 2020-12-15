@@ -21,14 +21,14 @@ public plugin_init()
 	register_plugin(PLUGIN, VERSION, AUTHOR);
 
 	for (new i = 0; i < sizeof grenadeNames; i++) {
-		RegisterHam(Ham_Item_Deploy, grenadeNames[i], "grenade_deploy", true);
-		RegisterHam(Ham_Weapon_SecondaryAttack, grenadeNames[i], "grenade_secondary_attack", false);
+		RegisterHam(Ham_Item_Deploy, grenadeNames[i], "grenade_deploy", 1);
+		RegisterHam(Ham_Weapon_SecondaryAttack, grenadeNames[i], "grenade_secondary_attack", 0);
 	}
 }
 
 public grenade_deploy(weapon)
 {
-	if (!pev_valid(weapon)) return HAM_IGNORED;
+	if (pev_valid(weapon) != VALID_PDATA) return HAM_IGNORED;
 
 	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
@@ -41,7 +41,7 @@ public grenade_deploy(weapon)
 
 public grenade_secondary_attack(ent)
 {
-	if (!pev_valid(ent)) return HAM_IGNORED;
+	if (pev_valid(ent) != VALID_PDATA) return HAM_IGNORED;
 
 	new id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 

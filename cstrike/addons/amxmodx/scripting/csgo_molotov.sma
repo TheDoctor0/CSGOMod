@@ -60,11 +60,11 @@ public plugin_init()
 
 	register_logevent("event_round_end", 2, "1=Round_End");
 
-	RegisterHam(Ham_Item_Deploy, molotovWeaponName, "molotov_deploy_model", true);
-	RegisterHam(Ham_Spawn, "player", "player_spawned", true);
+	RegisterHam(Ham_Item_Deploy, molotovWeaponName, "molotov_deploy_model", 1);
+	RegisterHam(Ham_Spawn, "player", "player_spawned", 1);
 
 	register_forward(FM_EmitSound, "sound_emit");
-	register_forward(FM_KeyValue, "key_value", true);
+	register_forward(FM_KeyValue, "key_value", 1);
 }
 
 public plugin_natives()
@@ -191,7 +191,7 @@ public buy_molotov(id)
 
 	cs_set_user_money(id, money - molotovPrice);
 
-	if (get_user_weapon(id) == CSW_HEGRENADE) {
+	if (get_user_weapon(id) == CSW_HEGRENADE && pev_valid(id) == VALID_PDATA) {
 		new weapon = get_pdata_cbase(id, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
 
 		ExecuteHamB(Ham_Item_Deploy, weapon);
@@ -242,7 +242,7 @@ public event_new_round()
 
 public molotov_deploy_model(weapon)
 {
-	if (!pev_valid(weapon)) return HAM_IGNORED;
+	if (pev_valid(weapon) != VALID_PDATA) return HAM_IGNORED;
 
 	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
@@ -406,12 +406,13 @@ public _csgo_get_user_molotov(id)
 
 stock radius_damage2(attacker, team, Float:origin[3], Float:damage, Float:range)
 {
-	new Float:tempOrigin[3], Float:distance, Float:tempDamange, i;
+	new Float:tempOrigin[3], Float:distance, Float:tempDamange;
 
 	for (new i = 1; i <= MAX_PLAYERS; i++) {
 		if (!is_user_alive(i) || (attacker != i && team == get_user_team(i))) continue;
 
 		pev(i, pev_origin, tempOrigin);
+
 		distance = get_distance_f(origin, tempOrigin);
 
 		if (distance > range) continue;

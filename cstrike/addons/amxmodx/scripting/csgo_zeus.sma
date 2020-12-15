@@ -42,14 +42,14 @@ public plugin_init()
 	bind_pcvar_num(create_cvar("csgo_zeus_enabled", "1"), zeusEnabled);
 	bind_pcvar_num(create_cvar("csgo_zeus_price", "300"), zeusPrice);
 
-	RegisterHam(Ham_Item_AttachToPlayer, zeusWeaponName, "weapon_attach_to_player", true);
-	RegisterHam(Ham_Item_Deploy, zeusWeaponName, "weapon_item_deploy", true);
-	RegisterHam(Ham_Weapon_PrimaryAttack, zeusWeaponName, "weapon_primary_attack", false);
-	RegisterHam(Ham_CS_Item_CanDrop, zeusWeaponName, "weapon_item_can_drop", false);
-	RegisterHam(Ham_Spawn, "player", "player_spawned", true);
+	RegisterHam(Ham_Item_AttachToPlayer, zeusWeaponName, "weapon_attach_to_player", 1);
+	RegisterHam(Ham_Item_Deploy, zeusWeaponName, "weapon_item_deploy", 1);
+	RegisterHam(Ham_Weapon_PrimaryAttack, zeusWeaponName, "weapon_primary_attack", 0);
+	RegisterHam(Ham_CS_Item_CanDrop, zeusWeaponName, "weapon_item_can_drop", 0);
+	RegisterHam(Ham_Spawn, "player", "player_spawned", 1);
 
-	register_forward(FM_SetModel, "set_model", false);
-	register_forward(FM_KeyValue, "key_value", true);
+	register_forward(FM_SetModel, "set_model", 0);
+	register_forward(FM_KeyValue, "key_value", 1);
 
 	register_event("DeathMsg", "event_deathmsg", "a", "2>0");
 	register_event("HLTV", "event_new_round", "a", "1=0", "2=0");
@@ -211,7 +211,7 @@ public event_new_round()
 
 public weapon_attach_to_player(weapon, id)
 {
-	if (!zeusEnabled || !pev_valid(weapon) || !pev_valid(id) || !get_bit(id, zeus) || get_pdata_float(weapon, OFFSET_EMPTY_SOUND, OFFSET_ITEM_LINUX)) return;
+	if (!zeusEnabled || pev_valid(weapon) != VALID_PDATA || pev_valid(id) != VALID_PDATA || !get_bit(id, zeus) || get_pdata_float(weapon, OFFSET_EMPTY_SOUND, OFFSET_ITEM_LINUX)) return;
 
 	set_pdata_int(weapon, OFFSET_CLIP, 1, OFFSET_ITEM_LINUX);
 	set_pdata_int(id, OFFSET_CLIENT_CLIP, 0, OFFSET_PLAYER_LINUX);
@@ -219,7 +219,7 @@ public weapon_attach_to_player(weapon, id)
 
 public weapon_item_deploy(weapon)
 {
-	if (!pev_valid(weapon)) return HAM_IGNORED;
+	if (pev_valid(weapon) != VALID_PDATA) return HAM_IGNORED;
 
 	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
@@ -236,7 +236,7 @@ public weapon_item_deploy(weapon)
 
 public weapon_primary_attack(weapon)
 {
-	if (!pev_valid(weapon)) return HAM_IGNORED;
+	if (pev_valid(weapon) != VALID_PDATA) return HAM_IGNORED;
 
 	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
@@ -247,6 +247,7 @@ public weapon_primary_attack(weapon)
 	static any:targetOrigin[3], Float:origin[3], Float:velocity[3], Float:vector[3], end[3], target, body, Float:distance;
 
 	distance = get_user_aiming(id, target, body);
+
 	entity_get_vector(id, EV_VEC_origin, origin);
 	VelocityByAim(id, ZEUS_DISTANCE, velocity);
 
@@ -277,7 +278,7 @@ public weapon_primary_attack(weapon)
 
 public weapon_item_can_drop(weapon)
 {
-	if (!pev_valid(weapon)) return HAM_IGNORED;
+	if (pev_valid(weapon) != VALID_PDATA) return HAM_IGNORED;
 
 	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 

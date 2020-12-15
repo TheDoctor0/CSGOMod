@@ -39,8 +39,6 @@
 #define WEAPONTYPE_M4A1		5
 #define WEAPONTYPE_USP		6
 
-#define VALID_PDATA 2
-
 #define WEAPON_ALL	31
 
 #define UNSILENCED 	0

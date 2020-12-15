@@ -38,6 +38,8 @@
 #define OFFSET_AMMO 376
 #define OFFSET_C4 385
 
+#define VALID_PDATA 2
+
 #define SAVE_NAME 0
 #define SAVE_STEAM_ID 1
 
