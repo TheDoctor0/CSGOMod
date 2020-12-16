@@ -30,7 +30,7 @@ public grenade_deploy(weapon)
 {
 	if (pev_valid(weapon) != VALID_PDATA) return HAM_IGNORED;
 
-	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
+	new id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	if (!pev_valid(id) || !is_user_alive(id)) return HAM_IGNORED;
 
@@ -58,7 +58,7 @@ public grenade_secondary_attack(ent)
 
 public grenade_throw(id, ent, weapon)
 {
-	if (!pev_valid(ent) || !pev_valid(id)) return;
+	if (!pev_valid(ent) || !pev_valid(id)) return FMRES_IGNORED;
 
 	new Float:grenadeVelocity[3];
 
@@ -71,4 +71,6 @@ public grenade_throw(id, ent, weapon)
 	set_pev(ent, pev_velocity, grenadeVelocity);
 
 	grenadeThrow[id] = NORMAL;
+
+	return FMRES_IGNORED;
 }

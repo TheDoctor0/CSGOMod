@@ -171,11 +171,11 @@ public forward_traceline(Float:start[3], Float:end[3], conditions, id, trace)
 {
 	if (!pev_valid(id) || !is_user_alive(id) || is_user_alive(get_tr2(trace, TR_pHit))) return FMRES_IGNORED;
 
-	static Float:endPoint[3], traceLine = 0, entity;
+	static Float:endPoint[3];
 
 	get_tr2(trace, TR_vecEndPos, endPoint);
 
-	entity = 0;
+	new entity = 0, traceLine = 0;
 
 	while ((entity = engfunc(EngFunc_FindEntityInSphere, entity, endPoint, 20.0))) {
 		if (is_shootable_entity(entity)) {

@@ -74,14 +74,14 @@ public plugin_precache()
 
 public set_model(ent, model[])
 {
-	if (pev_valid(ent)) {
-		static className[9];
+	if (!pev_valid(ent)) return;
 
-		pev(ent, pev_classname, className, charsmax(className));
+	static className[9];
 
-		if (equal(className, "grenade") && containi(model, "smokegrenade") != -1) {
-			set_pev(ent, pev_iuser3, SMOKE_ID);
-		}
+	pev(ent, pev_classname, className, charsmax(className));
+
+	if (equal(className, "grenade") && containi(model, "smokegrenade") != -1) {
+		set_pev(ent, pev_iuser3, SMOKE_ID);
 	}
 }
 

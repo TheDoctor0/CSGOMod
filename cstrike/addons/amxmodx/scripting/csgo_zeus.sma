@@ -215,7 +215,7 @@ public weapon_item_deploy(weapon)
 {
 	if (pev_valid(weapon) != VALID_PDATA) return HAM_IGNORED;
 
-	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
+	new id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	if (!zeusEnabled || !pev_valid(id) || !is_user_alive(id) || !get_bit(id, zeus)) return HAM_IGNORED;
 
@@ -232,15 +232,15 @@ public weapon_primary_attack(weapon)
 {
 	if (pev_valid(weapon) != VALID_PDATA) return HAM_IGNORED;
 
-	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
+	new id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	if (!zeusEnabled || !pev_valid(id) || !is_user_alive(id) || !get_bit(id, zeus)) return HAM_IGNORED;
 
 	rem_bit(id, zeus);
 
-	static any:targetOrigin[3], Float:origin[3], Float:velocity[3], Float:vector[3], end[3], target, body, Float:distance;
+	static any:targetOrigin[3], Float:origin[3], Float:velocity[3], Float:vector[3], end[3];
 
-	distance = get_user_aiming(id, target, body);
+	new target, body, Float:distance = get_user_aiming(id, target, body);
 
 	entity_get_vector(id, EV_VEC_origin, origin);
 	VelocityByAim(id, ZEUS_DISTANCE, velocity);
@@ -274,7 +274,7 @@ public weapon_item_can_drop(weapon)
 {
 	if (pev_valid(weapon) != VALID_PDATA) return HAM_IGNORED;
 
-	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
+	new id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	if (!zeusEnabled || !pev_valid(id) || !is_user_alive(id) || !get_bit(id, zeus)) return HAM_IGNORED;
 

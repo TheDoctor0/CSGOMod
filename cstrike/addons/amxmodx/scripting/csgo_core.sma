@@ -80,10 +80,10 @@ enum _:marketInfo { MARKET_ID, MARKET_SKIN, MARKET_OWNER, Float:MARKET_PRICE };
 enum _:typeInfo { TYPE_NAME, TYPE_STEAM_ID };
 
 new playerData[MAX_PLAYERS + 1][playerInfo], Array:playerSkins[MAX_PLAYERS + 1], Float:randomSkinPrice[WEAPON_ALL + 1], overallSkinChance[WEAPON_ALL + 1],
-	Array:skins, Array:weapons, Array:market, Handle:sql, Handle:connection, saveType, marketSkins, multipleSkins, skinChance, skinChanceSVIP, silencerAttached,
-	Float:skinChancePerMember, maxMarketSkins, Float:marketCommision, Float:killReward, Float:killHSReward, Float:bombReward, Float:defuseReward, Float:hostageReward,
-	Float:winReward, Float:botMultiplier, Float:vipMultiplier, Float:svipMultiplier, minPlayers, minPlayerFilter, bool:end, bool:sqlConnected, sqlHost[64], sqlUser[64],
-	sqlPassword[64], sqlDatabase[64], skinsPath[64], force, resetHandle;
+	bool:canPickup[MAX_PLAYERS + 1], Array:skins, Array:weapons, Array:market, Handle:sql, Handle:connection, saveType, marketSkins, multipleSkins, skinChance,
+	skinChanceSVIP, silencerAttached, Float:skinChancePerMember, maxMarketSkins, Float:marketCommision, Float:killReward, Float:killHSReward, Float:bombReward,
+	Float:defuseReward, Float:hostageReward, Float:winReward, Float:botMultiplier, Float:vipMultiplier, Float:svipMultiplier, minPlayers, minPlayerFilter,
+	bool:end, bool:sqlConnected, sqlHost[64], sqlUser[64], sqlPassword[64], sqlDatabase[64], skinsPath[64], force, resetHandle, weaponHud;
 
 native csgo_get_zeus(id);
 
@@ -180,6 +180,8 @@ public plugin_init()
 	RegisterHam(Ham_Weapon_SecondaryAttack, "weapon_m4a1", "m4a1_secondary_attack", 0);
 
 	resetHandle = CreateMultiForward("csgo_reset_data", ET_IGNORE);
+
+	weaponHud = CreateHudSyncObj();
 }
 
 public plugin_precache()
@@ -2517,11 +2519,11 @@ public weapon_deploy_post(ent)
 {
 	if (pev_valid(ent) != VALID_PDATA) return HAM_IGNORED;
 
-	static weapon, id; id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
+	new id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	if (!pev_valid(id) || !is_user_alive(id)) return HAM_IGNORED;
 
-	weapon = weapon_entity(ent);
+	new weapon = weapon_entity(ent);
 
 	playerData[id][TEMP][WEAPON] = weapon;
 	playerData[id][SKIN] = NONE;
@@ -2544,11 +2546,11 @@ public weapon_send_weapon_anim_post(ent, animation, skipLocal)
 {
 	if (pev_valid(ent) != VALID_PDATA) return HAM_IGNORED;
 
-	static weapon, id; id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
+	new id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	if (!pev_valid(id) || !is_user_alive(id) || playerData[id][SKINS_BLOCKED]) return HAM_IGNORED;
 
-	weapon = weapon_entity(ent);
+	new weapon = weapon_entity(ent);
 
 	switch (weapon) {
 		case CSW_C4, CSW_HEGRENADE, CSW_FLASHBANG, CSW_SMOKEGRENADE: return HAM_IGNORED;
@@ -2564,11 +2566,11 @@ public weapon_primary_attack(ent)
 {
 	if (pev_valid(ent) != VALID_PDATA) return HAM_IGNORED;
 
-	static weapon, id; id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
+	new id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	if (!pev_valid(id) || !is_user_alive(id) || playerData[id][SKINS_BLOCKED]) return HAM_IGNORED;
 
-	weapon = weapon_entity(ent);
+	new weapon = weapon_entity(ent);
 
 	switch (weapon) {
 		case CSW_C4, CSW_HEGRENADE, CSW_FLASHBANG, CSW_SMOKEGRENADE: return HAM_IGNORED;
@@ -2586,11 +2588,11 @@ public m4a1_secondary_attack(ent)
 {
 	if (pev_valid(ent) != VALID_PDATA) return HAM_IGNORED;
 
-	static skin, id; id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
+	new id = get_pdata_cbase(ent, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	if (!pev_valid(id) || !is_user_alive(id) || playerData[id][SKINS_BLOCKED]) return HAM_IGNORED;
 
-	skin = get_weapon_skin(id, weapon_entity(ent));
+	new skin = get_weapon_skin(id, weapon_entity(ent));
 
 	if (skin > NONE) {
 		static skinName[64];
@@ -2611,13 +2613,13 @@ public m4a1_secondary_attack(ent)
 
 public trace_attack_post(ent, attacker, Float:damage, Float:direction[3], ptr, damageType)
 {
-	static weapon, Float:vectorEnd[3];
-
 	if (pev_valid(attacker) != VALID_PDATA || playerData[attacker][SKINS_BLOCKED]) return HAM_IGNORED;
 
-	weapon = get_pdata_cbase(attacker, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
+	new weapon = get_pdata_cbase(attacker, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
 
 	if (!weapon || weapon_entity(weapon) == CSW_KNIFE) return HAM_IGNORED;
+
+	static Float:vectorEnd[3];
 
 	get_tr2(ptr, TR_vecEndPos, vectorEnd);
 
@@ -2708,21 +2710,21 @@ public update_client_data_post(id, sendWeapons, handleCD)
 
 	enum { SPEC_MODE, SPEC_TARGET, SPEC_END };
 
-	static specInfo[MAX_PLAYERS + 1][SPEC_END], Float:gameTime, Float:lastEventCheck, specMode, ent, weapon, target, owner;
+	static specInfo[MAX_PLAYERS + 1][SPEC_END], Float:gameTime, Float:lastEventCheck, specMode;
 
-	target = (specMode = pev(id, pev_iuser1)) ? pev(id, pev_iuser2) : id;
+	new target = (specMode = pev(id, pev_iuser1)) ? pev(id, pev_iuser2) : id;
 
 	if (pev_valid(target) != VALID_PDATA || !is_user_alive(target) || playerData[id][SKINS_BLOCKED]) return FMRES_IGNORED;
 
-	ent = get_pdata_cbase(target, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
+	new ent = get_pdata_cbase(target, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
 
 	if (!ent || pev_valid(ent) != VALID_PDATA) return FMRES_IGNORED;
 
-	weapon = weapon_entity(ent);
+	new weapon = weapon_entity(ent);
 
 	if (weapon == CSW_HEGRENADE || weapon == CSW_SMOKEGRENADE || weapon == CSW_FLASHBANG || weapon == CSW_C4) return FMRES_IGNORED;
 
-	owner = get_pdata_int(ent, OFFSET_ID, OFFSET_ITEM_LINUX);
+	new owner = get_pdata_int(ent, OFFSET_ID, OFFSET_ITEM_LINUX);
 
 	if (!owner) return FMRES_IGNORED;
 
@@ -2810,11 +2812,7 @@ public check_aim_weapon(id)
 
 	if (!pev_valid(id) || !is_user_alive(id)) return FMRES_IGNORED;
 
-	static bool:canPickup[MAX_PLAYERS + 1], weaponHud, ent;
-
-	ent = fm_get_user_aiming_ent(id, "weaponbox");
-
-	if (!weaponHud) weaponHud = CreateHudSyncObj();
+	new ent = fm_get_user_aiming_ent(id, "weaponbox");
 
 	if (!pev_valid(ent) || task_exists(ent)) {
 		if (canPickup[id]) ClearSyncHud(id, weaponHud);
@@ -2900,14 +2898,12 @@ stock change_skin(id, weapon, ent = 0)
 	static skin[skinsInfo];
 
 	if (is_valid_ent(ent) && weapon != CSW_KNIFE) {
-		static weaponOwner, weaponSkin;
-
-		weaponOwner = entity_get_int(ent, EV_INT_iuser1);
+		new weaponOwner = entity_get_int(ent, EV_INT_iuser1);
 
 		if (is_user_connected(weaponOwner) && !is_user_hltv(weaponOwner) && !is_user_bot(weaponOwner)) {
 			playerData[id][TEMP][WEAPON_ENT] = ent;
 
-			weaponSkin = entity_get_int(ent, EV_INT_iuser2);
+			new weaponSkin = entity_get_int(ent, EV_INT_iuser2);
 
 			if (weaponSkin > NONE) {
 				static weaponName[32];
@@ -2950,9 +2946,9 @@ public deploy_weapon_switch(id)
 
 	if (pev_valid(id) != VALID_PDATA || !is_user_alive(id)) return;
 
-	static skin[skinsInfo], defaultSkin[128], weaponName[32], weapon;
+	static skin[skinsInfo], defaultSkin[128], weaponName[32];
 
-	weapon = get_pdata_cbase(id, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
+	new weapon = get_pdata_cbase(id, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
 
 	if (!weapon || pev_valid(weapon) != VALID_PDATA) return;
 
@@ -3013,7 +3009,7 @@ stock send_weapon_animation(id, submodel, animation = 0)
 
 stock get_weapon_draw_animation(entity, temp = NONE)
 {
-	static animation, weaponState, weapon;
+	static animation, weaponState;
 
 	if (get_pdata_int(entity, OFFSET_SILENCER, OFFSET_ITEM_LINUX) & WPNSTATE_USP_SILENCED || get_pdata_int(entity, OFFSET_SILENCER, OFFSET_ITEM_LINUX) & WPNSTATE_M4A1_SILENCED) {
 		weaponState = SILENCED;
@@ -3021,7 +3017,7 @@ stock get_weapon_draw_animation(entity, temp = NONE)
 		weaponState = UNSILENCED;
 	}
 
-	weapon = temp != NONE ? temp : weapon_entity(entity);
+	new weapon = temp != NONE ? temp : weapon_entity(entity);
 
 	switch (weapon) {
 		case CSW_P228, CSW_XM1014, CSW_M3: animation = 6;
@@ -3083,7 +3079,7 @@ stock emulate_primary_attack(ent)
 
 stock weapon_shoot_info(ent, animation, const soundEmpty[], const soundFire[], autoShoot, weaponType)
 {
-	static id, clip;
+	new id, clip;
 
 	if (pev_valid(ent) != VALID_PDATA) return HAM_IGNORED;
 
@@ -3425,16 +3421,15 @@ public _csgo_get_min_players()
 
 stock get_weapon_skin_name(id, ent, dataReturn[], dataLength, weapon = 0, check = 0)
 {
-	static ownerName[32], weaponName[32], skinWeapon[32], defaultName[32], weaponOwner, weaponSkin;
-	weaponOwner = 0, weaponSkin = NONE;
+	static ownerName[32], weaponName[32], skinWeapon[32], defaultName[32];
 
 	formatex(defaultName, charsmax(defaultName), "%L", id, "CSGO_CORE_DEFAULT");
 
 	if (is_valid_ent(ent)) {
-		weaponOwner = entity_get_int(ent, EV_INT_iuser1);
+		new weaponOwner = entity_get_int(ent, EV_INT_iuser1);
 
 		if (is_user_connected(weaponOwner) && !is_user_hltv(weaponOwner) && !is_user_bot(weaponOwner)) {
-			weaponSkin = entity_get_int(ent, EV_INT_iuser2);
+			new weaponSkin = entity_get_int(ent, EV_INT_iuser2);
 
 			if (weaponSkin > NONE) {
 				get_skin_info(weaponSkin, SKIN_WEAPON, skinWeapon, charsmax(skinWeapon));

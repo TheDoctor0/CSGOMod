@@ -63,7 +63,7 @@ public deagle_reload(weapon)
 {
 	if (pev_valid(weapon) != VALID_PDATA) return HAM_IGNORED;
 
-	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
+	new id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	remove_task(id);
 
@@ -80,7 +80,7 @@ public deagle_override(weapon)
 {
 	if (pev_valid(weapon) != VALID_PDATA) return HAM_IGNORED;
 
-	static id; id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
+	new id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	remove_task(id);
 
@@ -109,8 +109,8 @@ public inspect_weapon(id)
 {
 	if (pev_valid(id) != VALID_PDATA || !is_user_alive(id) || cs_get_user_shield(id) || cs_get_user_zoom(id) > 1) return PLUGIN_HANDLED;
 
-	new weaponId = get_user_weapon(id);
-	static weapon; weapon = get_pdata_cbase(id, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
+	new weaponId = get_user_weapon(id),
+		weapon = get_pdata_cbase(id, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
 
 	if (weaponsWithoutInspect & (1<<weaponId) || !pev_valid(weapon)) return PLUGIN_HANDLED;
 
