@@ -1,6 +1,6 @@
 // Start of QC script.
 
-$modelname "v_mp5.mdl"
+$modelname "v_mp5navy.mdl"
 $cd ".\"
 $cdtexture ".\"
 $scale 1.0
