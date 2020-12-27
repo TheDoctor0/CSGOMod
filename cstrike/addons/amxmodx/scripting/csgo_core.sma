@@ -80,10 +80,10 @@ enum _:marketInfo { MARKET_ID, MARKET_SKIN, MARKET_OWNER, Float:MARKET_PRICE };
 enum _:typeInfo { TYPE_NAME, TYPE_STEAM_ID };
 
 new playerData[MAX_PLAYERS + 1][playerInfo], Array:playerSkins[MAX_PLAYERS + 1], Float:randomSkinPrice[WEAPON_ALL + 1], overallSkinChance[WEAPON_ALL + 1],
-	bool:canPickup[MAX_PLAYERS + 1], Array:skins, Array:weapons, Array:market, Handle:sql, Handle:connection, saveType, marketSkins, multipleSkins, skinChance,
-	skinChanceSVIP, silencerAttached, Float:skinChancePerMember, maxMarketSkins, Float:marketCommision, Float:killReward, Float:killHSReward, Float:bombReward,
-	Float:defuseReward, Float:hostageReward, Float:winReward, Float:botMultiplier, Float:vipMultiplier, Float:svipMultiplier, minPlayers, minPlayerFilter,
-	bool:end, bool:sqlConnected, sqlHost[64], sqlUser[64], sqlPassword[64], sqlDatabase[64], skinsPath[64], force, resetHandle, weaponHud;
+	bool:canPickup[MAX_PLAYERS + 1], Array:skins, Array:weapons, Array:market, Handle:sql, Handle:connection, saveType, marketSkins, multipleSkins, defaultSkins,
+	skinChance, skinChanceSVIP, silencerAttached, Float:skinChancePerMember, maxMarketSkins, Float:marketCommision, Float:killReward, Float:killHSReward,
+	Float:bombReward, Float:defuseReward, Float:hostageReward, Float:winReward, Float:botMultiplier, Float:vipMultiplier, Float:svipMultiplier, minPlayers,
+	minPlayerFilter, bool:end, bool:sqlConnected, sqlHost[64], sqlUser[64], sqlPassword[64], sqlDatabase[64], skinsPath[64], force, resetHandle, weaponHud;
 
 native csgo_get_zeus(id);
 
@@ -104,6 +104,7 @@ public plugin_init()
 
 	bind_pcvar_num(create_cvar("csgo_save_type", "0"), saveType);
 	bind_pcvar_num(create_cvar("csgo_multiple_skins", "1"), multipleSkins);
+	bind_pcvar_num(create_cvar("csgo_default_skins", "1"), defaultSkins);
 	bind_pcvar_num(create_cvar("csgo_min_players", "4"), minPlayers);
 	bind_pcvar_num(create_cvar("csgo_min_player_filter", "0"), minPlayerFilter);
 	bind_pcvar_num(create_cvar("csgo_max_market_skins", "5"), maxMarketSkins);
@@ -2962,10 +2963,17 @@ public deploy_weapon_switch(id)
 
 		set_pev(id, pev_viewmodel2, skin[SKIN_MODEL]);
 		set_pev(id, pev_body, skin[SKIN_SUBMODEL]);
-	} else {
+	} else if (defaultSkins) {
 		get_weaponname(playerData[id][TEMP][WEAPON], weaponName, charsmax(weaponName));
 
 		formatex(defaultSkin, charsmax(defaultSkin), "%s/%s/v_%s_0.mdl", skinsPath, weaponName[7], weaponName[7]);
+
+		set_pev(id, pev_viewmodel2, defaultSkin);
+		set_pev(id, pev_body, 0);
+	} else {
+		get_weaponname(playerData[id][TEMP][WEAPON], weaponName, charsmax(weaponName));
+
+		formatex(defaultSkin, charsmax(defaultSkin), "models/v_%s.mdl", weaponName[7]);
 
 		set_pev(id, pev_viewmodel2, defaultSkin);
 		set_pev(id, pev_body, 0);
