@@ -62,23 +62,27 @@ weapons = {
     "thighpack": False,
 }
 
-models_directory = f"models/{sys.argv[1] if len(sys.argv) > 1 and len(sys.argv[1]) else 'csgo_ozone_v2'}"
+custom_models_directory = sys.argv[1] if len(sys.argv) > 1 and len(sys.argv[1]) else 'csgo_ozone_v2'
 compiler = "studiomdl.exe"
 compiled_directory = "_compiled"
+compiled_models_directory = f"{compiled_directory}/{custom_models_directory}"
 skins_directory = "skins"
 models_directory = "models"
-default_model = "default.mdl"
 smd_directory = "smd"
 skins_ini = "csgo_skins.ini"
 smd_template = "template.smd"
 qc_template = "template.qc"
 default_skin = "default.bmp"
+default_model = "default.mdl"
 max_per_file = 40
 
 print('Compiling models...')
 
-if not path.exists(compiled_directory):
-    os.mkdir(compiled_directory)
+if path.exists(compiled_directory):
+    shutil.rmtree(compiled_directory)
+
+os.mkdir(compiled_directory)
+os.mkdir(compiled_models_directory)
 
 with open(path.join(compiled_directory, skins_ini), 'w+') as generated_ini:
     generated_ini.write(""";---INSTRUCTIONS---
@@ -98,7 +102,7 @@ with open(path.join(compiled_directory, skins_ini), 'w+') as generated_ini:
 
     for weapon in weapons.keys():
         if weapon != "random":
-            weapon_compiled_directory = path.join(compiled_directory, weapon)
+            weapon_compiled_directory = path.join(compiled_models_directory, weapon)
 
             if path.exists(weapon_compiled_directory):
                 shutil.rmtree(weapon_compiled_directory)
@@ -111,7 +115,7 @@ with open(path.join(compiled_directory, skins_ini), 'w+') as generated_ini:
             model_files = glob.glob(path.join(weapon, f"*_{weapon}.mdl"))
 
             for model_file in model_files:
-                shutil.copyfile(model_file, path.join(compiled_directory, model_file))
+                shutil.copyfile(model_file, path.join(compiled_models_directory, model_file))
 
             continue
 
@@ -128,7 +132,7 @@ with open(path.join(compiled_directory, skins_ini), 'w+') as generated_ini:
             skin_file = path.basename(skin)
 
             if skin_file == default_model:
-                shutil.copyfile(skin, path.join(compiled_directory, f"{weapon}/v_{weapon}_0.mdl"))
+                shutil.copyfile(skin, path.join(compiled_models_directory, f"{weapon}/v_{weapon}_0.mdl"))
 
                 default_skin_found = True
 
@@ -148,13 +152,13 @@ with open(path.join(compiled_directory, skins_ini), 'w+') as generated_ini:
                 .title()
 
             generated_ini.write(f'"{skin_name}"'
-                                f'\t\t"{f"{models_directory}/{weapon}/v_{weapon}_{skin_file}"}"'
+                                f'\t\t"{f"models/{custom_models_directory}/{weapon}/v_{weapon}_{skin_file}"}"'
                                 f'\t\t"0"'
                                 f'\t\t"{weapons.get(weapon).get("skin")}"'
                                 f'\t\t"1"'
                                 f'\t\t"1"\n')
 
-            shutil.copyfile(skin, path.join(compiled_directory, f"{weapon}/v_{weapon}_{skin_file}"))
+            shutil.copyfile(skin, path.join(compiled_models_directory, f"{weapon}/v_{weapon}_{skin_file}"))
 
             continue
 
@@ -186,7 +190,7 @@ with open(path.join(compiled_directory, skins_ini), 'w+') as generated_ini:
 
         if 'knife_' in weapon:
             generated_ini.write(f'"{weapon.replace("knife_", "").replace("_", "").title()} | Vanilla"'
-                                f'\t\t"{f"{models_directory}/{weapon}/v_{weapon}_0.mdl"}"'
+                                f'\t\t"{f"models/{custom_models_directory}/{weapon}/v_{weapon}_0.mdl"}"'
                                 f'\t\t"0"'
                                 f'\t\t"{weapon_data.get("skin")}"'
                                 f'\t\t"1"'
@@ -242,7 +246,7 @@ with open(path.join(compiled_directory, skins_ini), 'w+') as generated_ini:
                 .title()
 
             generated_ini.write(f'"{prefix}{skin_name}"'
-                                f'\t\t"{f"{models_directory}/{weapon}/v_{weapon}_{order}.mdl"}"'
+                                f'\t\t"{f"models/{custom_models_directory}/{weapon}/v_{weapon}_{order}.mdl"}"'
                                 f'\t\t"{index - order * max_per_file}"'
                                 f'\t\t"{weapon_data.get("skin")}"'
                                 f'\t\t"1"'
@@ -262,6 +266,6 @@ with open(path.join(compiled_directory, skins_ini), 'w+') as generated_ini:
         model_files = glob.glob(path.join(weapon, f"v_{weapon}_*.mdl"))
 
         for model_file in model_files:
-            shutil.move(model_file, path.join(compiled_directory, model_file))
+            shutil.move(model_file, path.join(compiled_models_directory, model_file))
 
 print('Finished compiling models and generating `csgo_skins.ini`.')

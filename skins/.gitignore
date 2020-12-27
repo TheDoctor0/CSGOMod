@@ -1,2 +1,6 @@
 .idea
 _compiled/*
+*/smd
+*/studiomdl.exe
+*/*.mdl
+*/*.qc
