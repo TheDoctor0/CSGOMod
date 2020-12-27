@@ -44,13 +44,13 @@ weapons = {
     "tmp": {"random": 10.0, "skin": 40},
     "scout": {"random": 15.0, "skin": 60},
     "aug": {"random": 20.0, "skin": 80},
-    "sg552": {"random": 20.0, "skin": 80, "skins": ["", "Aerial", "Cyrex", "Phantom", "Pulse", "Tiger Moth", "Triarch"]},
+    "sg552": {"random": 20.0, "skin": 80},
     "p228": {"random": 10.0, "skin": 40},
     "fiveseven": {"random": 10.0, "skin": 40},
-    "elite": {"random": 10.0, "skin": 40, "skins": ["", "Cobalt Quartz", "Dualing Dragons", "Royal Consorts", "Urban Shock"]},
-    "m3": {"random": 10.0, "skin": 40, "skins": ["", "Antique", "Hyperbeast", "Koi", "Rising Skull"]},
+    "elite": {"random": 10.0, "skin": 40},
+    "m3": {"random": 10.0, "skin": 40},
     "xm1014": {"random": 10.0, "skin": 40},
-    "m249": {"random": 10.0, "skin": 40, "skins": ["", "Gator Mesh", "Nebula Crusader", "Sprectre", "System Lock"]},
+    "m249": {"random": 10.0, "skin": 40},
     "sg550": {"random": 10.0, "skin": 40},
     "g3sg1": {"random": 10.0, "skin": 40},
     "flashbang": False,
@@ -66,6 +66,8 @@ models_directory = f"models/{sys.argv[1] if len(sys.argv) > 1 and len(sys.argv[1
 compiler = "studiomdl.exe"
 compiled_directory = "_compiled"
 skins_directory = "skins"
+models_directory = "models"
+default_model = "default.mdl"
 smd_directory = "smd"
 skins_ini = "csgo_skins.ini"
 smd_template = "template.smd"
@@ -119,39 +121,59 @@ with open(path.join(compiled_directory, skins_ini), 'w+') as generated_ini:
             if weapon == "random":
                 continue
 
-        existing_skins = weapon_data.get('skins')
+        existing_skins = glob.glob(path.join(weapon, models_directory, "*.mdl"))
+        default_skin_found = False
 
-        if existing_skins is not None:
-            for index, skin_name in enumerate(existing_skins, start=0):
-                if index > 0:
-                    generated_ini.write(f'"{skin_name}"'
-                                        f'\t\t"{f"{models_directory}/{weapon}/v_{weapon}_{index}.mdl"}"'
-                                        f'\t\t"0"'
-                                        f'\t\t"{weapons.get(weapon).get("skin")}"'
-                                        f'\t\t"1"'
-                                        f'\t\t"1"\n')
+        for skin in existing_skins:
+            skin_file = path.basename(skin)
 
-                model_file = f"{weapon}/v_{weapon}_{index}.mdl"
+            if skin_file == default_model:
+                shutil.copyfile(skin, path.join(compiled_directory, f"{weapon}/v_{weapon}_0.mdl"))
 
-                shutil.copyfile(model_file, path.join(compiled_directory, model_file))
+                default_skin_found = True
+
+                continue
+
+            if weapon in ["m4a4", "knife"]:
+                prefix = f'{weapon.title()} | '
+            elif "knife_" in weapon:
+                prefix = f'{weapon.replace("knife_", "").replace("_", " ").title()} | '
+            else:
+                prefix = ""
+
+            skin_name = skin_file.replace(path.join(weapon, skins_directory, ""), "")\
+                .replace(f"{weapon}_", "")\
+                .replace(".mdl", "")\
+                .replace("_", " ")\
+                .title()
+
+            generated_ini.write(f'"{skin_name}"'
+                                f'\t\t"{f"{models_directory}/{weapon}/v_{weapon}_{skin_file}"}"'
+                                f'\t\t"0"'
+                                f'\t\t"{weapons.get(weapon).get("skin")}"'
+                                f'\t\t"1"'
+                                f'\t\t"1"\n')
+
+            shutil.copyfile(skin, path.join(compiled_directory, f"{weapon}/v_{weapon}_{skin_file}"))
 
             continue
 
-        if not path.isfile(path.join(weapon, smd_template)):
-            print(f"File `{smd_template}` for weapon {weapon} does not exists!")
-            exit(0)
+        if not default_skin_found:
+            if not path.isfile(path.join(weapon, smd_template)):
+                print(f"File `{smd_template}` for weapon {weapon} does not exists!")
+                exit(0)
 
-        if not path.isfile(path.join(weapon, qc_template)):
-            print(f"File `{qc_template}` for weapon {weapon} does not exists!")
-            exit(0)
+            if not path.isfile(path.join(weapon, qc_template)):
+                print(f"File `{qc_template}` for weapon {weapon} does not exists!")
+                exit(0)
 
-        if not path.isfile(path.join(weapon, default_skin)):
-            print(f"File `{default_skin}` for weapon {weapon} does not exists!")
-            exit(0)
+            if not path.isfile(path.join(weapon, default_skin)):
+                print(f"File `{default_skin}` for weapon {weapon} does not exists!")
+                exit(0)
 
-        if not path.isdir(path.join(weapon, skins_directory)):
-            print(f"Directory `{skins_directory}` for weapon {weapon} does not exists!")
-            exit(0)
+            if not path.isdir(path.join(weapon, skins_directory)):
+                print(f"Directory `{skins_directory}` for weapon {weapon} does not exists!")
+                exit(0)
 
         weapon_smd_directory = path.join(weapon, smd_directory)
 
