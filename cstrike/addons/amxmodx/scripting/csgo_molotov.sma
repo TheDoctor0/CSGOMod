@@ -9,11 +9,8 @@
 #define PLUGIN	"CS:GO Molotov"
 #define AUTHOR	"DynamicBits & O'Zone"
 
-#define TASK_RESET		1000
-#define TASK_OFFSET		10
-#define TASK_BASE1		2000
-#define TASK_BASE2		TASK_BASE1 + (TASK_OFFSET * MAX_PLAYERS)
-#define TASK_BASE3		TASK_BASE1 + TASK_BASE2 + (TASK_OFFSET * MAX_PLAYERS)
+#define ENT_FIRE		pev_iuser3
+#define THINK_COUNT		pev_iuser4
 
 enum { ViewModel, PlayerModel, WorldModel, WorldModelBroken }
 new const models[][] = {
@@ -37,8 +34,8 @@ new const molotovWeaponName[] = "weapon_hegrenade", molotovClassName[] = "moloto
 
 new const commandBuy[][] = { "say /molotov", "say_team /molotov", "say /m", "say_team /m", "molotov" };
 
-new molotovEnabled, molotovPrice, molotov, mapBuyBlock, fireSprite, smokeSprite[2], molotovOffset[MAX_PLAYERS + 1],
-	bool:restarted, bool:reset, Float:molotovRadius, Float:molotovFireTime, Float:molotovFireDamage, Float:gameTime;
+new molotovEnabled, molotovPrice, molotov, mapBuyBlock, fireSprite, smokeSprite[2], bool:restarted, bool:reset,
+	Float:molotovRadius, Float:molotovFireTime, Float:molotovFireDamage, Float:gameTime;
 
 public plugin_init()
 {
@@ -57,6 +54,8 @@ public plugin_init()
 	register_event("TextMsg", "event_game_restart", "a", "2=#Game_Commencing", "2=#Game_will_restart_in");
 
 	register_logevent("event_round_end", 2, "1=Round_End");
+
+	register_think(molotovClassName, "think_molotov");
 
 	RegisterHam(Ham_Item_Deploy, molotovWeaponName, "molotov_deploy_model", 1);
 	RegisterHam(Ham_Spawn, "player", "player_spawned", 1);
@@ -198,19 +197,19 @@ public buy_molotov(id)
 }
 
 public event_deathmsg()
-	rem_bit(read_data(2), molotov);
+{
+	new victim = read_data(2);
+
+	if (is_user_connected(victim)) {
+		rem_bit(victim, molotov);
+	}
+}
 
 public event_game_restart()
 	restarted = true;
 
 public event_round_end()
-{
-	if (!reset) {
-		reset_tasks();
-
-		reset = true;
-	}
-}
+	reset = true;
 
 public event_new_round()
 {
@@ -225,8 +224,6 @@ public event_new_round()
 
 		restarted = false;
 	}
-
-	reset_tasks();
 
 	remove_molotovs();
 
@@ -271,11 +268,11 @@ public set_model(ent, model[])
 
 	if (!equal(className, "grenade") || containi(model, "hegrenade") == -1) return FMRES_IGNORED;
 
-	new id = entity_get_edict(ent, EV_ENT_owner);
+	new id = pev(ent, pev_owner);
 
 	if (!is_user_connected(id) || !pev_valid(id) || !get_bit(id, molotov)) return FMRES_IGNORED;
 
-	set_pev(ent, pev_nextthink, 9999.0);
+	set_pev(ent, pev_dmgtime, 9999.0);
 	set_pev(ent, pev_team, get_user_team(id));
 
 	engfunc(EngFunc_SetModel, ent, models[WorldModel]);
@@ -294,15 +291,7 @@ public sound_emit(ent, channel, sample[])
 	if (contain(modelName, models[WorldModel]) != -1) {
 		emit_sound(ent, CHAN_AUTO, "debris/glass2.wav", VOL_NORM, ATTN_STATIC, 0, PITCH_LOW);
 
-		new Float:velocity[3];
-
-		pev(ent, pev_velocity, velocity);
-
-		velocity[0] *= 0.01;
-		velocity[1] *= 0.01;
-		velocity[2] *= 0.01;
-
-		set_pev(ent, pev_velocity, velocity);
+		set_pev(ent, pev_velocity, {0.0, 0.0, 0.0});
 
 		molotov_explode(ent);
 
@@ -316,99 +305,89 @@ public sound_emit(ent, channel, sample[])
 	return FMRES_IGNORED;
 }
 
-stock molotov_explode(ent)
+stock molotov_explode(entMolotov)
 {
-	new Float:tempOrigin[3], origin[3], data[8], owner = pev(ent, pev_owner);
+	new owner = pev(entMolotov, pev_owner);
 
 	if (!pev_valid(owner)) return;
 
 	rem_bit(owner, molotov);
 
 	if (reset) {
-		set_pev(ent, pev_flags, pev(ent, pev_flags) | FL_KILLME);
+		engfunc(EngFunc_RemoveEntity, entMolotov);
 
 		return;
 	}
 
-	set_pev(ent, pev_classname, molotovClassName);
+	new Float:origin[3];
 
-	engfunc(EngFunc_SetModel, ent, models[WorldModelBroken]);
-	entity_set_int(ent, EV_INT_solid, SOLID_NOT);
-
-	pev(ent, pev_origin, tempOrigin);
+	pev(entMolotov, pev_origin, origin);
 
 	new entFire = engfunc(EngFunc_CreateNamedEntity, engfunc(EngFunc_AllocString, "info_target"));
 
-	set_pev(entFire, pev_classname, molotovClassName);
-	set_pev(entFire, pev_origin, tempOrigin);
+	set_pev(entFire, pev_classname, "molotov_fire");
+	set_pev(entFire, pev_owner, owner);
+	set_pev(entFire, pev_origin, origin);
+	set_pev(entFire, pev_nextthink, get_gametime() + 0.1);
 
-	if (molotovOffset[owner] == TASK_OFFSET - 1) molotovOffset[owner] = 0;
+	engfunc(EngFunc_SetModel, entMolotov, models[WorldModelBroken]);
+	entity_set_int(entMolotov, EV_INT_solid, SOLID_NOT);
 
-	data[0] = ent;
-	data[1] = entFire;
-	data[2] = owner;
-	data[3] = molotovOffset[owner]++;
-	data[4] = pev(ent, pev_team);
-	data[5] = origin[0] = floatround(tempOrigin[0]);
-	data[6] = origin[1] = floatround(tempOrigin[1]);
-	data[7] = origin[2] = floatround(tempOrigin[2]);
+	set_pev(entMolotov, pev_classname, molotovClassName);
+	set_pev(entMolotov, pev_nextthink, get_gametime() + 0.1);
+	set_pev(entMolotov, ENT_FIRE, entFire);
+	set_pev(entMolotov, THINK_COUNT, floatround(molotovFireTime / 0.1, floatround_floor) - 1);
 
-	if (extinguish_molotov(data)) return;
+	if (extinguish_molotov(entMolotov)) return;
+
+	emit_sound(entMolotov, CHAN_AUTO, sounds[Explode], VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
+}
+
+public think_molotov(entMolotov)
+{
+	new entFire = pev(entMolotov, ENT_FIRE), owner = pev(entMolotov, pev_owner);
+
+	if (!pev_valid(entMolotov) || !pev_valid(entFire) || !pev_valid(owner) || !is_user_connected(owner) || extinguish_molotov(entMolotov)) {
+		fire_stop(entMolotov);
+
+		return;
+	}
+
+	set_pev(entMolotov, THINK_COUNT, pev(entMolotov, THINK_COUNT) - 1);
+	set_pev(entMolotov, pev_nextthink, get_gametime() + 0.1);
+	set_pev(entFire, pev_nextthink, get_gametime() + 0.1);
+
+	if (!pev(entMolotov, THINK_COUNT)) {
+		fire_stop(entMolotov);
+
+		return;
+	}
+
+	if (pev(entMolotov, THINK_COUNT) % 10 == 0) {
+		emit_sound(entMolotov, CHAN_AUTO, sounds[Fire], VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
+	}
+
+	new Float:origin[3];
+
+	pev(entMolotov, pev_origin, origin);
 
 	random_fire(origin, entFire);
 
-	emit_sound(ent, CHAN_AUTO, sounds[Explode], VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
-
-	set_task(0.1, "fire_damage", TASK_BASE1 + (TASK_OFFSET * owner) + molotovOffset[owner], data, sizeof(data), "a", floatround(molotovFireTime / 0.1, floatround_floor));
-	set_task(1.0, "fire_sound", TASK_BASE2 + (TASK_OFFSET * owner) + molotovOffset[owner], data, sizeof(data), "a", floatround(molotovFireTime) - 1);
-
-	set_task(molotovFireTime, "fire_stop", TASK_BASE3 + (TASK_OFFSET * owner) + molotovOffset[owner], data, sizeof(data));
+	radius_damage2(pev(entMolotov, pev_owner), pev(entMolotov, pev_team), origin, molotovFireDamage, molotovRadius);
 }
 
-public fire_sound(data[])
+public fire_stop(entMolotov)
 {
-	new ent = data[0];
+	if (pev_valid(entMolotov)) {
+		new entFire = pev(entMolotov, ENT_FIRE);
 
-	if (!pev_valid(ent)) return;
+		if (pev_valid(entFire)) {
+			set_pev(entFire, pev_flags, pev(entFire, pev_flags) | FL_KILLME);
+		}
 
-	new owner = data[2];
-
-	if (pev_valid(owner) && is_user_connected(owner)) {
-		emit_sound(ent, CHAN_AUTO, sounds[Fire], VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
-	} else {
-		fire_stop(data);
+		set_pev(entMolotov, pev_flags, pev(entMolotov, pev_flags) | FL_KILLME);
 	}
 }
-
-public fire_stop(data[])
-{
-	new ent = data[0], entFire = data[1];
-
-	if (pev_valid(ent)) set_pev(ent, pev_flags, pev(ent, pev_flags) | FL_KILLME);
-	if (pev_valid(entFire)) set_pev(entFire, pev_flags, pev(entFire, pev_flags) | FL_KILLME);
-}
-
-public fire_damage(data[])
-{
-	new ent = data[0], entFire = data[1], owner = data[2];
-
-	if (!pev_valid(ent) || !pev_valid(entFire) || !pev_valid(owner) || !is_user_connected(owner) || extinguish_molotov(data)) return;
-
-	new Float:newOrigin[3], origin[3];
-
-	origin[0] = data[5];
-	origin[1] = data[6];
-	origin[2] = data[7];
-
-	random_fire(origin, entFire);
-
-	IVecFVec(origin, newOrigin);
-
-	radius_damage2(owner, data[4], newOrigin, molotovFireDamage, molotovRadius);
-}
-
-public _csgo_get_user_molotov(id)
-	return get_bit(id, molotov);
 
 stock radius_damage2(attacker, team, Float:origin[3], Float:damage, Float:range)
 {
@@ -430,19 +409,23 @@ stock radius_damage2(attacker, team, Float:origin[3], Float:damage, Float:range)
 	}
 }
 
-stock extinguish_molotov(data[])
+stock extinguish_molotov(entMolotov)
 {
-	new ent = data[0], entFire = data[1], owner = data[2];
+	new entFire = pev(entMolotov, ENT_FIRE), owner = pev(entMolotov, pev_owner);
 
-	if (!pev_valid(ent) || !pev_valid(entFire) || !pev_valid(owner) || !is_user_connected(owner)) return false;
+	if (!pev_valid(entMolotov) || !pev_valid(entFire) || !pev_valid(owner) || !is_user_connected(owner)) {
+		fire_stop(entMolotov);
+
+		return true;
+	}
 
 	static entList[16];
 
-	new Float:dmgTime, foundGrenades = find_sphere_class(ent, "grenade", molotovRadius * 0.75, entList, charsmax(entList));
+	new foundGrenades = find_sphere_class(entMolotov, "grenade", molotovRadius * 0.75, entList, charsmax(entList));
 
 	for (new i = 0; i < foundGrenades; i++) {
 		if (grenade_is_smoke(entList[i])) {
-			new Float:velocity[3], Float:origin[3];
+			new Float:velocity[3], Float:origin[3], Float:dmgTime;
 
 			velocity[0] = 0.0;
 			velocity[1] = 0.0;
@@ -456,25 +439,13 @@ stock extinguish_molotov(data[])
 			entity_set_origin(entList[i], origin);
 
 			pev(entList[i], pev_dmgtime, dmgTime);
-			set_pev(entList[i], pev_dmgtime, dmgTime - 3.0);
 
-			if (!user_has_weapon(owner, CSW_HEGRENADE)) {
-				rem_bit(owner, molotov);
-			}
+			set_pev(entList[i], pev_dmgtime, floatmax(0.0, dmgTime - 3.0));
+			set_pev(entList[i], pev_velocity, {0.0, 0.0, 0.0});
 
-			remove_task(TASK_BASE1 + (TASK_OFFSET * owner) + data[3]);
-			remove_task(TASK_BASE2 + (TASK_OFFSET * owner) + data[3]);
-			remove_task(TASK_BASE3 + (TASK_OFFSET * owner) + data[3]);
+			emit_sound(entList[i], CHAN_AUTO, sounds[Extinguish], VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
 
-			if (pev_valid(ent)) {
-				emit_sound(entList[i], CHAN_AUTO, sounds[Extinguish], VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
-
-				set_pev(ent, pev_flags, pev(ent, pev_flags) | FL_KILLME);
-			}
-
-			if (pev_valid(entFire)) {
-				set_pev(entFire, pev_flags, pev(ent, pev_flags) | FL_KILLME);
-			}
+			fire_stop(entMolotov);
 
 			return true;
 		}
@@ -483,24 +454,26 @@ stock extinguish_molotov(data[])
 	return false;
 }
 
-stock random_fire(original[3], ent)
+stock random_fire(Float:temp[3], ent)
 {
-	new range, origin[3], counter, i;
+	new range, origin[3], source[3], counter, i;
+
+	FVecIVec(temp, source);
 
 	range = floatround(molotovRadius);
 
 	for (i = 1; i <= 5; i++) {
 		counter = 1;
 
-		origin[0] = original[0] + random_num(-range, range);
-		origin[1] = original[1] + random_num(-range, range);
-		origin[2] = original[2];
+		origin[0] = source[0] + random_num(-range, range);
+		origin[1] = source[1] + random_num(-range, range);
+		origin[2] = source[2];
 		origin[2] = ground_z(origin, ent);
 
-		while (get_distance(origin, original) > range) {
-			origin[0] = original[0] + random_num(-range, range);
-			origin[1] = original[1] + random_num(-range, range);
-			origin[2] = original[2];
+		while (get_distance(origin, source) > range) {
+			origin[0] = source[0] + random_num(-range, range);
+			origin[1] = source[1] + random_num(-range, range);
+			origin[2] = source[2];
 
 			if (++counter >= 10) origin[2] = ground_z(origin, ent, 1);
 			else origin[2] = ground_z(origin, ent);
@@ -528,17 +501,6 @@ stock random_fire(original[3], ent)
 	write_byte(random_num(10, 30));
 	write_byte(random_num(10, 20));
 	message_end();
-}
-
-stock reset_tasks()
-{
-	for (new i = 1; i <= MAX_PLAYERS; i++) {
-		for (new j = 0; j < TASK_OFFSET; j++) {
-			remove_task(TASK_BASE1 + (TASK_OFFSET * i) + j);
-			remove_task(TASK_BASE2 + (TASK_OFFSET * i) + j);
-			remove_task(TASK_BASE3 + (TASK_OFFSET * i) + j);
-		}
-	}
 }
 
 stock kill(killer, victim, team)
@@ -651,7 +613,9 @@ stock remove_molotovs(id = 0)
 	new ent = find_ent_by_class(0, molotovClassName);
 
 	while (ent > 0) {
-		if (!id || (id && entity_get_edict(ent, EV_ENT_owner) == id)) set_pev(ent, pev_flags, pev(ent, pev_flags) | FL_KILLME);
+		if (!id || (id && pev(ent, pev_owner) == id)) {
+			fire_stop(ent);
+		}
 
 		ent = find_ent_by_class(ent, molotovClassName);
 	}
@@ -672,3 +636,7 @@ stock Float:distance_to_floor(Float:start[3], ignoremonsters = 1)
 
 	return ret > 0 ? ret : 0.0;
 }
+
+
+public _csgo_get_user_molotov(id)
+	return get_bit(id, molotov);
