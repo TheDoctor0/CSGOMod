@@ -34,6 +34,51 @@ Plugins can be enabled / disabled in [plugins-csgo.ini](https://github.com/TheDo
 
 All of available configuration files have proper description.
 
+## Skins
+Skins customization is easy and can be done by anyone in a matter of minutes, so if you want to make your server special, make sure to customize them.
+
+Before starting you need to download and install [Python 3](https://www.python.org/downloads/) to use skins auto-compilation script.
+
+You also need to download `skins.zip` from the [latest release](https://github.com/TheDoctor0/CSGOMod/releases/latest) and extract it anywhere on your computer.
+Inside you will find source files for all skins that you can select for compilation. You may also extend it by adding some of your own.
+
+### Management
+Inside every weapon directory you will find `_textures` folder with all available skins. 
+Select and copy and any textures that you want to use into `skins` folder.
+
+Some textures are in `skins` by default (those are for skins included in `csgo_mod.zip`), but of course if you want you can remove or replace them.
+If you want you can download or make your own textures and add them here. All textures need to be `512x512px` and match weapon structure.
+
+You can also add skins any without submodels. Place them inside `models` folder in correct weapon directory.
+
+When you think that all skins are ready to compile run `compile.bat`, input new models directory name (optional but recommended) and press Enter.
+It will take some time to compile all skins so be patient.
+
+When the process is finished go into `_compiled` directory where you will find folder with all your skins as well as generated `csgo_skins.ini` that you can use.
+
+### Gloves
+If you want to have skins with different gloves you can check `_gloves` directory, select any gloves texture that you want and
+replace `gloves.bmp` (or `t_glove.bmp`) in any weapon directory. This will change them in all skins for this weapon.
+
+If you want to use different gloves only for single skin you will need to use model without submodels.
+There are two possible ways:
+1. Change existing model:
+- Download a model from [GameBanana](https://gamebanana.com/skins/games/4254) or any other source.
+- Download and install [Jed's Model Viewer](https://gamebanana.com/tools/4779).
+- Open model file in Jed's Model Viewer and go to `Textures` tab.
+- Select `gloves.bmp` (or `t_glove.bmp`) texture - it is required to be `512x512px`.
+- Click `Import Texture` and select any file from `_gloves` directory.
+- Click `File` > `Save Model As...` to save model file with changed gloves.
+
+2. Compile it yourself:
+- Copy all files from weapon directory to separate folder.
+- Copy `debug.bat` and `studiomdl.exe` to the same folder.
+- Replace `default.bmp` with any file from `_textures`.
+- Replace `gloves.bmp` (or `t_glove.bmp`) with any file from `_gloves`.
+- Run `debug.bat` and drag & drop `template.qc` file to script window to compile it.
+
+Remember to copy your new skin without submodels into `models` folder inside directory with weapon skins sources so compiler script can detect it.
+
 ## Commands
 If you want to add money (Euro) to any player balance, you can use this command::
 ```
@@ -54,9 +99,6 @@ To use those commands you need **ADMIN_ADMIN** access, so better add yourself *"
 
 ## Documentation
 Online documentation is available on [csgomod-docs.5v.pl](http://csgomod-docs.5v.pl/). You can also find it in [csgomod.inc](https://github.com/TheDoctor0/CSGOMod/blob/master/cstrike/addons/amxmodx/scripting/include/csgomod.inc).
-
-## Skins
-TODO
 
 ## Known issues
 1. Server may crash on map `csgo_dust2_new` with message `FATAL ERROR (shutting down): Cache_TryAlloc: x is greater then free hunk`.
