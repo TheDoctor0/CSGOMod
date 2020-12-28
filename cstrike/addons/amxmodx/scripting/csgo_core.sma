@@ -26,6 +26,10 @@
 #define TASK_DEPLOY 7321
 #define TASK_FORCE  8568
 
+// Uncomment to disable support for skins based on submodels
+//#define DISABLE_SUBMODELS
+
+#if !defined DISABLE_SUBMODELS
 #define WPNSTATE_USP_SILENCED		(1<<0)
 #define WPNSTATE_GLOCK18_BURST_MODE	(1<<1)
 #define WPNSTATE_M4A1_SILENCED		(1<<2)
@@ -39,12 +43,13 @@
 #define WEAPONTYPE_M4A1		5
 #define WEAPONTYPE_USP		6
 
+#define OBSERVER	4
+#endif
+
 #define WEAPON_ALL	31
 
 #define UNSILENCED 	0
 #define SILENCED 	1
-
-#define OBSERVER	4
 
 #define NONE		-1
 
@@ -67,8 +72,18 @@ new const ammoType[][] = { "", "357sig", "", "762nato", "", "buckshot", "", "45a
 new const weaponSlots[] = { -1, 2, -1, 1, 4, 1, 5, 1, 1, 4, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 4, 2, 1, 1, 3, 1 };
 new const maxBPAmmo[] = { -1, 52, -1, 90, 1, 32, 1, 100, 90, 1, 120, 100, 100, 90, 90, 90, 100, 120, 30, 120, 200, 32, 90, 120, 90, 2, 35, 90, 90, -1, 100 };
 
+#if !defined DISABLE_SUBMODELS
 new const defaultShell[] = "models/pshell.mdl",
 		  shotgunShell[] = "models/shotgunshell.mdl";
+#else
+new const defaultModels[][] = { "", "models/csgo_ozone_v2/p228/v_p228.mdl", "", "models/csgo_ozone_v2/scout/v_scout.mdl", "", "models/csgo_ozone_v2/xm1014/v_xm1014.mdl", "",
+	"models/csgo_ozone_v2/mac10/v_mac10.mdl", "models/csgo_ozone_v2/aug/v_aug.mdl", "", "models/csgo_ozone_v2/elite/v_elite.mdl", "models/csgo_ozone_v2/fiveseven/v_fiveseven.mdl",
+	"models/csgo_ozone_v2/ump45/v_ump45.mdl", "models/csgo_ozone_v2/sg550/v_sg550.mdl", "models/csgo_ozone_v2/galil/v_galil.mdl", "models/csgo_ozone_v2/famas/v_famas.mdl",
+	"models/csgo_ozone_v2/usp/v_usp.mdl", "models/csgo_ozone_v2/glock18/v_glock18.mdl", "models/csgo_ozone_v2/awp/v_awp.mdl", "models/csgo_ozone_v2/mp5navy/v_mp5navy.mdl",
+	"models/csgo_ozone_v2/m249/v_m249.mdl", "models/csgo_ozone_v2/m3/v_m3.mdl", "models/csgo_ozone_v2/m4a1/v_m4a1.mdl", "models/csgo_ozone_v2/tmp/v_tmp.mdl",
+	"models/csgo_ozone_v2/g3sg1/v_g3sg1.mdl", "", "models/csgo_ozone_v2/deagle/v_deagle.mdl", "models/csgo_ozone_v2/sg552/v_sg552.mdl", "models/csgo_ozone_v2/ak47/v_ak47.mdl",
+	"models/csgo_ozone_v2/knife/v_knife.mdl", "models/csgo_ozone_v2/p90/v_p90.mdl" };
+#endif
 
 enum _:tempInfo { WEAPON, WEAPONS, WEAPON_ENT, EXCHANGE_PLAYER, EXCHANGE, EXCHANGE_FOR_SKIN, GIVE_PLAYER, SALE_SKIN, BUY_SKIN,
 	BUY_WEAPON, BUY_SUBMODEL, ADD_SKIN, Float:COUNTDOWN };
@@ -154,9 +169,12 @@ public plugin_init()
 	register_message(SVC_INTERMISSION, "message_intermission");
 
 	register_forward(FM_SetModel, "set_model", 0);
+
+	#if !defined DISABLE_SUBMODELS
 	register_forward(FM_UpdateClientData, "update_client_data_post", 1);
 	register_forward(FM_PlaybackEvent, "client_playback_event");
 	register_forward(FM_ClientUserInfoChanged, "client_user_info_changed");
+	#endif
 
 	RegisterHam(Ham_AddPlayerItem, "player", "add_player_item", 1);
 	RegisterHam(Ham_Spawn, "player", "player_spawn", 1);
@@ -168,15 +186,20 @@ public plugin_init()
 
 	for (new i = 0; i < sizeof weapons; i++) {
 		RegisterHam(Ham_Item_Deploy, weapons[i], "weapon_deploy_post", 1);
+
+		#if !defined DISABLE_SUBMODELS
 		RegisterHam(Ham_CS_Weapon_SendWeaponAnim, weapons[i], "weapon_send_weapon_anim_post", 1);
 		RegisterHam(Ham_Weapon_PrimaryAttack, weapons[i], "weapon_primary_attack");
+		#endif
 	}
 
+	#if !defined DISABLE_SUBMODELS
 	new const traceBullets[][] = { "func_breakable", "func_wall", "func_door", "func_plat", "func_rotating", "worldspawn", "func_door_rotating" };
 
 	for (new i = 0; i < sizeof traceBullets; i++) {
 		RegisterHam(Ham_TraceAttack, traceBullets[i], "trace_attack_post", 1);
 	}
+	#endif
 
 	RegisterHam(Ham_Weapon_SecondaryAttack, "weapon_m4a1", "m4a1_secondary_attack", 0);
 
@@ -187,14 +210,14 @@ public plugin_init()
 
 public plugin_precache()
 {
-	register_forward(FM_PrecacheModel, "forward_precache");
-
 	skins = ArrayCreate(skinsInfo);
 	market = ArrayCreate(marketInfo);
 	weapons = ArrayCreate(32, 32);
 
+	#if !defined DISABLE_SUBMODELS
 	precache_model(defaultShell);
 	precache_model(shotgunShell);
+	#endif
 
 	new file[128];
 
@@ -255,6 +278,20 @@ public plugin_precache()
 	}
 
 	fclose(fileOpen);
+
+	#if defined DISABLE_SUBMODELS
+	for (new i = 0; i < sizeof defaultModels; i++) {
+		if (!strlen(defaultModels[i])) continue;
+
+		if (!file_exists(defaultModels[i])) {
+			log_to_file("csgo-error.log", "[CS:GO] The file %s containing one of the default skins does not exist!", defaultModels[i]);
+
+			error = true;
+		} else {
+			precache_model(defaultModels[i]);
+		}
+	}
+	#endif
 
 	if (error) set_fail_state("[CS:GO] Not all the skins were loaded. Check the error logs!");
 
@@ -956,9 +993,13 @@ public buy_weapon_skin_confirm_handle(id, menu, item)
 		case 0: {
 			set_bit(id, force);
 
+			#if !defined DISABLE_SUBMODELS
 			set_pev(id, pev_viewmodel2, "");
 
 			set_task(0.1, "deploy_weapon_switch", id + TASK_DEPLOY);
+			#else
+			deploy_weapon_switch(id);
+			#endif
 
 			playerData[id][TEMP][COUNTDOWN] = get_gametime();
 
@@ -2534,15 +2575,18 @@ public weapon_deploy_post(ent)
 
 	if (weapon == CSW_P228 && csgo_get_user_zeus(id)) return HAM_IGNORED;
 
+	#if !defined DISABLE_SUBMODELS
 	if (weapon != CSW_HEGRENADE && weapon != CSW_SMOKEGRENADE && weapon != CSW_FLASHBANG && weapon != CSW_C4) {
 		set_pev(id, pev_viewmodel2, "");
 	}
+	#endif
 
 	change_skin(id, playerData[id][TEMP][WEAPON], ent);
 
 	return HAM_IGNORED;
 }
 
+#if !defined DISABLE_SUBMODELS
 public weapon_send_weapon_anim_post(ent, animation, skipLocal)
 {
 	if (pev_valid(ent) != VALID_PDATA) return HAM_IGNORED;
@@ -2585,6 +2629,31 @@ public weapon_primary_attack(ent)
 	return HAM_IGNORED;
 }
 
+public trace_attack_post(ent, attacker, Float:damage, Float:direction[3], ptr, damageType)
+{
+	if (pev_valid(attacker) != VALID_PDATA || playerData[attacker][SKINS_BLOCKED]) return HAM_IGNORED;
+
+	new weapon = get_pdata_cbase(attacker, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
+
+	if (!weapon || weapon_entity(weapon) == CSW_KNIFE) return HAM_IGNORED;
+
+	static Float:vectorEnd[3];
+
+	get_tr2(ptr, TR_vecEndPos, vectorEnd);
+
+	engfunc(EngFunc_MessageBegin, MSG_PAS, SVC_TEMPENTITY, vectorEnd, 0);
+	write_byte(TE_GUNSHOTDECAL);
+	engfunc(EngFunc_WriteCoord, vectorEnd[0]);
+	engfunc(EngFunc_WriteCoord, vectorEnd[1]);
+	engfunc(EngFunc_WriteCoord, vectorEnd[2]);
+	write_short(ent);
+	write_byte(random_num(41, 45));
+	message_end();
+
+	return HAM_IGNORED;
+}
+#endif
+
 public m4a1_secondary_attack(ent)
 {
 	if (pev_valid(ent) != VALID_PDATA) return HAM_IGNORED;
@@ -2608,30 +2677,6 @@ public m4a1_secondary_attack(ent)
 			return HAM_SUPERCEDE;
 		}
 	}
-
-	return HAM_IGNORED;
-}
-
-public trace_attack_post(ent, attacker, Float:damage, Float:direction[3], ptr, damageType)
-{
-	if (pev_valid(attacker) != VALID_PDATA || playerData[attacker][SKINS_BLOCKED]) return HAM_IGNORED;
-
-	new weapon = get_pdata_cbase(attacker, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
-
-	if (!weapon || weapon_entity(weapon) == CSW_KNIFE) return HAM_IGNORED;
-
-	static Float:vectorEnd[3];
-
-	get_tr2(ptr, TR_vecEndPos, vectorEnd);
-
-	engfunc(EngFunc_MessageBegin, MSG_PAS, SVC_TEMPENTITY, vectorEnd, 0);
-	write_byte(TE_GUNSHOTDECAL);
-	engfunc(EngFunc_WriteCoord, vectorEnd[0]);
-	engfunc(EngFunc_WriteCoord, vectorEnd[1]);
-	engfunc(EngFunc_WriteCoord, vectorEnd[2]);
-	write_short(ent);
-	write_byte(random_num(41, 45));
-	message_end();
 
 	return HAM_IGNORED;
 }
@@ -2705,6 +2750,7 @@ public set_model(ent, model[])
 	return HAM_IGNORED;
 }
 
+#if !defined DISABLE_SUBMODELS
 public update_client_data_post(id, sendWeapons, handleCD)
 {
 	if (!pev_valid(id)) return FMRES_IGNORED;
@@ -2806,6 +2852,7 @@ public client_user_info_changed(id)
 
 	return FMRES_IGNORED;
 }
+#endif
 
 public check_aim_weapon(id)
 {
@@ -2894,7 +2941,9 @@ stock change_skin(id, weapon, ent = 0)
 
 	if (!is_user_alive(id) || !weapon || weapon == CSW_HEGRENADE || weapon == CSW_SMOKEGRENADE || weapon == CSW_FLASHBANG || weapon == CSW_C4) return;
 
+	#if !defined DISABLE_SUBMODELS
 	set_pev(id, pev_viewmodel2, "");
+	#endif
 
 	static skin[skinsInfo];
 
@@ -2925,7 +2974,11 @@ stock change_skin(id, weapon, ent = 0)
 				}
 			}
 
+			#if !defined DISABLE_SUBMODELS
 			set_task(0.1, "deploy_weapon_switch", id + TASK_DEPLOY);
+			#else
+			deploy_weapon_switch(id);
+			#endif
 
 			return;
 		}
@@ -2938,16 +2991,22 @@ stock change_skin(id, weapon, ent = 0)
 		playerData[id][SUBMODEL] = skin[SKIN_SUBMODEL];
 	}
 
+	#if !defined DISABLE_SUBMODELS
 	set_task(0.1, "deploy_weapon_switch", id + TASK_DEPLOY);
+	#else
+	deploy_weapon_switch(id);
+	#endif
 }
 
 public deploy_weapon_switch(id)
 {
+	#if !defined DISABLE_SUBMODELS
 	id -= TASK_DEPLOY;
+	#endif
 
 	if (pev_valid(id) != VALID_PDATA || !is_user_alive(id)) return;
 
-	static skin[skinsInfo], defaultSkin[128], weaponName[32];
+	static skin[skinsInfo], defaultSkin[128];
 
 	new weapon = get_pdata_cbase(id, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
 
@@ -2957,33 +3016,57 @@ public deploy_weapon_switch(id)
 		ArrayGetArray(skins, playerData[id][TEMP][BUY_SKIN], skin);
 
 		set_pev(id, pev_viewmodel2, skin[SKIN_MODEL]);
+
+		#if !defined DISABLE_SUBMODELS
 		set_pev(id, pev_body, skin[SKIN_SUBMODEL]);
+		#endif
 	} else if (playerData[id][SKIN] > NONE) {
 		ArrayGetArray(skins, playerData[id][SKIN], skin);
 
 		set_pev(id, pev_viewmodel2, skin[SKIN_MODEL]);
+
+		#if !defined DISABLE_SUBMODELS
 		set_pev(id, pev_body, skin[SKIN_SUBMODEL]);
+		#endif
 	} else if (defaultSkins) {
+		#if !defined DISABLE_SUBMODELS
+		static weaponName[32];
+
 		get_weaponname(playerData[id][TEMP][WEAPON], weaponName, charsmax(weaponName));
 
 		formatex(defaultSkin, charsmax(defaultSkin), "%s/%s/v_%s_0.mdl", skinsPath, weaponName[7], weaponName[7]);
 
-		set_pev(id, pev_viewmodel2, defaultSkin);
 		set_pev(id, pev_body, 0);
+		#else
+		copy(defaultSkin, charsmax(defaultSkin), defaultModels[playerData[id][TEMP][WEAPON]]);
+		#endif
+
+		set_pev(id, pev_viewmodel2, defaultSkin);
 	} else {
+		#if !defined DISABLE_SUBMODELS
+		static weaponName[32];
+
 		get_weaponname(playerData[id][TEMP][WEAPON], weaponName, charsmax(weaponName));
+
+		replace(weaponName, charsmax(weaponName), "mp5navy", "mp5");
 
 		formatex(defaultSkin, charsmax(defaultSkin), "models/v_%s.mdl", weaponName[7]);
 
 		set_pev(id, pev_viewmodel2, defaultSkin);
 		set_pev(id, pev_body, 0);
+		#endif
 	}
 
+	#if !defined DISABLE_SUBMODELS
 	set_pdata_float(weapon, OFFSET_LAST_EVENT_CHECK, get_gametime() + 0.001, OFFSET_ITEM_LINUX);
 
 	send_weapon_animation(id, get_bit(id, force) ? playerData[id][TEMP][BUY_SUBMODEL] : playerData[id][SUBMODEL]);
+	#else
+	set_pev(id, pev_body, 0);
+	#endif
 }
 
+#if !defined DISABLE_SUBMODELS
 stock send_weapon_animation(id, submodel, animation = 0)
 {
 	static i, count, spectator, spectators[MAX_PLAYERS];
@@ -3180,6 +3263,7 @@ public eject_shell(id)
 
 	set_pdata_float(id, OFFSET_EJECT, get_gametime(), OFFSET_PLAYER_LINUX);
 }
+#endif
 
 stock get_weapon_skin(id, weapon)
 {
