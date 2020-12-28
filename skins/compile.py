@@ -111,12 +111,12 @@ with open(path.join(compiled_directory, skins_ini), 'w+') as generated_ini:
 
         weapon_data = weapons.get(weapon)
 
+        model_files = glob.glob(path.join(weapon, f"*_{weapon}.mdl"))
+
+        for model_file in model_files:
+            shutil.copyfile(model_file, path.join(compiled_models_directory, model_file))
+
         if weapon_data is False:
-            model_files = glob.glob(path.join(weapon, f"*_{weapon}.mdl"))
-
-            for model_file in model_files:
-                shutil.copyfile(model_file, path.join(compiled_models_directory, model_file))
-
             continue
 
         if 'knife_' not in weapon and weapon != 'm4a4':

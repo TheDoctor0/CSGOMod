@@ -2,5 +2,5 @@
 _compiled/*
 */smd
 */studiomdl.exe
-*/*.mdl
+*/*[0-9].mdl
 */*.qc
