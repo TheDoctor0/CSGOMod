@@ -14,10 +14,10 @@
 
 enum { ViewModel, PlayerModel, WorldModel, WorldModelBroken }
 new const models[][] = {
-	"models/csgo_ozone/molotov/v_molotov.mdl",
-	"models/csgo_ozone/molotov/p_molotov.mdl",
-	"models/csgo_ozone/molotov/w_molotov.mdl",
-	"models/csgo_ozone/molotov/w_broken_molotov.mdl"
+	"models/csgo_ozone_v2/molotov/v_molotov.mdl",
+	"models/csgo_ozone_v2/molotov/p_molotov.mdl",
+	"models/csgo_ozone_v2/molotov/w_molotov.mdl",
+	"models/csgo_ozone_v2/molotov/w_broken_molotov.mdl"
 };
 
 enum { Fire, Explode, Extinguish }
