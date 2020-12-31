@@ -93,6 +93,7 @@ enum _:playerSkinsInfo { SKIN_ID, SKIN_COUNT };
 enum _:skinsInfo { SKIN_NAME[64], SKIN_WEAPON[32], SKIN_MODEL[64], SKIN_SUBMODEL, SKIN_PRICE, SKIN_CHANCE, bool:SKIN_BUYABLE };
 enum _:marketInfo { MARKET_ID, MARKET_SKIN, MARKET_OWNER, Float:MARKET_PRICE };
 enum _:typeInfo { TYPE_NAME, TYPE_STEAM_ID };
+enum _:menuTypes { MENU_SET, MENU_BUY, MENU_RANDOM, MENU_ADD };
 
 new playerData[MAX_PLAYERS + 1][playerInfo], Array:playerSkins[MAX_PLAYERS + 1], Float:randomSkinPrice[WEAPON_ALL + 1], overallSkinChance[WEAPON_ALL + 1],
 	bool:canPickup[MAX_PLAYERS + 1], Array:skins, Array:weapons, Array:market, Handle:sql, Handle:connection, saveType, marketSkins, multipleSkins, defaultSkins,
@@ -547,7 +548,7 @@ public skins_menu_handle(id, menu, item)
 	}
 
 	switch (item) {
-		case 0, 1, 2: choose_weapon_menu(id, item);
+		case MENU_SET, MENU_BUY, MENU_RANDOM: choose_weapon_menu(id, item);
 		case 3: market_menu(id);
 		case 4: client_cmd(id, "transfer");
 		case 5: exchange_skin_menu(id);
@@ -618,7 +619,7 @@ public set_skin_menu(id)
 		return PLUGIN_HANDLED;
 	}
 
-	choose_weapon_menu(id, 0);
+	choose_weapon_menu(id, MENU_SET);
 
 	return PLUGIN_HANDLED;
 }
@@ -633,7 +634,7 @@ public buy_skin_menu(id)
 		return PLUGIN_HANDLED;
 	}
 
-	choose_weapon_menu(id, 1);
+	choose_weapon_menu(id, MENU_BUY);
 
 	return PLUGIN_HANDLED;
 }
@@ -648,7 +649,7 @@ public random_skin_menu(id)
 		return PLUGIN_HANDLED;
 	}
 
-	choose_weapon_menu(id, 2);
+	choose_weapon_menu(id, MENU_RANDOM);
 
 	return PLUGIN_HANDLED;
 }
@@ -663,7 +664,7 @@ public add_skin_menu(id)
 		return PLUGIN_HANDLED;
 	}
 
-	choose_weapon_menu(id, 3);
+	choose_weapon_menu(id, MENU_ADD);
 
 	return PLUGIN_HANDLED;
 }
@@ -676,10 +677,10 @@ public choose_weapon_menu(id, type)
 
 	new menu = menu_create(menuData, "choose_weapon_menu_handle");
 
-	for (new i = type != 2 ? 1 : (randomSkinPrice[WEAPON_ALL] > 0.0 ? 0 : 1); i < ArraySize(weapons); i++) {
+	for (new i = type == MENU_RANDOM ? (randomSkinPrice[WEAPON_ALL] > 0.0 ? 0 : 1) : 1; i < ArraySize(weapons); i++) {
 		ArrayGetString(weapons, i, weapon, charsmax(weapon));
 
-		if (type == 3) {
+		if (type == MENU_ADD) {
 			formatex(itemData, charsmax(itemData), "%s#%i", weapon, type);
 
 			menu_additem(menu, weapon, itemData);
@@ -704,10 +705,16 @@ public choose_weapon_menu(id, type)
 			}
 		}
 
-		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_CHOOSE_WEAPON_ITEM", weapon, playerSkinCount, skinCount);
+		if (i == 0 && type == MENU_RANDOM) {
+			formatex(weapon, charsmax(weapon), "%L", id, "CSGO_CORE_ALL");
+			formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_ALL");
+		} else {
+			formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_CHOOSE_WEAPON_ITEM", weapon, playerSkinCount, skinCount);
+		}
+
 		formatex(itemData, charsmax(itemData), "%s#%i", weapon, type);
 
-		if (type != 2 || randomSkinPrice[get_weapon_id(weapon)] > 0.0) {
+		if (type != MENU_RANDOM || i == 0 || randomSkinPrice[get_weapon_id(weapon)] > 0.0) {
 			menu_additem(menu, menuData, itemData);
 
 			count++;
@@ -753,10 +760,10 @@ public choose_weapon_menu_handle(id, menu, item)
 	strtok2(itemData, weapon, charsmax(weapon), itemType, charsmax(itemType), '#');
 
 	switch (str_to_num(itemType)) {
-		case 0: set_weapon_skin(id, weapon);
-		case 1: buy_weapon_skin(id, weapon);
-		case 2: random_weapon_skin(id, weapon);
-		case 3: add_weapon_skin(id, weapon);
+		case MENU_SET: set_weapon_skin(id, weapon);
+		case MENU_BUY: buy_weapon_skin(id, weapon);
+		case MENU_RANDOM: random_weapon_skin(id, weapon);
+		case MENU_ADD: add_weapon_skin(id, weapon);
 	}
 
 	return PLUGIN_HANDLED;
