@@ -37,24 +37,26 @@ All of available configuration files have proper description.
 ## Skins
 Skins customization is easy and can be done by anyone in a matter of minutes, so if you want to make your server special, make sure to customize them.
 
-Before starting you need to download and install [Python 3](https://www.python.org/downloads/) to use skins auto-compilation script.
-
-You also need to download `skins.zip` from the [latest release](https://github.com/TheDoctor0/CSGOMod/releases/latest) and extract it anywhere on your computer.
-Inside you will find source files for all skins that you can select for compilation. You may also extend it by adding some of your own.
+Before starting you need to:
+1. Download and install [Python 3](https://www.python.org/downloads/). This is required to use skins auto-compilation script.
+2. Download `skins.zip` from the [latest release](https://github.com/TheDoctor0/CSGOMod/releases/latest) and extract it anywhere on your computer.
+    Inside you will find source files for all skins that you can select for compilation. You may also extend it by adding some of your own - more about it in section below.
 
 ### Management
-Inside every weapon directory you will find `_textures` folder with all available skins. 
-Select and copy and any textures that you want to use into `skins` folder.
+1. Inside every weapon directory you will find `_textures` folder with all available skins. 
+    Select any textures that you want to use and copy them into `skins` folder.
 
-Some textures are in `skins` by default (those are for skins included in `csgo_mod.zip`), but of course if you want you can remove or replace them.
-If you want you can download or make your own textures and add them here. All textures need to be `512x512px` and match weapon structure.
+    Textures that are already in `skins` are those for skins included in `csgo_mod.zip`, so of course you can remove or replace them.
 
-You can also add skins any without submodels. Place them inside `models` folder in correct weapon directory.
+    You can make your own textures and add them here. All textures need to be `512x512px` and match weapon structure.
 
-When you think that all skins are ready to compile run `compile.bat`, input new models directory name (optional but recommended) and press Enter.
-It will take some time to compile all skins so be patient.
+2. You can add regular skins that don't use submodels. Place them inside `models` folder that you will find for every weapon.
 
-When the process is finished go into `_compiled` directory where you will find folder with all your skins as well as generated `csgo_skins.ini` that you can use.
+3. When you think that all skins are ready to compile, run `compile.bat`, input new models directory name (optional) and press `Enter`.
+    It will take some time to compile all skins so be patient.
+
+4. When the process is finished go into `_compiled` directory where you will find folder with all your skins.
+    Script will also generated `csgo_skins.ini` that you can use, so you don't have to update it manually.
 
 ### Gloves
 If you want to have skins with different gloves you can check `_gloves` directory, select any gloves texture that you want and
@@ -78,6 +80,15 @@ There are two possible ways:
 - Run `debug.bat` and drag & drop `template.qc` file to script window to compile it.
 
 Remember to copy your new skin without submodels into `models` folder inside directory with weapon skins sources so compiler script can detect it.
+
+### Submodels
+By default core plugin provides support for submodels.
+If want to only use regular models with single skin you can disable it in `csgo_core.sma`:
+```
+// Uncomment to disable support for skins based on submodels
+//#define DISABLE_SUBMODELS
+```
+This should improve server performance, but will drastically reduce number of skins that you can use.
 
 ## Commands
 If you want to add money (Euro) to any player balance, you can use this command::
