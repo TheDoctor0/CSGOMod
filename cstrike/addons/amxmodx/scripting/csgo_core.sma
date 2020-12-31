@@ -51,6 +51,7 @@
 #define UNSILENCED 	0
 #define SILENCED 	1
 
+#define CHANCE      1
 #define NONE		-1
 
 new const commandSkins[][] = { "skiny", "say /skins", "say_team /skins", "say /skin", "say_team /skin", "say /skiny",
@@ -90,9 +91,10 @@ enum _:tempInfo { WEAPON, WEAPONS, WEAPON_ENT, EXCHANGE_PLAYER, EXCHANGE, EXCHAN
 enum _:playerInfo { ACTIVE[CSW_P90 + 1], Float:MONEY, SKIN, SUBMODEL, bool:SKINS_LOADED, bool:DATA_LOADED, bool:EXCHANGE_BLOCKED,
 	bool:MENU_BLOCKED, bool:SKINS_BLOCKED, bool:HUD_BLOCKED, TEMP[tempInfo], NAME[32], SAFE_NAME[64], STEAM_ID[35] };
 enum _:playerSkinsInfo { SKIN_ID, SKIN_COUNT };
-enum _:skinsInfo { SKIN_NAME[64], SKIN_WEAPON[32], SKIN_MODEL[64], SKIN_SUBMODEL, SKIN_PRICE, SKIN_CHANCE, bool:SKIN_BUYABLE };
+enum _:skinsInfo { SKIN_NAME[64], SKIN_WEAPON[32], SKIN_MODEL[64], SKIN_SUBMODEL, SKIN_PRICE, SKIN_RARITY };
 enum _:marketInfo { MARKET_ID, MARKET_SKIN, MARKET_OWNER, Float:MARKET_PRICE };
 enum _:typeInfo { TYPE_NAME, TYPE_STEAM_ID };
+enum _:skinRarity { RARITY_COMMON = 1, RARITY_UNCOMMON, RARITY_RATE, RARITY_MYTHICAL, RARIRTY_LEGENDARY, RARITY_ANCIENT, RARITY_EXCEEDINGLY_RARE, RARITY_IMMORTAL };
 enum _:menuTypes { MENU_SET, MENU_BUY, MENU_RANDOM, MENU_ADD };
 
 new playerData[MAX_PLAYERS + 1][playerInfo], Array:playerSkins[MAX_PLAYERS + 1], Float:randomSkinPrice[WEAPON_ALL + 1], overallSkinChance[WEAPON_ALL + 1],
@@ -227,7 +229,7 @@ public plugin_precache()
 
 	if (!file_exists(file)) set_fail_state("[CS:GO] No skins configuration file csgo_skins.ini!");
 
-	new skin[skinsInfo], lineData[256], tempValue[6][64], bool:error, count = 0, fileOpen = fopen(file, "r"), Array:files = ArrayCreate(64, 64), filePath[64];
+	new skin[skinsInfo], lineData[256], tempValue[5][128], bool:error, count = 0, fileOpen = fopen(file, "r"), Array:files = ArrayCreate(64, 128), filePath[128];
 
 	while (!feof(fileOpen)) {
 		fgets(fileOpen, lineData, charsmax(lineData)); trim(lineData);
@@ -244,15 +246,24 @@ public plugin_precache()
 
 			continue;
 		} else {
-			parse(lineData, tempValue[0], charsmax(tempValue[]), tempValue[1], charsmax(tempValue[]), tempValue[2], charsmax(tempValue[]), tempValue[3], charsmax(tempValue[]), tempValue[4], charsmax(tempValue[]), tempValue[5], charsmax(tempValue[]));
+			parse(lineData, tempValue[0], charsmax(tempValue[]), tempValue[1], charsmax(tempValue[]), tempValue[2], charsmax(tempValue[]), tempValue[3], charsmax(tempValue[]), tempValue[4], charsmax(tempValue[]));
 
 			formatex(skin[SKIN_NAME], charsmax(skin[SKIN_NAME]), tempValue[0]);
 			formatex(skin[SKIN_MODEL], charsmax(skin[SKIN_MODEL]), tempValue[1]);
 
 			skin[SKIN_SUBMODEL] = str_to_num(tempValue[2]);
 			skin[SKIN_PRICE] = str_to_num(tempValue[3]);
-			skin[SKIN_CHANCE] = (str_to_num(tempValue[4]) > 1 ? str_to_num(tempValue[4]) : 1);
-			skin[SKIN_BUYABLE] = strlen(tempValue[5]) ? (!! str_to_num(tempValue[5])) : true;
+			skin[SKIN_RARITY] = str_to_num(tempValue[4]);
+
+			if (equali(skin[SKIN_WEAPON], "knife")) {
+				skin[SKIN_RARITY] = RARITY_EXCEEDINGLY_RARE;
+			} else {
+				skin[SKIN_RARITY] = str_to_num(tempValue[4]);
+
+				if (skin[SKIN_RARITY] == RARITY_EXCEEDINGLY_RARE) {
+					skin[SKIN_RARITY] = RARITY_ANCIENT;
+				}
+			}
 
 			if (!file_exists(skin[SKIN_MODEL])) {
 				log_to_file("csgo-error.log", "[CS:GO] The file %s containing the skin %s does not exist!", skin[SKIN_MODEL], skin[SKIN_NAME]);
@@ -794,9 +805,9 @@ public set_weapon_skin(id, weapon[])
 			if (multipleSkins) skinsCount = get_player_skin_info(id, skinId, SKIN_COUNT);
 
 			if (skinsCount > 1) {
-				formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_SET_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON], skinsCount);
+				formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_SET_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON], skin[SKIN_RARITY], skinsCount);
 			} else {
-				formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_SET_ITEM2", skin[SKIN_NAME], skin[SKIN_WEAPON]);
+				formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_SET_ITEM2", skin[SKIN_NAME], skin[SKIN_WEAPON], skin[SKIN_RARITY]);
 			}
 
 			num_to_str(i, tempId, charsmax(tempId));
@@ -879,12 +890,12 @@ public buy_weapon_skin(id, weapon[])
 	for (new i = 0; i < ArraySize(skins); i++) {
 		ArrayGetArray(skins, i, skin);
 
-		if (equal(weapon, skin[SKIN_WEAPON]) && skin[SKIN_BUYABLE]) {
+		if (equal(weapon, skin[SKIN_WEAPON]) && skin[SKIN_RARITY] != RARITY_IMMORTAL) {
 			if (!multipleSkins && has_skin(id, i)) continue;
 
 			num_to_str(i, tempId, charsmax(tempId));
 
-			formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_BUY_ITEM", skin[SKIN_NAME], skin[SKIN_PRICE]);
+			formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_BUY_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON], skin[SKIN_RARITY], skin[SKIN_PRICE]);
 
 			menu_additem(menu, menuData, tempId);
 
@@ -1125,15 +1136,15 @@ public random_weapon_skin_handle(id, menu, item)
 	new chance = (csgo_get_user_svip(id) ? skinChanceSVIP : skinChance) + floatround(csgo_get_clan_members(csgo_get_user_clan(id)) * skinChancePerMember, floatround_floor);
 
 	if (random_num(1, 100) <= chance) {
-		new skin[skinsInfo], skinId, skinsChance = 0, skinChance = random_num(1, multipleSkins ? get_weapon_skins_count(id, weapon, 1) : get_missing_weapon_skins_count(id, weapon, 1));
+		new skin[skinsInfo], skinId, skinsChance = 0, skinChance = random_num(1, multipleSkins ? get_weapon_skins_count(id, weapon, CHANCE) : get_missing_weapon_skins_count(id, weapon, CHANCE));
 
 		for (new i = 0; i < ArraySize(skins); i++) {
 			ArrayGetArray(skins, i, skin);
 
 			if (equali(weapon, skin[SKIN_WEAPON]) || equal(weapon, allName)) {
-				if (!skin[SKIN_BUYABLE] || (!multipleSkins && has_skin(id, i))) continue;
+				if (skin[SKIN_RARITY] == RARITY_IMMORTAL || (!multipleSkins && has_skin(id, i))) continue;
 
-				skinsChance += skin[SKIN_CHANCE];
+				skinsChance += get_skin_chance(skin[SKIN_RARITY]);
 
 				if (skinsChance >= skinChance) {
 					skinId = i;
@@ -1404,9 +1415,9 @@ public exchange_skin_menu_handle(id, menu, item)
 		num_to_str(skinId, tempId, charsmax(tempId));
 
 		if (multipleSkins && skinsCount > 1) {
-			formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_EXCHANGE_OWN_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON], skinsCount);
+			formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_EXCHANGE_OWN_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON], skin[SKIN_RARITY], skinsCount);
 		} else {
-			formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_EXCHANGE_OWN_ITEM2", skin[SKIN_NAME], skin[SKIN_WEAPON]);
+			formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_EXCHANGE_OWN_ITEM2", skin[SKIN_NAME], skin[SKIN_WEAPON], skin[SKIN_RARITY]);
 		}
 
 		menu_additem(menu, menuData, tempId);
@@ -1479,7 +1490,7 @@ public exchange_skin_handle(id, menu, item)
 
 		num_to_str(skinId, tempId, charsmax(tempId));
 
-		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_EXCHANGE_THEIR_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON]);
+		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_EXCHANGE_THEIR_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON], skin[SKIN_RARITY]);
 
 		menu_additem(menu, menuData, tempId);
 
@@ -1705,8 +1716,8 @@ public give_skin_menu_handle(id, menu, item)
 
 		num_to_str(skinId, tempId, charsmax(tempId));
 
-		if (multipleSkins && skinCount > 1) formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_GIVE_SELECT_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON], skinCount);
-		else formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_GIVE_SELECT_ITEM2", skin[SKIN_NAME], skin[SKIN_WEAPON]);
+		if (multipleSkins && skinCount > 1) formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_GIVE_SELECT_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON], skin[SKIN_RARITY], skinCount);
+		else formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_GIVE_SELECT_ITEM2", skin[SKIN_NAME], skin[SKIN_WEAPON], skin[SKIN_RARITY]);
 
 		menu_additem(menu, menuData, tempId);
 
@@ -1888,9 +1899,9 @@ public market_sell_skin(id)
 		num_to_str(skinId, tempId, charsmax(tempId));
 
 		if (multipleSkins && skinsCount > 1) {
-			formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_SELL_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON], skinsCount);
+			formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_SELL_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON], skin[SKIN_RARITY], skinsCount);
 		} else {
-			formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_SELL_ITEM2", skin[SKIN_NAME], skin[SKIN_WEAPON]);
+			formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_SELL_ITEM2", skin[SKIN_NAME], skin[SKIN_WEAPON], skin[SKIN_RARITY]);
 		}
 
 		menu_additem(menu, menuData, tempId);
@@ -2019,7 +2030,7 @@ public market_buy_skin(id)
 
 		formatex(skinIds, charsmax(skinIds), "%i#%i#%i", marketSkin[MARKET_ID], marketSkin[MARKET_SKIN], marketSkin[MARKET_OWNER]);
 
-		formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CORE_PURCHASE_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON], marketSkin[MARKET_PRICE]);
+		formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CORE_PURCHASE_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON], skin[SKIN_RARITY], marketSkin[MARKET_PRICE]);
 
 		menu_additem(menu, itemData, skinIds);
 
@@ -2179,7 +2190,7 @@ public market_withdraw_skin(id)
 
 		formatex(skinIds, charsmax(skinIds), "%i#%i#%i", marketSkin[MARKET_ID], marketSkin[MARKET_SKIN], marketSkin[MARKET_OWNER]);
 
-		formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CORE_WITHDRAW_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON], marketSkin[MARKET_PRICE]);
+		formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CORE_WITHDRAW_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON], skin[SKIN_RARITY], marketSkin[MARKET_PRICE]);
 
 		menu_additem(menu, itemData, skinIds);
 
@@ -3578,7 +3589,7 @@ stock Float:get_multiplier(id, target = 0)
 	else return 1.0;
 }
 
-stock get_weapon_skins_count(id, weapon[], chance = 0)
+stock get_weapon_skins_count(id, weapon[], action = 0)
 {
 	new skin[skinsInfo], allName[32], weaponSkinsCount = 0;
 
@@ -3587,17 +3598,17 @@ stock get_weapon_skins_count(id, weapon[], chance = 0)
 	for (new i = 0; i < ArraySize(skins); i++) {
 		ArrayGetArray(skins, i, skin);
 
-		if (chance && !skin[SKIN_BUYABLE]) continue;
+		if (action == CHANCE && skin[SKIN_RARITY] == RARITY_IMMORTAL) continue;
 
 		if (equal(weapon, skin[SKIN_WEAPON]) || equal(weapon, allName)) {
-			weaponSkinsCount += chance ? skin[SKIN_CHANCE] : 1;
+			weaponSkinsCount += action == CHANCE ? get_skin_chance(skin[SKIN_RARITY]) : 1;
 		}
 	}
 
 	return weaponSkinsCount;
 }
 
-stock get_missing_weapon_skins_count(id, weapon[], chance = 0)
+stock get_missing_weapon_skins_count(id, weapon[], action = 0)
 {
 	new skin[skinsInfo], marketSkin[marketInfo], allName[32], playerSkinsCount = 0, skinId;
 
@@ -3608,10 +3619,10 @@ stock get_missing_weapon_skins_count(id, weapon[], chance = 0)
 
 		ArrayGetArray(skins, skinId, skin);
 
-		if (chance && !skin[SKIN_BUYABLE]) continue;
+		if (action == CHANCE && skin[SKIN_RARITY] == RARITY_IMMORTAL) continue;
 
 		if (equal(weapon, skin[SKIN_WEAPON]) || equal(weapon, allName)) {
-			playerSkinsCount += chance ? skin[SKIN_CHANCE] : 1;
+			playerSkinsCount += action == CHANCE ? get_skin_chance(skin[SKIN_RARITY]) : 1;
 		}
 	}
 
@@ -3621,15 +3632,20 @@ stock get_missing_weapon_skins_count(id, weapon[], chance = 0)
 		if (marketSkin[MARKET_OWNER] == id) {
 			ArrayGetArray(skins, marketSkin[MARKET_SKIN], skin);
 
-			if (chance && !skin[SKIN_BUYABLE]) continue;
+			if (action == CHANCE && skin[SKIN_RARITY] == RARITY_IMMORTAL) continue;
 
 			if (equal(weapon, skin[SKIN_WEAPON]) || equal(weapon, allName)) {
-				playerSkinsCount += chance ? skin[SKIN_CHANCE] : 1;
+				playerSkinsCount += action == CHANCE ? get_skin_chance(skin[SKIN_RARITY]) : 1;
 			}
 		}
 	}
 
-	return get_weapon_skins_count(id, weapon, chance) - playerSkinsCount;
+	return get_weapon_skins_count(id, weapon, action) - playerSkinsCount;
+}
+
+stock get_skin_chance(rarity)
+{
+	return power(2, RARITY_EXCEEDINGLY_RARE - rarity);
 }
 
 stock get_weapon_id(weapon[])
