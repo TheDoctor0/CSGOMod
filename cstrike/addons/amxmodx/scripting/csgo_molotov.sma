@@ -34,7 +34,7 @@ new const molotovWeaponName[] = "weapon_hegrenade", molotovClassName[] = "moloto
 
 new const commandBuy[][] = { "say /molotov", "say_team /molotov", "say /m", "say_team /m", "molotov" };
 
-new molotovEnabled, molotovPrice, molotov, mapBuyBlock, fireSprite, smokeSprite[2], bool:restarted, bool:reset,
+new molotovEnabled, molotovPrice, molotov, mapBuyBlock, fireSprite, smokeSprite[2], bool:restarted,
 	Float:molotovRadius, Float:molotovFireTime, Float:molotovFireDamage, Float:gameTime;
 
 public plugin_init()
@@ -52,8 +52,6 @@ public plugin_init()
 	register_event("DeathMsg", "event_deathmsg", "a", "2>0");
 	register_event("HLTV", "event_new_round", "a", "1=0", "2=0");
 	register_event("TextMsg", "event_game_restart", "a", "2=#Game_Commencing", "2=#Game_will_restart_in");
-
-	register_logevent("event_round_end", 2, "1=Round_End");
 
 	register_think(molotovClassName, "think_molotov");
 
@@ -208,13 +206,8 @@ public event_deathmsg()
 public event_game_restart()
 	restarted = true;
 
-public event_round_end()
-	reset = true;
-
 public event_new_round()
 {
-	reset = false;
-
 	gameTime = get_gametime();
 
 	if (!molotovEnabled) return PLUGIN_CONTINUE;
@@ -237,6 +230,8 @@ public molotov_deploy_model(weapon)
 	new id = get_pdata_cbase(weapon, OFFSET_PLAYER, OFFSET_ITEM_LINUX);
 
 	if (!molotovEnabled || !pev_valid(id) || !is_user_alive(id) || !get_bit(id, molotov)) return HAM_IGNORED;
+
+	log_amx("%s", models[ViewModel]);
 
 	set_pev(id, pev_viewmodel2, models[ViewModel]);
 	set_pev(id, pev_weaponmodel2, models[PlayerModel]);
@@ -312,12 +307,6 @@ stock molotov_explode(entMolotov)
 	if (!pev_valid(owner)) return;
 
 	rem_bit(owner, molotov);
-
-	if (reset) {
-		engfunc(EngFunc_RemoveEntity, entMolotov);
-
-		return;
-	}
 
 	new Float:origin[3];
 
