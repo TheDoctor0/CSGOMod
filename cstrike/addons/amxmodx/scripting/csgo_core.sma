@@ -118,8 +118,6 @@ public plugin_init()
 	bind_pcvar_string(create_cvar("csgo_sql_pass", "password", FCVAR_SPONLY | FCVAR_PROTECTED), sqlPassword, charsmax(sqlPassword));
 	bind_pcvar_string(create_cvar("csgo_sql_db", "database", FCVAR_SPONLY | FCVAR_PROTECTED), sqlDatabase, charsmax(sqlDatabase));
 
-	bind_pcvar_string(create_cvar("csgo_skins_path", "models/csgo_ozone_v2"), skinsPath, charsmax(skinsPath));
-
 	bind_pcvar_num(create_cvar("csgo_save_type", "0"), saveType);
 	bind_pcvar_num(create_cvar("csgo_multiple_skins", "1"), multipleSkins);
 	bind_pcvar_num(create_cvar("csgo_default_skins", "1"), defaultSkins);
@@ -229,12 +227,18 @@ public plugin_precache()
 
 	if (!file_exists(file)) set_fail_state("[CS:GO] No skins configuration file csgo_skins.ini!");
 
-	new skin[skinsInfo], lineData[256], tempValue[5][128], bool:error, count = 0, fileOpen = fopen(file, "r"), Array:files = ArrayCreate(64, 128), filePath[128];
+	new skin[skinsInfo], lineData[256], tempValue[5][128], bool:error, skinsCount = 0, fileCount = 0, fileOpen = fopen(file, "r"), Array:files = ArrayCreate(64, 128);
 
 	while (!feof(fileOpen)) {
 		fgets(fileOpen, lineData, charsmax(lineData)); trim(lineData);
 
 		if (lineData[0] == ';' || lineData[0] == '^0' || lineData[0] == '/') continue;
+
+		if (contain(lineData, "MODELS_PATH") != -1) {
+			strtok2(lineData, tempValue[0], charsmax(tempValue[]), skinsPath, length, '=', 1);
+
+			return;
+		}
 
 		if (lineData[0] == '[') {
 			replace_all(lineData, charsmax(lineData), "[", "");
@@ -275,14 +279,14 @@ public plugin_precache()
 				new bool:found;
 
 				for (new i = 0; i < ArraySize(files); i++) {
-					ArrayGetString(files, i, filePath, charsmax(filePath));
+					ArrayGetString(files, i, file, charsmax(file));
 
-					if (equal(filePath, skin[SKIN_MODEL])) found = true;
+					if (equal(file, skin[SKIN_MODEL])) found = true;
 				}
 
 				if (!found) ArrayPushString(files, skin[SKIN_MODEL]);
 
-				count++;
+				skinsCount++;
 			}
 
 			ArrayPushArray(skins, skin);
@@ -300,6 +304,9 @@ public plugin_precache()
 
 			error = true;
 		} else {
+			skinsCount++;
+			fileCount++;
+
 			precache_model(defaultModels[i]);
 		}
 	}
@@ -311,10 +318,8 @@ public plugin_precache()
 
 	for (new i = 1; i <= MAX_PLAYERS; i++) playerSkins[i] = ArrayCreate(playerSkinsInfo);
 
-	if (error) set_fail_state("[CS:GO] Not all standard skins were loaded. Check the error logs!");
-
 	log_amx("CS:GO Mod by O'Zone (v%s).", VERSION);
-	log_amx("Loaded %i skins from %i files.", count, ArraySize(files));
+	log_amx("Loaded %i skins from %i files.", skinsCount, ArraySize(files) + fileCount);
 
 	set_task(0.1, "load_skins_details");
 }
@@ -3052,7 +3057,7 @@ public deploy_weapon_switch(id)
 
 		get_weaponname(playerData[id][TEMP][WEAPON], weaponName, charsmax(weaponName));
 
-		formatex(defaultSkin, charsmax(defaultSkin), "%s/%s/v_%s_0.mdl", skinsPath, weaponName[7], weaponName[7]);
+		formatex(defaultSkin, charsmax(defaultSkin), "models/%s/%s/v_%s_0.mdl", skinsPath, weaponName[7], weaponName[7]);
 
 		set_pev(id, pev_body, 0);
 		#else

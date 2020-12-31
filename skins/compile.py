@@ -8,51 +8,51 @@ import fileinput
 from os import path
 
 weapons = {
-    "random": {"random": 125.0},
-    "knife": {"random": 250.0, "skin": 1000},
-    "knife_bayonet": {"random": 250.0, "skin": 1000},
-    "knife_bowie": {"random": 250.0, "skin": 1000},
-    "knife_butterfly": {"random": 250.0, "skin": 1000},
-    "knife_daggers": {"random": 250.0, "skin": 1000},
-    "knife_falchion": {"random": 250.0, "skin": 1000},
-    "knife_flip": {"random": 250.0, "skin": 1000},
-    "knife_gut": {"random": 250.0, "skin": 1000},
-    "knife_huntsman": {"random": 250.0, "skin": 1000},
-    "knife_karambit": {"random": 250.0, "skin": 1000},
-    "knife_m9_bayonet": {"random": 250.0, "skin": 1000},
-    "knife_navaja": {"random": 250.0, "skin": 1000},
-    "knife_nomad": {"random": 250.0, "skin": 1000},
-    "knife_paracord": {"random": 250.0, "skin": 1000},
-    "knife_skeleton": {"random": 250.0, "skin": 1000},
-    "knife_stiletto": {"random": 250.0, "skin": 1000},
-    "knife_survival": {"random": 250.0, "skin": 1000},
-    "knife_talon": {"random": 250.0, "skin": 1000},
-    "knife_ursus": {"random": 250.0, "skin": 1000},
-    "ak47": {"random": 50.0, "skin": 200},
-    "m4a1": {"random": 50.0, "skin": 200},
-    "m4a4": {"random": 50.0, "skin": 200},
-    "awp": {"random": 50.0, "skin": 200},
-    "deagle": {"random": 30.0, "skin": 120},
-    "usp": {"random": 25.0, "skin": 100},
-    "glock18": {"random": 25.0, "skin": 100},
-    "galil": {"random": 20.0, "skin": 80},
-    "famas": {"random": 20.0, "skin": 80},
-    "p90": {"random": 15.0, "skin": 60},
-    "mp5navy": {"random": 15.0, "skin": 60},
-    "ump45": {"random": 15.0, "skin": 60},
-    "mac10": {"random": 10.0, "skin": 40},
-    "tmp": {"random": 10.0, "skin": 40},
-    "scout": {"random": 15.0, "skin": 60},
-    "aug": {"random": 20.0, "skin": 80},
-    "sg552": {"random": 20.0, "skin": 80},
-    "p228": {"random": 10.0, "skin": 40},
-    "fiveseven": {"random": 10.0, "skin": 40},
-    "elite": {"random": 10.0, "skin": 40},
-    "m3": {"random": 10.0, "skin": 40},
-    "xm1014": {"random": 10.0, "skin": 40},
-    "m249": {"random": 10.0, "skin": 40},
-    "sg550": {"random": 10.0, "skin": 40},
-    "g3sg1": {"random": 10.0, "skin": 40},
+    "random": {"random": 50.0},
+    "knife": {"random": 500.0, "skin": 2500},
+    "knife_bayonet": {"random": 500.0, "skin": 2500},
+    "knife_bowie": {"random": 500.0, "skin": 2500},
+    "knife_butterfly": {"random": 500.0, "skin": 2500},
+    "knife_daggers": {"random": 500.0, "skin": 2500},
+    "knife_falchion": {"random": 500.0, "skin": 2500},
+    "knife_flip": {"random": 500.0, "skin": 2500},
+    "knife_gut": {"random": 500.0, "skin": 2500},
+    "knife_huntsman": {"random": 500.0, "skin": 2500},
+    "knife_karambit": {"random": 500.0, "skin": 2500},
+    "knife_m9_bayonet": {"random": 500.0, "skin": 2500},
+    "knife_navaja": {"random": 500.0, "skin": 2500},
+    "knife_nomad": {"random": 500.0, "skin": 2500},
+    "knife_paracord": {"random": 500.0, "skin": 2500},
+    "knife_skeleton": {"random": 500.0, "skin": 2500},
+    "knife_stiletto": {"random": 500.0, "skin": 2500},
+    "knife_survival": {"random": 500.0, "skin": 2500},
+    "knife_talon": {"random": 500.0, "skin": 2500},
+    "knife_ursus": {"random": 500.0, "skin": 2500},
+    "ak47": {"random": 50.0, "skin": 250},
+    "m4a1": {"random": 50.0, "skin": 250},
+    "m4a4": {"random": 50.0, "skin": 250},
+    "awp": {"random": 50.0, "skin": 250},
+    "deagle": {"random": 30.0, "skin": 150},
+    "usp": {"random": 25.0, "skin": 125},
+    "glock18": {"random": 25.0, "skin": 125},
+    "galil": {"random": 20.0, "skin": 100},
+    "famas": {"random": 20.0, "skin": 100},
+    "p90": {"random": 15.0, "skin": 75},
+    "mp5navy": {"random": 15.0, "skin": 75},
+    "ump45": {"random": 15.0, "skin": 75},
+    "mac10": {"random": 10.0, "skin": 50},
+    "tmp": {"random": 10.0, "skin": 50},
+    "scout": {"random": 15.0, "skin": 75},
+    "aug": {"random": 20.0, "skin": 100},
+    "sg552": {"random": 20.0, "skin": 100},
+    "p228": {"random": 10.0, "skin": 50},
+    "fiveseven": {"random": 10.0, "skin": 50},
+    "elite": {"random": 10.0, "skin": 50},
+    "m3": {"random": 10.0, "skin": 50},
+    "xm1014": {"random": 10.0, "skin": 50},
+    "m249": {"random": 10.0, "skin": 50},
+    "sg550": {"random": 10.0, "skin": 50},
+    "g3sg1": {"random": 10.0, "skin": 50},
     "flashbang": False,
     "hegrenade": False,
     "smokegrenade": False,
@@ -62,10 +62,12 @@ weapons = {
     "thighpack": False,
 }
 
-custom_models_directory = sys.argv[1] if len(sys.argv) > 1 and len(sys.argv[1]) else 'csgo_ozone_v2'
+default_models_directory = 'csgo_ozone_v2'
+custom_skins_directory = sys.argv[1] if len(sys.argv) > 1 and len(sys.argv[1]) else 'csgo_ozone_v2_skins'
 compiler = "studiomdl.exe"
 compiled_directory = "_compiled"
-compiled_models_directory = f"{compiled_directory}/{custom_models_directory}"
+compiled_models_directory = f"{compiled_directory}/{default_models_directory}"
+compiled_skins_directory = f"{compiled_directory}/{custom_skins_directory}"
 skins_directory = "skins"
 models_directory = "models"
 smd_directory = "smd"
@@ -83,26 +85,38 @@ if path.exists(compiled_directory):
 
 os.mkdir(compiled_directory)
 os.mkdir(compiled_models_directory)
+os.mkdir(compiled_skins_directory)
 
 with open(path.join(compiled_directory, skins_ini), 'w+') as generated_ini:
-    generated_ini.write(""";---INSTRUCTIONS---
+    generated_ini.write(f""";---INSTRUCTIONS---
 ; [WEAPON NAME - Price of Drawing (set to 0.0 to disable for this weapon)]
-; "Skin Name" "Model Path" "Submodel Index" "Price" "Odds" "Buyable"
+; "Skin Name" "Model Path" "Submodel Index" "Price" "Rarity"
 ;
-; NOTES:
-; 1. Skin names must be unique for single weapon.
+; Skin rarity can be:
+; 1 - Common
+; 2 - Uncommon
+; 3 - Rare
+; 4 - Mythical
+; 5 - Legendary
+; 6 - Ancient
+; 7 - Exceedingly Rare (only knives)
+; 8 - Immortal (cannot be bought or aquired by draw)
 ;
-; 2. The odds must be greater than 1 - if not defined odds will be set to 1.
-; The greater the odds, the greater the probability of a particular skin being drawn
-; and the smaller the chance of others being drawn.
-;
-; 3. Non-buyable skins are not available for purchase or in draw.
-
-; Optional possibility to draw any skin (set to 0.0 to disable)""")
+; Optional possibility to draw any skin (set to 0.0 to disable)
+SKINS_PATHS={custom_skins_directory}
+""")
 
     for weapon in weapons.keys():
         if weapon != "random":
-            weapon_compiled_directory = path.join(compiled_models_directory, weapon)
+            if 'knife_' not in weapon and weapon != 'm4a4':
+                weapon_compiled_directory = path.join(compiled_models_directory, weapon)
+
+                if path.exists(weapon_compiled_directory):
+                    shutil.rmtree(weapon_compiled_directory)
+
+                os.mkdir(weapon_compiled_directory)
+
+            weapon_compiled_directory = path.join(compiled_skins_directory, weapon)
 
             if path.exists(weapon_compiled_directory):
                 shutil.rmtree(weapon_compiled_directory)
@@ -128,11 +142,13 @@ with open(path.join(compiled_directory, skins_ini), 'w+') as generated_ini:
         existing_skins = glob.glob(path.join(weapon, models_directory, "*.mdl"))
         default_skin_found = False
 
+        rarity = "7" if "knife" in weapon else "1"
+
         for skin in existing_skins:
             skin_file = path.basename(skin)
 
             if skin_file == default_model:
-                shutil.copyfile(skin, path.join(compiled_models_directory, f"{weapon}/v_{weapon}_0.mdl"))
+                shutil.copyfile(skin, path.join(compiled_skins_directory, f"{weapon}/v_{weapon}_0.mdl"))
 
                 default_skin_found = True
 
@@ -152,13 +168,12 @@ with open(path.join(compiled_directory, skins_ini), 'w+') as generated_ini:
                 .title()
 
             generated_ini.write(f'"{skin_name}"'
-                                f'\t\t"{f"models/{custom_models_directory}/{weapon}/v_{weapon}_{skin_file}"}"'
+                                f'\t\t"{f"models/{custom_skins_directory}/{weapon}/v_{weapon}_{skin_file}"}"'
                                 f'\t\t"0"'
                                 f'\t\t"{weapons.get(weapon).get("skin")}"'
-                                f'\t\t"1"'
-                                f'\t\t"1"\n')
+                                f'\t\t"{rarity}\n')
 
-            shutil.copyfile(skin, path.join(compiled_models_directory, f"{weapon}/v_{weapon}_{skin_file}"))
+            shutil.copyfile(skin, path.join(compiled_skins_directory, f"{weapon}/v_{weapon}_{skin_file}"))
 
             continue
 
@@ -190,11 +205,10 @@ with open(path.join(compiled_directory, skins_ini), 'w+') as generated_ini:
 
         if 'knife_' in weapon:
             generated_ini.write(f'"{weapon.replace("knife_", "").replace("_", "").title()} | Vanilla"'
-                                f'\t\t"{f"models/{custom_models_directory}/{weapon}/v_{weapon}_0.mdl"}"'
+                                f'\t\t"{f"models/{custom_skins_directory}/{weapon}/v_{weapon}_0.mdl"}"'
                                 f'\t\t"0"'
                                 f'\t\t"{weapon_data.get("skin")}"'
-                                f'\t\t"1"'
-                                f'\t\t"1"\n')
+                                f'\t\t"{rarity}"\n')
 
         for index, skin in enumerate(skins, start=1):
             smd = skin.replace(skins_directory, smd_directory).replace(".bmp", ".smd")
@@ -246,11 +260,10 @@ with open(path.join(compiled_directory, skins_ini), 'w+') as generated_ini:
                 .title()
 
             generated_ini.write(f'"{prefix}{skin_name}"'
-                                f'\t\t"{f"models/{custom_models_directory}/{weapon}/v_{weapon}_{order}.mdl"}"'
+                                f'\t\t"{f"models/{custom_skins_directory}/{weapon}/v_{weapon}_{order}.mdl"}"'
                                 f'\t\t"{index - order * max_per_file}"'
                                 f'\t\t"{weapon_data.get("skin")}"'
-                                f'\t\t"1"'
-                                f'\t\t"1"\n')
+                                f'\t\t"{rarity}"\n')
 
         shutil.copyfile(compiler, path.join(weapon, compiler))
 
@@ -266,6 +279,6 @@ with open(path.join(compiled_directory, skins_ini), 'w+') as generated_ini:
         model_files = glob.glob(path.join(weapon, f"v_{weapon}_*.mdl"))
 
         for model_file in model_files:
-            shutil.move(model_file, path.join(compiled_models_directory, model_file))
+            shutil.move(model_file, path.join(compiled_skins_directory, model_file))
 
 print('Finished compiling models and generating `csgo_skins.ini`.')
