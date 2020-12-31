@@ -62,8 +62,8 @@ weapons = {
     "thighpack": False,
 }
 
-default_models_directory = 'csgo_ozone_v2'
-custom_skins_directory = sys.argv[1] if len(sys.argv) > 1 and len(sys.argv[1]) else 'csgo_ozone_v2_skins'
+default_models_directory = 'csgo_v2_default'
+custom_skins_directory = sys.argv[1] if len(sys.argv) > 1 and len(sys.argv[1]) else 'csgo_v2_skins'
 compiler = "studiomdl.exe"
 compiled_directory = "_compiled"
 compiled_models_directory = f"{compiled_directory}/{default_models_directory}"
@@ -101,43 +101,42 @@ with open(path.join(compiled_directory, skins_ini), 'w+') as generated_ini:
 ; 6 - Ancient
 ; 7 - Exceedingly Rare (only knives)
 ; 8 - Immortal (cannot be bought or aquired by draw)
-;
-; Optional possibility to draw any skin (set to 0.0 to disable)
+
+; Default skins path
 SKINS_PATHS={custom_skins_directory}
-""")
+
+; Optional possibility to draw random skin (set to 0.0 to disable)""")
 
     for weapon in weapons.keys():
-        if weapon != "random":
-            if 'knife_' not in weapon and weapon != 'm4a4':
-                weapon_compiled_directory = path.join(compiled_models_directory, weapon)
+        weapon_data = weapons.get(weapon)
 
-                if path.exists(weapon_compiled_directory):
-                    shutil.rmtree(weapon_compiled_directory)
-
-                os.mkdir(weapon_compiled_directory)
-
-            weapon_compiled_directory = path.join(compiled_skins_directory, weapon)
+        if 'knife_' not in weapon and weapon != 'm4a4' and weapon != "random":
+            weapon_compiled_directory = path.join(compiled_models_directory, weapon)
 
             if path.exists(weapon_compiled_directory):
                 shutil.rmtree(weapon_compiled_directory)
 
             os.mkdir(weapon_compiled_directory)
 
-        weapon_data = weapons.get(weapon)
+            model_files = glob.glob(path.join(weapon, "*.mdl"))
 
-        model_files = glob.glob(path.join(weapon, f"*_{weapon}.mdl"))
-
-        for model_file in model_files:
-            shutil.copyfile(model_file, path.join(compiled_models_directory, model_file))
+            for model_file in model_files:
+                shutil.copyfile(model_file, path.join(compiled_models_directory, model_file))
 
         if weapon_data is False:
             continue
 
-        if 'knife_' not in weapon and weapon != 'm4a4':
-            generated_ini.write(f"\n[{weapon.upper()} - {weapon_data.get('random')}]\n")
+        generated_ini.write(f"\n[{weapon.upper()} - {weapon_data.get('random')}]\n")
 
-            if weapon == "random":
-                continue
+        if weapon == "random":
+            continue
+
+        weapon_compiled_directory = path.join(compiled_skins_directory, weapon)
+
+        if path.exists(weapon_compiled_directory):
+            shutil.rmtree(weapon_compiled_directory)
+
+        os.mkdir(weapon_compiled_directory)
 
         existing_skins = glob.glob(path.join(weapon, models_directory, "*.mdl"))
         default_skin_found = False

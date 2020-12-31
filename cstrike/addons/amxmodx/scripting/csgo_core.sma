@@ -77,13 +77,13 @@ new const maxBPAmmo[] = { -1, 52, -1, 90, 1, 32, 1, 100, 90, 1, 120, 100, 100, 9
 new const defaultShell[] = "models/pshell.mdl",
 		  shotgunShell[] = "models/shotgunshell.mdl";
 #else
-new const defaultModels[][] = { "", "models/csgo_ozone_v2/p228/v_p228.mdl", "", "models/csgo_ozone_v2/scout/v_scout.mdl", "", "models/csgo_ozone_v2/xm1014/v_xm1014.mdl", "",
-	"models/csgo_ozone_v2/mac10/v_mac10.mdl", "models/csgo_ozone_v2/aug/v_aug.mdl", "", "models/csgo_ozone_v2/elite/v_elite.mdl", "models/csgo_ozone_v2/fiveseven/v_fiveseven.mdl",
-	"models/csgo_ozone_v2/ump45/v_ump45.mdl", "models/csgo_ozone_v2/sg550/v_sg550.mdl", "models/csgo_ozone_v2/galil/v_galil.mdl", "models/csgo_ozone_v2/famas/v_famas.mdl",
-	"models/csgo_ozone_v2/usp/v_usp.mdl", "models/csgo_ozone_v2/glock18/v_glock18.mdl", "models/csgo_ozone_v2/awp/v_awp.mdl", "models/csgo_ozone_v2/mp5navy/v_mp5navy.mdl",
-	"models/csgo_ozone_v2/m249/v_m249.mdl", "models/csgo_ozone_v2/m3/v_m3.mdl", "models/csgo_ozone_v2/m4a1/v_m4a1.mdl", "models/csgo_ozone_v2/tmp/v_tmp.mdl",
-	"models/csgo_ozone_v2/g3sg1/v_g3sg1.mdl", "", "models/csgo_ozone_v2/deagle/v_deagle.mdl", "models/csgo_ozone_v2/sg552/v_sg552.mdl", "models/csgo_ozone_v2/ak47/v_ak47.mdl",
-	"models/csgo_ozone_v2/knife/v_knife.mdl", "models/csgo_ozone_v2/p90/v_p90.mdl" };
+new const defaultModels[][] = { "", "models/csgo_v2_models/p228/v_p228.mdl", "", "models/csgo_v2_models/scout/v_scout.mdl", "", "models/csgo_v2_models/xm1014/v_xm1014.mdl", "",
+	"models/csgo_v2_models/mac10/v_mac10.mdl", "models/csgo_v2_models/aug/v_aug.mdl", "", "models/csgo_v2_models/elite/v_elite.mdl", "models/csgo_v2_models/fiveseven/v_fiveseven.mdl",
+	"models/csgo_v2_models/ump45/v_ump45.mdl", "models/csgo_v2_models/sg550/v_sg550.mdl", "models/csgo_v2_models/galil/v_galil.mdl", "models/csgo_v2_models/famas/v_famas.mdl",
+	"models/csgo_v2_models/usp/v_usp.mdl", "models/csgo_v2_models/glock18/v_glock18.mdl", "models/csgo_v2_models/awp/v_awp.mdl", "models/csgo_v2_models/mp5navy/v_mp5navy.mdl",
+	"models/csgo_v2_models/m249/v_m249.mdl", "models/csgo_v2_models/m3/v_m3.mdl", "models/csgo_v2_models/m4a1/v_m4a1.mdl", "models/csgo_v2_models/tmp/v_tmp.mdl",
+	"models/csgo_v2_models/g3sg1/v_g3sg1.mdl", "", "models/csgo_v2_models/deagle/v_deagle.mdl", "models/csgo_v2_models/sg552/v_sg552.mdl", "models/csgo_v2_models/ak47/v_ak47.mdl",
+	"models/csgo_v2_models/knife/v_knife.mdl", "models/csgo_v2_models/p90/v_p90.mdl" };
 #endif
 
 enum _:tempInfo { WEAPON, WEAPONS, WEAPON_ENT, EXCHANGE_PLAYER, EXCHANGE, EXCHANGE_FOR_SKIN, GIVE_PLAYER, SALE_SKIN, BUY_SKIN,
@@ -91,7 +91,7 @@ enum _:tempInfo { WEAPON, WEAPONS, WEAPON_ENT, EXCHANGE_PLAYER, EXCHANGE, EXCHAN
 enum _:playerInfo { ACTIVE[CSW_P90 + 1], Float:MONEY, SKIN, SUBMODEL, bool:SKINS_LOADED, bool:DATA_LOADED, bool:EXCHANGE_BLOCKED,
 	bool:MENU_BLOCKED, bool:SKINS_BLOCKED, bool:HUD_BLOCKED, TEMP[tempInfo], NAME[32], SAFE_NAME[64], STEAM_ID[35] };
 enum _:playerSkinsInfo { SKIN_ID, SKIN_COUNT };
-enum _:skinsInfo { SKIN_NAME[64], SKIN_WEAPON[32], SKIN_MODEL[64], SKIN_SUBMODEL, SKIN_PRICE, SKIN_RARITY };
+enum _:skinsInfo { SKIN_NAME[64], SKIN_WEAPON[32], SKIN_MODEL[128], SKIN_SUBMODEL, SKIN_PRICE, SKIN_RARITY };
 enum _:marketInfo { MARKET_ID, MARKET_SKIN, MARKET_OWNER, Float:MARKET_PRICE };
 enum _:typeInfo { TYPE_NAME, TYPE_STEAM_ID };
 enum _:skinRarity { RARITY_COMMON = 1, RARITY_UNCOMMON, RARITY_RATE, RARITY_MYTHICAL, RARIRTY_LEGENDARY, RARITY_ANCIENT, RARITY_EXCEEDINGLY_RARE, RARITY_IMMORTAL };
@@ -234,10 +234,10 @@ public plugin_precache()
 
 		if (lineData[0] == ';' || lineData[0] == '^0' || lineData[0] == '/') continue;
 
-		if (contain(lineData, "MODELS_PATH") != -1) {
-			strtok2(lineData, tempValue[0], charsmax(tempValue[]), skinsPath, length, '=', 1);
+		if (contain(lineData, "SKINS_PATH") != -1) {
+			strtok2(lineData, tempValue[0], charsmax(tempValue[]), skinsPath, charsmax(skinsPath), '=', 1);
 
-			return;
+			continue;
 		}
 
 		if (lineData[0] == '[') {

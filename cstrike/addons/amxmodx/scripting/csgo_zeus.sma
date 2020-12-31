@@ -13,9 +13,9 @@
 
 enum { ViewModel, PlayerModel, WorldModel }
 new const models[][] = {
-	"models/csgo_ozone_v2/zeus/v_zeus.mdl",
-	"models/csgo_ozone_v2/zeus/p_zeus.mdl",
-	"models/csgo_ozone_v2/zeus/w_zeus.mdl"
+	"models/csgo_v2_models/zeus/v_zeus.mdl",
+	"models/csgo_v2_models/zeus/p_zeus.mdl",
+	"models/csgo_v2_models/zeus/w_zeus.mdl"
 }
 
 enum { Deploy, Hit, Shoot }
