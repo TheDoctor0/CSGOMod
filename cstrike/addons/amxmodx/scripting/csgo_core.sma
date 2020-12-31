@@ -3497,7 +3497,7 @@ public _csgo_get_current_skin_name(id, dataReturn[], dataLength)
 	}
 }
 
-public _csgo_get_min_players()
+public bool:_csgo_get_min_players()
 {
 	static players[32], playersCount;
 
@@ -3508,7 +3508,7 @@ public _csgo_get_min_players()
 		case 3: get_players(players, playersCount, "ch");
 	}
 
-	return minPlayers >= playersCount;
+	return playersCount >= minPlayers;
 }
 
 stock get_weapon_skin_name(id, ent, dataReturn[], dataLength, weapon = 0, check = 0)
