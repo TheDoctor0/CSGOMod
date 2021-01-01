@@ -62,7 +62,7 @@ weapons = {
     "thighpack": False,
 }
 
-default_models_directory = 'csgo_v2_default'
+default_models_directory = 'csgo_v2_models'
 custom_skins_directory = sys.argv[1] if len(sys.argv) > 1 and len(sys.argv[1]) else 'csgo_v2_skins'
 compiler = "studiomdl.exe"
 compiled_directory = "_compiled"
