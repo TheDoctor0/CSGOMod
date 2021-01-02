@@ -4,3 +4,4 @@ _compiled/*
 */studiomdl.exe
 */*[0-9].mdl
 */*.qc
+*/*.bak

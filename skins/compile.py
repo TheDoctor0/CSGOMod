@@ -105,12 +105,17 @@ with open(path.join(compiled_directory, skins_ini), 'w+') as generated_ini:
 ; Default skins path
 SKINS_PATHS={custom_skins_directory}
 
-; Optional possibility to draw random skin (set to 0.0 to disable)""")
+; Optional possibility to draw random skin (set to 0.0 to disable)
+[RANDOM - {weapons.get('random').get('random')}]
+""")
 
     for weapon in weapons.keys():
+        if weapon == 'random':
+            continue
+
         weapon_data = weapons.get(weapon)
 
-        if 'knife_' not in weapon and weapon != 'm4a4' and weapon != "random":
+        if not 'knife_' in weapon and weapon != 'm4a4' and weapon != 'random':
             weapon_compiled_directory = path.join(compiled_models_directory, weapon)
 
             if path.exists(weapon_compiled_directory):
@@ -123,13 +128,10 @@ SKINS_PATHS={custom_skins_directory}
             for model_file in model_files:
                 shutil.copyfile(model_file, path.join(compiled_models_directory, model_file))
 
-        if weapon_data is False:
-            continue
-
-        generated_ini.write(f"\n[{weapon.upper()} - {weapon_data.get('random')}]\n")
-
-        if weapon == "random":
-            continue
+            if weapon_data:
+                generated_ini.write(f"\n[{weapon.upper()} - {weapon_data.get('random')}]\n")
+            else:
+                continue
 
         weapon_compiled_directory = path.join(compiled_skins_directory, weapon)
 
