@@ -12,7 +12,7 @@
 #define ADMIN_FLAG_X (1<<23)
 
 new Array:VIPs, Array:SVIPs, bool:used[MAX_PLAYERS + 1], bool:disabled, roundNum = 0,
-	VIP, SVIP, smallMaps, freeType, freeEnabled, freeFrom, freeTo;
+	VIP, SVIP, smallMaps, prefixEnabled, freeType, freeEnabled, freeFrom, freeTo;
 
 new const commandVIPs[][] = { "vips", "say /vips", "say_team /vips", "say /vipy", "say_team /vipy" };
 new const commandSVIPs[][] = { "svips", "say /svips", "say_team /svips", "say /svipy", "say_team /svipy" };
@@ -41,6 +41,7 @@ public plugin_init()
 	register_plugin(PLUGIN, VERSION, AUTHOR);
 
 	bind_pcvar_num(register_cvar("csgo_vip_svip_small_maps", "0"), smallMaps);
+	bind_pcvar_num(register_cvar("csgo_vip_svip_prefix_enabled", "1"), prefixEnabled);
 	bind_pcvar_num(register_cvar("csgo_vip_svip_free_enabled", "0"), freeEnabled);
 	bind_pcvar_num(register_cvar("csgo_vip_svip_free_type", "0"), freeType);
 	bind_pcvar_num(register_cvar("csgo_vip_svip_free_vip_from", "23"), freeFrom);
@@ -698,7 +699,7 @@ public say_text(msgId,msgDest,msgEnt)
 {
 	new id = get_msg_arg_int(1);
 
-	if (is_user_connected(id) && get_bit(id, VIP)) {
+	if (prefixEnabled && is_user_connected(id) && get_bit(id, VIP)) {
 		new tempMessage[192], message[192], chatPrefix[16], playerName[32];
 
 		get_msg_arg_string(2, tempMessage, charsmax(tempMessage));
