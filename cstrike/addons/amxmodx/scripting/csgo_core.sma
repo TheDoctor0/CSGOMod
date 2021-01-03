@@ -86,6 +86,11 @@ new const defaultModels[][] = { "", "models/csgo_v2_models/p228/v_p228.mdl", "",
 	"models/csgo_v2_models/knife/v_knife.mdl", "models/csgo_v2_models/p90/v_p90.mdl" };
 #endif
 
+new const availableWeapons[][] = { "weapon_p228", "weapon_scout", "weapon_hegrenade", "weapon_xm1014", "weapon_c4", "weapon_mac10",
+		"weapon_aug", "weapon_smokegrenade", "weapon_elite", "weapon_fiveseven", "weapon_ump45", "weapon_sg550", "weapon_galil",
+		"weapon_famas", "weapon_usp", "weapon_glock18", "weapon_awp", "weapon_mp5navy", "weapon_m249", "weapon_m3", "weapon_m4a1",
+		"weapon_tmp", "weapon_g3sg1", "weapon_flashbang", "weapon_deagle", "weapon_sg552", "weapon_ak47", "weapon_knife", "weapon_p90" };
+
 enum _:tempInfo { WEAPON, WEAPONS, WEAPON_ENT, EXCHANGE_PLAYER, EXCHANGE, EXCHANGE_FOR_SKIN, GIVE_PLAYER, SALE_SKIN, BUY_SKIN,
 	BUY_WEAPON, BUY_SUBMODEL, ADD_SKIN, Float:COUNTDOWN };
 enum _:playerInfo { ACTIVE[CSW_P90 + 1], Float:MONEY, SKIN, SUBMODEL, bool:SKINS_LOADED, bool:DATA_LOADED, bool:EXCHANGE_BLOCKED,
@@ -180,17 +185,12 @@ public plugin_init()
 	RegisterHam(Ham_AddPlayerItem, "player", "add_player_item", 1);
 	RegisterHam(Ham_Spawn, "player", "player_spawn", 1);
 
-	new const weapons[][] = { "weapon_p228", "weapon_scout", "weapon_hegrenade", "weapon_xm1014", "weapon_c4", "weapon_mac10",
-		"weapon_aug", "weapon_smokegrenade", "weapon_elite", "weapon_fiveseven", "weapon_ump45", "weapon_sg550", "weapon_galil",
-		"weapon_famas", "weapon_usp", "weapon_glock18", "weapon_awp", "weapon_mp5navy", "weapon_m249", "weapon_m3", "weapon_m4a1",
-		"weapon_tmp", "weapon_g3sg1", "weapon_flashbang", "weapon_deagle", "weapon_sg552", "weapon_ak47", "weapon_knife", "weapon_p90" };
-
-	for (new i = 0; i < sizeof weapons; i++) {
-		RegisterHam(Ham_Item_Deploy, weapons[i], "weapon_deploy_post", 1);
+	for (new i = 0; i < sizeof availableWeapons; i++) {
+		RegisterHam(Ham_Item_Deploy, availableWeapons[i], "weapon_deploy_post", 1);
 
 		#if !defined DISABLE_SUBMODELS
-		RegisterHam(Ham_CS_Weapon_SendWeaponAnim, weapons[i], "weapon_send_weapon_anim_post", 1);
-		RegisterHam(Ham_Weapon_PrimaryAttack, weapons[i], "weapon_primary_attack");
+		RegisterHam(Ham_CS_Weapon_SendWeaponAnim, availableWeapons[i], "weapon_send_weapon_anim_post", 1);
+		RegisterHam(Ham_Weapon_PrimaryAttack, availableWeapons[i], "weapon_primary_attack");
 		#endif
 	}
 
@@ -306,6 +306,40 @@ public plugin_precache()
 			fileCount++;
 
 			precache_model(defaultModels[i]);
+		}
+	}
+	#else
+	for (new i = 0; i < sizeof availableWeapons; i++) {
+		static weapon, weaponModel[128];
+
+		weapon = get_weaponid(availableWeapons[i]);
+
+		if (weapon == CSW_C4 || weapon == CSW_HEGRENADE || weapon == CSW_FLASHBANG || weapon == CSW_SMOKEGRENADE) continue;
+
+		formatex(weaponModel, charsmax(weaponModel), "models/%s/%s/v_%s_0.mdl", skinsPath, availableWeapons[i][7], availableWeapons[i][7]);
+
+		if (!file_exists(weaponModel)) {
+			log_to_file("csgo-error.log", "[CS:GO] The file %s containing one of the default skins does not exist!", weaponModel);
+
+			error = true;
+		} else {
+			new bool:precached;
+
+			for (new i = 0; i < ArraySize(skins); i++) {
+				ArrayGetArray(skins, i, skin);
+
+				if (equal(weaponModel, skin[SKIN_MODEL])) {
+					precached = true;
+				}
+			}
+
+			if (!precached) {
+				fileCount++;
+
+				precache_model(weaponModel);
+			}
+
+			skinsCount++;
 		}
 	}
 	#endif
