@@ -260,13 +260,11 @@ public plugin_precache()
 			skin[SKIN_RARITY] = str_to_num(tempValue[4]);
 
 			if (equali(skin[SKIN_WEAPON], "knife")) {
-				skin[SKIN_RARITY] = RARITY_EXCEEDINGLY_RARE;
-			} else {
-				skin[SKIN_RARITY] = str_to_num(tempValue[4]);
-
-				if (skin[SKIN_RARITY] == RARITY_EXCEEDINGLY_RARE) {
-					skin[SKIN_RARITY] = RARITY_ANCIENT;
+				if (skin[SKIN_RARITY] < RARITY_EXCEEDINGLY_RARE) {
+					skin[SKIN_RARITY] = RARITY_EXCEEDINGLY_RARE;
 				}
+			} else if (skin[SKIN_RARITY] == RARITY_EXCEEDINGLY_RARE) {
+				skin[SKIN_RARITY] = RARITY_ANCIENT;
 			}
 
 			if (!file_exists(skin[SKIN_MODEL])) {
