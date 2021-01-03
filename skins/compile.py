@@ -115,7 +115,7 @@ SKINS_PATHS={custom_skins_directory}
 
         weapon_data = weapons.get(weapon)
 
-        if not 'knife_' in weapon and weapon != 'm4a4' and weapon != 'random':
+        if not 'knife_' in weapon and weapon != 'm4a4':
             weapon_compiled_directory = path.join(compiled_models_directory, weapon)
 
             if path.exists(weapon_compiled_directory):
@@ -128,10 +128,10 @@ SKINS_PATHS={custom_skins_directory}
             for model_file in model_files:
                 shutil.copyfile(model_file, path.join(compiled_models_directory, model_file))
 
-            if weapon_data:
-                generated_ini.write(f"\n[{weapon.upper()} - {weapon_data.get('random')}]\n")
-            else:
-                continue
+        if weapon_data:
+            generated_ini.write(f"\n[{weapon.upper()} - {weapon_data.get('random')}]\n")
+        else:
+            continue
 
         weapon_compiled_directory = path.join(compiled_skins_directory, weapon)
 

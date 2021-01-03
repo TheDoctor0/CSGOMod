@@ -54,6 +54,10 @@
 #define CHANCE      1
 #define NONE		-1
 
+#define M4A1		"M4A1"
+#define M4A4		"M4A4"
+#define KNIFE		"KNIFE"
+
 new const commandSkins[][] = { "skiny", "say /skins", "say_team /skins", "say /skin", "say_team /skin", "say /skiny",
 	"say_team /skiny", "say /modele", "say_team /modele", "say /model", "say_team /model", "say /jackpot", "say_team /jackpot" };
 new const commandHelp[][] = { "pomoc", "say /pomoc", "say_team /pomoc", "say /help", "say_team /help" };
@@ -96,7 +100,7 @@ enum _:tempInfo { WEAPON, WEAPONS, WEAPON_ENT, EXCHANGE_PLAYER, EXCHANGE, EXCHAN
 enum _:playerInfo { ACTIVE[CSW_P90 + 1], Float:MONEY, SKIN, SUBMODEL, bool:SKINS_LOADED, bool:DATA_LOADED, bool:EXCHANGE_BLOCKED,
 	bool:MENU_BLOCKED, bool:SKINS_BLOCKED, bool:HUD_BLOCKED, TEMP[tempInfo], NAME[32], SAFE_NAME[64], STEAM_ID[35] };
 enum _:playerSkinsInfo { SKIN_ID, SKIN_COUNT };
-enum _:skinsInfo { SKIN_NAME[64], SKIN_WEAPON[32], SKIN_MODEL[128], SKIN_SUBMODEL, SKIN_PRICE, SKIN_RARITY };
+enum _:skinsInfo { SKIN_NAME[64], SKIN_WEAPON[32], SKIN_WEAPON_SHORT[32], SKIN_MODEL[128], SKIN_SUBMODEL, SKIN_PRICE, SKIN_RARITY };
 enum _:marketInfo { MARKET_ID, MARKET_SKIN, MARKET_OWNER, Float:MARKET_PRICE };
 enum _:typeInfo { TYPE_NAME, TYPE_STEAM_ID };
 enum _:skinRarity { RARITY_COMMON = 1, RARITY_UNCOMMON, RARITY_RATE, RARITY_MYTHICAL, RARIRTY_LEGENDARY, RARITY_ANCIENT, RARITY_EXCEEDINGLY_RARE, RARITY_IMMORTAL };
@@ -246,7 +250,15 @@ public plugin_precache()
 
 			split(lineData, skin[SKIN_WEAPON], charsmax(skin[SKIN_WEAPON]), tempValue[0], charsmax(tempValue[]), " - ");
 
+			replace_all(skin[SKIN_WEAPON], charsmax(skin[SKIN_WEAPON]), "_", " ");
+
 			ArrayPushString(weapons, skin[SKIN_WEAPON]);
+
+			if (is_skin_knife(skin[SKIN_WEAPON])) {
+				formatex(skin[SKIN_WEAPON_SHORT], charsmax(skin[SKIN_WEAPON_SHORT]), KNIFE);
+			} else if (is_skin_m4a4(skin[SKIN_WEAPON])) {
+				copy(skin[SKIN_WEAPON_SHORT], charsmax(skin[SKIN_WEAPON_SHORT]), M4A1);
+			}
 
 			continue;
 		} else {
@@ -259,7 +271,7 @@ public plugin_precache()
 			skin[SKIN_PRICE] = str_to_num(tempValue[3]);
 			skin[SKIN_RARITY] = str_to_num(tempValue[4]);
 
-			if (equali(skin[SKIN_WEAPON], "knife")) {
+			if (is_skin_knife(skin[SKIN_WEAPON_SHORT])) {
 				if (skin[SKIN_RARITY] < RARITY_EXCEEDINGLY_RARE) {
 					skin[SKIN_RARITY] = RARITY_EXCEEDINGLY_RARE;
 				}
@@ -725,7 +737,7 @@ public choose_weapon_menu(id, type)
 
 	new menu = menu_create(menuData, "choose_weapon_menu_handle");
 
-	for (new i = type == MENU_RANDOM ? (randomSkinPrice[WEAPON_ALL] > 0.0 ? 0 : 1) : 1; i < ArraySize(weapons); i++) {
+	for (new i = (type == MENU_RANDOM && randomSkinPrice[WEAPON_ALL]) ? 0 : 1; i < ArraySize(weapons); i++) {
 		ArrayGetString(weapons, i, weapon, charsmax(weapon));
 
 		if (type == MENU_ADD) {
@@ -842,9 +854,9 @@ public set_weapon_skin(id, weapon[])
 			if (multipleSkins) skinsCount = get_player_skin_info(id, skinId, SKIN_COUNT);
 
 			if (skinsCount > 1) {
-				formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_SET_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON], skin[SKIN_RARITY], skinsCount);
+				formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_SET_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT], skin[SKIN_RARITY], skinsCount);
 			} else {
-				formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_SET_ITEM2", skin[SKIN_NAME], skin[SKIN_WEAPON], skin[SKIN_RARITY]);
+				formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_SET_ITEM2", skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT], skin[SKIN_RARITY]);
 			}
 
 			num_to_str(i, tempId, charsmax(tempId));
@@ -886,13 +898,13 @@ public set_weapon_skin_handle(id, menu, item)
 
 		ArrayGetArray(skins, skinId, skin);
 
-		remove_active_skin(id, skin[SKIN_WEAPON]);
+		remove_active_skin(id, skin[SKIN_WEAPON_SHORT]);
 
-		set_skin(id, skin[SKIN_WEAPON], skin[SKIN_NAME], skinId, 1);
+		set_skin(id, skin[SKIN_WEAPON_SHORT], skin[SKIN_NAME], skinId, 1);
 
-		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_SET_NEW", skin[SKIN_WEAPON], skin[SKIN_NAME]);
+		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_SET_NEW", skin[SKIN_WEAPON_SHORT], skin[SKIN_NAME]);
 
-		if (!equal(skin[SKIN_WEAPON], "KNIFE")) {
+		if (!is_skin_knife(skin[SKIN_WEAPON_SHORT])) {
 			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_SET_INFO");
 		}
 	} else {
@@ -906,7 +918,7 @@ public set_weapon_skin_handle(id, menu, item)
 
 		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_SET_DEFAULT", itemData);
 
-		if (!equal(itemData, "KNIFE")) {
+		if (!is_skin_knife(itemData)) {
 			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_SET_INFO");
 		}
 	}
@@ -932,7 +944,7 @@ public buy_weapon_skin(id, weapon[])
 
 			num_to_str(i, tempId, charsmax(tempId));
 
-			formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_BUY_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON], skin[SKIN_RARITY], skin[SKIN_PRICE]);
+			formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_BUY_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT], skin[SKIN_RARITY], skin[SKIN_PRICE]);
 
 			menu_additem(menu, menuData, tempId);
 
@@ -1007,7 +1019,7 @@ public buy_weapon_skin_confirm(id)
 
 	ArrayGetArray(skins, playerData[id][TEMP][BUY_SKIN], skin);
 
-	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_BUY_CONFIRMATION", skin[SKIN_WEAPON], skin[SKIN_NAME], skin[SKIN_PRICE]);
+	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_BUY_CONFIRMATION", skin[SKIN_WEAPON_SHORT], skin[SKIN_NAME], skin[SKIN_PRICE]);
 
 	new menu = menu_create(menuData, "buy_weapon_skin_confirm_handle");
 
@@ -1078,11 +1090,11 @@ public buy_weapon_skin_confirm_handle(id, menu, item)
 
 			save_data(id);
 
-			add_skin(id, playerData[id][TEMP][BUY_SKIN], skin[SKIN_WEAPON], skin[SKIN_NAME]);
+			add_skin(id, playerData[id][TEMP][BUY_SKIN], skin[SKIN_WEAPON_SHORT], skin[SKIN_NAME]);
 
-			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_BUY_SUCCESS", skin[SKIN_NAME], skin[SKIN_WEAPON]);
+			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_BUY_SUCCESS", skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT]);
 
-			log_to_file("csgo-buy.log", "Player %s bought skin %s (%s)", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON]);
+			log_to_file("csgo-buy.log", "Player %s bought skin %s (%s)", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT]);
 
 			skins_menu(id);
 		} case 2: {
@@ -1193,15 +1205,15 @@ public random_weapon_skin_handle(id, menu, item)
 
 		ArrayGetArray(skins, skinId, skin);
 
-		add_skin(id, skinId, skin[SKIN_WEAPON], skin[SKIN_NAME]);
+		add_skin(id, skinId, skin[SKIN_WEAPON_SHORT], skin[SKIN_NAME]);
 
 		for (new player = 1; player <= MAX_PLAYERS; player++) {
 			if (!is_user_connected(player) || is_user_hltv(player) || is_user_bot(player)) continue;
 
-			client_print_color(player, id, "%s %L", CHAT_PREFIX, player, "CSGO_CORE_DRAW_SUCCESS", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON]);
+			client_print_color(player, id, "%s %L", CHAT_PREFIX, player, "CSGO_CORE_DRAW_SUCCESS", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT]);
 		}
 
-		log_to_file("csgo-random.log", "Player %s has drawn a skin %s (%s)", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON]);
+		log_to_file("csgo-random.log", "Player %s has drawn a skin %s (%s)", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT]);
 	} else {
 		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_DRAW_NEXT_TIME");
 	}
@@ -1340,12 +1352,12 @@ public add_weapon_skin_player_handle(id, menu, item)
 
 	ArrayGetArray(skins, playerData[id][TEMP][ADD_SKIN], skin);
 
-	add_skin(player, playerData[id][TEMP][ADD_SKIN], skin[SKIN_WEAPON], skin[SKIN_NAME]);
+	add_skin(player, playerData[id][TEMP][ADD_SKIN], skin[SKIN_WEAPON_SHORT], skin[SKIN_NAME]);
 
-	client_print_color(player, player, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_ADD_SUCCESS", skin[SKIN_NAME], skin[SKIN_WEAPON]);
-	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_ADD_SUCCESS2", skin[SKIN_NAME], skin[SKIN_WEAPON], playerData[id][NAME]);
+	client_print_color(player, player, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_ADD_SUCCESS", skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT]);
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_ADD_SUCCESS2", skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT], playerData[id][NAME]);
 
-	log_to_file("csgo-add.log", "Admin %s added skin %s (%s) to player %s", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON], playerData[player][NAME]);
+	log_to_file("csgo-add.log", "Admin %s added skin %s (%s) to player %s", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT], playerData[player][NAME]);
 
 	return PLUGIN_HANDLED;
 }
@@ -1452,9 +1464,9 @@ public exchange_skin_menu_handle(id, menu, item)
 		num_to_str(skinId, tempId, charsmax(tempId));
 
 		if (multipleSkins && skinsCount > 1) {
-			formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_EXCHANGE_OWN_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON], skin[SKIN_RARITY], skinsCount);
+			formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_EXCHANGE_OWN_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT], skin[SKIN_RARITY], skinsCount);
 		} else {
-			formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_EXCHANGE_OWN_ITEM2", skin[SKIN_NAME], skin[SKIN_WEAPON], skin[SKIN_RARITY]);
+			formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_EXCHANGE_OWN_ITEM2", skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT], skin[SKIN_RARITY]);
 		}
 
 		menu_additem(menu, menuData, tempId);
@@ -1512,7 +1524,7 @@ public exchange_skin_handle(id, menu, item)
 		return PLUGIN_HANDLED;
 	}
 
-	new menuData[64], skin[skinsInfo], tempId[5], skinsCount = 0, skinId;
+	new menuData[128], skin[skinsInfo], tempId[5], skinsCount = 0, skinId;
 
 	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_EXCHANGE_THEIR_MENU");
 
@@ -1525,9 +1537,7 @@ public exchange_skin_handle(id, menu, item)
 
 		ArrayGetArray(skins, skinId, skin);
 
-		num_to_str(skinId, tempId, charsmax(tempId));
-
-		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_EXCHANGE_THEIR_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON], skin[SKIN_RARITY]);
+		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_EXCHANGE_THEIR_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT], skin[SKIN_RARITY]);
 
 		menu_additem(menu, menuData, tempId);
 
@@ -1602,7 +1612,7 @@ public exchange_for_skin_handle(id, menu, item)
 	playerData[player][TEMP][EXCHANGE_PLAYER] = id;
 
 	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_EXCHANGE_QUESTION",
-		playerData[id][NAME], playerSkin[SKIN_NAME], playerSkin[SKIN_WEAPON], skin[SKIN_NAME], skin[SKIN_WEAPON]);
+		playerData[id][NAME], playerSkin[SKIN_NAME], playerSkin[SKIN_WEAPON_SHORT], skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT]);
 
 	show_menu(player, (MENU_KEY_8 | MENU_KEY_9 | MENU_KEY_0), menuData, -1, "Exchange");
 
@@ -1640,16 +1650,16 @@ public exchange_question_handle(id, key)
 			ArrayGetArray(skins, exchangeSkin, playerSkin);
 			ArrayGetArray(skins, exchangeForSkin, skin);
 
-			remove_skin(player, exchangeSkin, playerSkin[SKIN_WEAPON], playerSkin[SKIN_NAME]);
-			remove_skin(id, exchangeForSkin, skin[SKIN_WEAPON], skin[SKIN_NAME]);
+			remove_skin(player, exchangeSkin, playerSkin[SKIN_WEAPON_SHORT], playerSkin[SKIN_NAME]);
+			remove_skin(id, exchangeForSkin, skin[SKIN_WEAPON_SHORT], skin[SKIN_NAME]);
 
-			add_skin(player, exchangeForSkin, skin[SKIN_WEAPON], skin[SKIN_NAME]);
-			add_skin(id, exchangeSkin, playerSkin[SKIN_WEAPON], playerSkin[SKIN_NAME]);
+			add_skin(player, exchangeForSkin, skin[SKIN_WEAPON_SHORT], skin[SKIN_NAME]);
+			add_skin(id, exchangeSkin, playerSkin[SKIN_WEAPON_SHORT], playerSkin[SKIN_NAME]);
 
-			client_print_color(player, player, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_EXCHANGE_SUCCESS", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON]);
-			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_EXCHANGE_SUCCESS", playerData[player][NAME], playerSkin[SKIN_NAME], playerSkin[SKIN_WEAPON]);
+			client_print_color(player, player, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_EXCHANGE_SUCCESS", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT]);
+			client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_EXCHANGE_SUCCESS", playerData[player][NAME], playerSkin[SKIN_NAME], playerSkin[SKIN_WEAPON_SHORT]);
 
-			log_to_file("csgo-exchange.log", "Player %s has exchanged skin %s (%s) z graczem %s with player %s (%s)", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON], playerData[player][NAME], playerSkin[SKIN_NAME], playerSkin[SKIN_WEAPON]);
+			log_to_file("csgo-exchange.log", "Player %s has exchanged skin %s (%s) z graczem %s with player %s (%s)", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT], playerData[player][NAME], playerSkin[SKIN_NAME], playerSkin[SKIN_WEAPON_SHORT]);
 		} default: {
 			client_print_color(player, player, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_EXCHANGE_DECLINED");
 		}
@@ -1738,7 +1748,7 @@ public give_skin_menu_handle(id, menu, item)
 
 	playerData[id][TEMP][GIVE_PLAYER] = player;
 
-	new menuData[64], skin[skinsInfo], tempId[5], skinsCount = 0, skinId, skinCount;
+	new menuData[128], skin[skinsInfo], tempId[5], skinsCount = 0, skinId, skinCount;
 
 	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_GIVE_SELECT_MENU");
 
@@ -1753,8 +1763,8 @@ public give_skin_menu_handle(id, menu, item)
 
 		num_to_str(skinId, tempId, charsmax(tempId));
 
-		if (multipleSkins && skinCount > 1) formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_GIVE_SELECT_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON], skin[SKIN_RARITY], skinCount);
-		else formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_GIVE_SELECT_ITEM2", skin[SKIN_NAME], skin[SKIN_WEAPON], skin[SKIN_RARITY]);
+		if (multipleSkins && skinCount > 1) formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_GIVE_SELECT_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT], skin[SKIN_RARITY], skinCount);
+		else formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_GIVE_SELECT_ITEM2", skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT], skin[SKIN_RARITY]);
 
 		menu_additem(menu, menuData, tempId);
 
@@ -1821,14 +1831,14 @@ public give_skin_handle(id, menu, item)
 
 	ArrayGetArray(skins, skinId, skin);
 
-	remove_skin(id, skinId, skin[SKIN_WEAPON], skin[SKIN_NAME]);
+	remove_skin(id, skinId, skin[SKIN_WEAPON_SHORT], skin[SKIN_NAME]);
 
-	add_skin(player, skinId, skin[SKIN_WEAPON], skin[SKIN_NAME]);
+	add_skin(player, skinId, skin[SKIN_WEAPON_SHORT], skin[SKIN_NAME]);
 
-	client_print_color(player, player, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_GIVE_SUCCESS", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON]);
-	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_GIVE_SUCCESS2", skin[SKIN_NAME], skin[SKIN_WEAPON], playerData[player][NAME]);
+	client_print_color(player, player, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_GIVE_SUCCESS", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT]);
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_GIVE_SUCCESS2", skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT], playerData[player][NAME]);
 
-	log_to_file("csgo-give.log", "Player %s gave skin %s (%s) to player %s", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON], playerData[player][NAME]);
+	log_to_file("csgo-give.log", "Player %s gave skin %s (%s) to player %s", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT], playerData[player][NAME]);
 
 	return PLUGIN_HANDLED;
 }
@@ -1918,7 +1928,7 @@ public market_sell_skin(id)
 		return PLUGIN_HANDLED;
 	}
 
-	new menuTitle[128], menuData[64], skin[skinsInfo], tempId[5], skinId, skinsCount;
+	new menuTitle[128], menuData[128], skin[skinsInfo], tempId[5], skinId, skinsCount;
 
 	if (marketCommision > 0.0) {
 		formatex(menuTitle, charsmax(menuTitle), "%L", id, "CSGO_CORE_SELL_MENU_COMISSION", marketCommision);
@@ -1936,9 +1946,9 @@ public market_sell_skin(id)
 		num_to_str(skinId, tempId, charsmax(tempId));
 
 		if (multipleSkins && skinsCount > 1) {
-			formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_SELL_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON], skin[SKIN_RARITY], skinsCount);
+			formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_SELL_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT], skin[SKIN_RARITY], skinsCount);
 		} else {
-			formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_SELL_ITEM2", skin[SKIN_NAME], skin[SKIN_WEAPON], skin[SKIN_RARITY]);
+			formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_SELL_ITEM2", skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT], skin[SKIN_RARITY]);
 		}
 
 		menu_additem(menu, menuData, tempId);
@@ -2036,7 +2046,7 @@ public set_skin_price(id)
 	for (new player = 1; player <= MAX_PLAYERS; player++) {
 		if (!is_user_connected(player) || is_user_hltv(player) || is_user_bot(player)) continue;
 
-		client_print_color(player, id, "%s %L", CHAT_PREFIX, player, "CSGO_CORE_SELL_ISSUED", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON], price);
+		client_print_color(player, id, "%s %L", CHAT_PREFIX, player, "CSGO_CORE_SELL_ISSUED", playerData[id][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT], price);
 	}
 
 	return PLUGIN_HANDLED;
@@ -2067,7 +2077,7 @@ public market_buy_skin(id)
 
 		formatex(skinIds, charsmax(skinIds), "%i#%i#%i", marketSkin[MARKET_ID], marketSkin[MARKET_SKIN], marketSkin[MARKET_OWNER]);
 
-		formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CORE_PURCHASE_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON], skin[SKIN_RARITY], marketSkin[MARKET_PRICE]);
+		formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CORE_PURCHASE_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT], skin[SKIN_RARITY], marketSkin[MARKET_PRICE]);
 
 		menu_additem(menu, itemData, skinIds);
 
@@ -2124,7 +2134,7 @@ public market_buy_skin_handle(id, menu, item)
 	ArrayGetArray(skins, marketSkin[MARKET_SKIN], skin);
 
 	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_PURCHASE_CONFIRMATION",
-		playerData[marketSkin[MARKET_OWNER]][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON], marketSkin[MARKET_PRICE]);
+		playerData[marketSkin[MARKET_OWNER]][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT], marketSkin[MARKET_PRICE]);
 
 	new menu = menu_create(menuData, "market_buy_confirm_handle");
 
@@ -2189,15 +2199,15 @@ public market_buy_confirm_handle(id, menu, item)
 	playerData[marketSkin[MARKET_OWNER]][MONEY] += priceAfterCommision;
 	playerData[id][MONEY] -= marketSkin[MARKET_PRICE];
 
-	add_skin(id, marketSkin[MARKET_SKIN], skin[SKIN_WEAPON], skin[SKIN_NAME]);
-	remove_skin(marketSkin[MARKET_OWNER], marketSkin[MARKET_SKIN], skin[SKIN_WEAPON], skin[SKIN_NAME]);
+	add_skin(id, marketSkin[MARKET_SKIN], skin[SKIN_WEAPON_SHORT], skin[SKIN_NAME]);
+	remove_skin(marketSkin[MARKET_OWNER], marketSkin[MARKET_SKIN], skin[SKIN_WEAPON_SHORT], skin[SKIN_NAME]);
 
-	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_PURCHASE_BOUGHT", skin[SKIN_NAME], skin[SKIN_WEAPON]);
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_PURCHASE_BOUGHT", skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT]);
 
-	client_print_color(marketSkin[MARKET_OWNER], marketSkin[MARKET_OWNER], "%s %L", CHAT_PREFIX, id, "CSGO_CORE_PURCHASE_BOUGHT2", skin[SKIN_NAME], skin[SKIN_WEAPON], playerData[id][NAME]);
+	client_print_color(marketSkin[MARKET_OWNER], marketSkin[MARKET_OWNER], "%s %L", CHAT_PREFIX, id, "CSGO_CORE_PURCHASE_BOUGHT2", skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT], playerData[id][NAME]);
 	client_print_color(marketSkin[MARKET_OWNER], marketSkin[MARKET_OWNER], "%s %L", CHAT_PREFIX, id, "CSGO_CORE_PURCHASE_BOUGHT3", priceAfterCommision);
 
-	log_to_file("csgo-sell.log", "Player %s sold skin %s (%s) to player %s for %.2f Euro", playerData[marketSkin[MARKET_OWNER]][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON], playerData[id][NAME], marketSkin[MARKET_PRICE]);
+	log_to_file("csgo-sell.log", "Player %s sold skin %s (%s) to player %s for %.2f Euro", playerData[marketSkin[MARKET_OWNER]][NAME], skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT], playerData[id][NAME], marketSkin[MARKET_PRICE]);
 
 	return PLUGIN_CONTINUE;
 }
@@ -2227,7 +2237,7 @@ public market_withdraw_skin(id)
 
 		formatex(skinIds, charsmax(skinIds), "%i#%i#%i", marketSkin[MARKET_ID], marketSkin[MARKET_SKIN], marketSkin[MARKET_OWNER]);
 
-		formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CORE_WITHDRAW_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON], skin[SKIN_RARITY], marketSkin[MARKET_PRICE]);
+		formatex(itemData, charsmax(itemData), "%L", id, "CSGO_CORE_WITHDRAW_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT], skin[SKIN_RARITY], marketSkin[MARKET_PRICE]);
 
 		menu_additem(menu, itemData, skinIds);
 
@@ -2284,7 +2294,7 @@ public market_withdraw_skin_handle(id, menu, item)
 	ArrayGetArray(skins, marketSkin[MARKET_SKIN], skin);
 
 	formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_WITHDRAW_CONFIRMATION",
-		skin[SKIN_NAME], skin[SKIN_WEAPON], marketSkin[MARKET_PRICE]);
+		skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT], marketSkin[MARKET_PRICE]);
 
 	new menu = menu_create(menuData, "market_withdraw_confirm_handle");
 
@@ -2337,7 +2347,7 @@ public market_withdraw_confirm_handle(id, menu, item)
 
 	ArrayDeleteItem(market, skinId);
 
-	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_PURCHASE_SUCCESS", skin[SKIN_NAME], skin[SKIN_WEAPON]);
+	client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CORE_PURCHASE_SUCCESS", skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT]);
 
 	return PLUGIN_CONTINUE;
 }
@@ -2724,7 +2734,7 @@ public m4a1_secondary_attack(ent)
 
 		get_weapon_skin_name(id, ent, skinName, charsmax(skinName));
 
-		if (containi(skinName, "M4A4") != -1) {
+		if (is_skin_m4a4(skinName)) {
 			cs_set_weapon_silen(ent, 0, 0);
 
 			set_pdata_float(ent, OFFSET_SECONDARY_ATTACK, 9999.0, OFFSET_ITEM_LINUX);
@@ -2770,7 +2780,7 @@ public add_player_item(id, ent)
 
 			get_weapon_skin_name(id, ent, skinName, charsmax(skinName));
 
-			if (containi(skinName, "M4A4") != -1) {
+			if (is_skin_m4a4(skinName)) {
 				cs_set_weapon_silen(ent, 0, 0);
 
 				set_pdata_float(ent, OFFSET_SECONDARY_ATTACK, 9999.0, OFFSET_ITEM_LINUX);
@@ -3461,14 +3471,14 @@ public load_skins_handle(failState, Handle:query, error[], errorNum, playerId[],
 
 	while (SQL_MoreResults(query)) {
 		SQL_ReadResult(query, SQL_FieldNameToNum(query, "skin"), skin[SKIN_NAME], charsmax(skin[SKIN_NAME]));
-		SQL_ReadResult(query, SQL_FieldNameToNum(query, "weapon"), skin[SKIN_WEAPON], charsmax(skin[SKIN_WEAPON]));
+		SQL_ReadResult(query, SQL_FieldNameToNum(query, "weapon"), skin[SKIN_WEAPON_SHORT], charsmax(skin[SKIN_WEAPON_SHORT]));
 
-		if (contain(skin[SKIN_WEAPON], "ACTIVE") != NONE) {
-			replace(skin[SKIN_WEAPON], charsmax(skin[SKIN_WEAPON]), " ACTIVE", "");
+		if (contain(skin[SKIN_WEAPON_SHORT], "ACTIVE") != NONE) {
+			replace(skin[SKIN_WEAPON_SHORT], charsmax(skin[SKIN_WEAPON_SHORT]), " ACTIVE", "");
 
-			set_skin(id, skin[SKIN_WEAPON], skin[SKIN_NAME], get_skin_id(skin[SKIN_NAME], skin[SKIN_WEAPON]));
+			set_skin(id, skin[SKIN_WEAPON_SHORT], skin[SKIN_NAME], get_skin_id(skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT]));
 		} else {
-			new skinId = get_skin_id(skin[SKIN_NAME], skin[SKIN_WEAPON]);
+			new skinId = get_skin_id(skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT]);
 
 			if (skinId > NONE) {
 				static playerSkin[playerSkinsInfo];
@@ -3579,7 +3589,7 @@ stock get_weapon_skin_name(id, ent, dataReturn[], dataLength, weapon = 0, check 
 			new weaponSkin = entity_get_int(ent, EV_INT_iuser2);
 
 			if (weaponSkin > NONE) {
-				get_skin_info(weaponSkin, SKIN_WEAPON, skinWeapon, charsmax(skinWeapon));
+				get_skin_info(weaponSkin, SKIN_WEAPON_SHORT, skinWeapon, charsmax(skinWeapon));
 
 				if (!weapon || weapon == get_weapon_id(skinWeapon)) {
 					get_skin_info(weaponSkin, SKIN_NAME, dataReturn, dataLength);
@@ -3609,7 +3619,7 @@ stock get_weapon_skin_name(id, ent, dataReturn[], dataLength, weapon = 0, check 
 
 			if (equal(dataReturn, defaultName) || !dataReturn[0]) {
 				formatex(dataReturn, dataLength, weaponName[7]);
-			} else if (containi(dataReturn, "M4A4") == -1) {
+			} else if (!is_skin_m4a4(dataReturn)) {
 				format(dataReturn, dataLength, "%s | %s", weaponName[7], dataReturn);
 			}
 		}
@@ -3687,13 +3697,31 @@ stock get_skin_chance(rarity)
 
 stock get_weapon_id(weapon[])
 {
+	if (is_skin_knife(weapon)) {
+		return CSW_KNIFE;
+	}
+
+	if (is_skin_m4a4(weapon)) {
+		return CSW_M4A1;
+	}
+
 	new weaponName[32];
 
-	formatex(weaponName, charsmax(weaponName), "weapon_%s", weapon);
+	format(weaponName, charsmax(weaponName), "weapon_%s", weapon);
 
 	strtolower(weaponName);
 
 	return get_weaponid(weaponName);
+}
+
+stock is_skin_m4a4(skinName[])
+{
+	return containi(skinName, M4A4) != -1;
+}
+
+stock is_skin_knife(skinName[])
+{
+	return containi(skinName, KNIFE) != -1;
 }
 
 stock has_skin(id, skin, check = 0)
@@ -3843,7 +3871,7 @@ stock get_skin_id(const name[], const weapon[])
 	for (new i = 0; i < ArraySize(skins); i++) {
 		ArrayGetArray(skins, i, skin);
 
-		if (equal(name, skin[SKIN_NAME]) && equal(weapon, skin[SKIN_WEAPON])) {
+		if (equal(name, skin[SKIN_NAME]) && equal(weapon, skin[SKIN_WEAPON_SHORT])) {
 			return i;
 		}
 	}
