@@ -258,6 +258,8 @@ public plugin_precache()
 				formatex(skin[SKIN_WEAPON_SHORT], charsmax(skin[SKIN_WEAPON_SHORT]), KNIFE);
 			} else if (is_skin_m4a4(skin[SKIN_WEAPON])) {
 				copy(skin[SKIN_WEAPON_SHORT], charsmax(skin[SKIN_WEAPON_SHORT]), M4A1);
+			} else {
+				copy(skin[SKIN_WEAPON_SHORT], charsmax(skin[SKIN_WEAPON_SHORT]), skin[SKIN_WEAPON]);
 			}
 
 			continue;
