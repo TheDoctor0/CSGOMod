@@ -80,14 +80,6 @@ new const maxBPAmmo[] = { -1, 52, -1, 90, 1, 32, 1, 100, 90, 1, 120, 100, 100, 9
 #if !defined DISABLE_SUBMODELS
 new const defaultShell[] = "models/pshell.mdl",
 		  shotgunShell[] = "models/shotgunshell.mdl";
-#else
-new const defaultModels[][] = { "", "models/csgo_v2_models/p228/v_p228.mdl", "", "models/csgo_v2_models/scout/v_scout.mdl", "", "models/csgo_v2_models/xm1014/v_xm1014.mdl", "",
-	"models/csgo_v2_models/mac10/v_mac10.mdl", "models/csgo_v2_models/aug/v_aug.mdl", "", "models/csgo_v2_models/elite/v_elite.mdl", "models/csgo_v2_models/fiveseven/v_fiveseven.mdl",
-	"models/csgo_v2_models/ump45/v_ump45.mdl", "models/csgo_v2_models/sg550/v_sg550.mdl", "models/csgo_v2_models/galil/v_galil.mdl", "models/csgo_v2_models/famas/v_famas.mdl",
-	"models/csgo_v2_models/usp/v_usp.mdl", "models/csgo_v2_models/glock18/v_glock18.mdl", "models/csgo_v2_models/awp/v_awp.mdl", "models/csgo_v2_models/mp5navy/v_mp5navy.mdl",
-	"models/csgo_v2_models/m249/v_m249.mdl", "models/csgo_v2_models/m3/v_m3.mdl", "models/csgo_v2_models/m4a1/v_m4a1.mdl", "models/csgo_v2_models/tmp/v_tmp.mdl",
-	"models/csgo_v2_models/g3sg1/v_g3sg1.mdl", "", "models/csgo_v2_models/deagle/v_deagle.mdl", "models/csgo_v2_models/sg552/v_sg552.mdl", "models/csgo_v2_models/ak47/v_ak47.mdl",
-	"models/csgo_v2_models/knife/v_knife.mdl", "models/csgo_v2_models/p90/v_p90.mdl" };
 #endif
 
 new const availableWeapons[][] = { "weapon_p228", "weapon_scout", "weapon_hegrenade", "weapon_xm1014", "weapon_c4", "weapon_mac10",
@@ -307,22 +299,7 @@ public plugin_precache()
 
 	fclose(fileOpen);
 
-	#if defined DISABLE_SUBMODELS
-	for (new i = 0; i < sizeof defaultModels; i++) {
-		if (!strlen(defaultModels[i])) continue;
-
-		if (!file_exists(defaultModels[i])) {
-			log_to_file("csgo-error.log", "[CS:GO] The file %s containing one of the default skins does not exist!", defaultModels[i]);
-
-			error = true;
-		} else {
-			skinsCount++;
-			fileCount++;
-
-			precache_model(defaultModels[i]);
-		}
-	}
-	#else
+	#if !defined DISABLE_SUBMODELS
 	for (new i = 0; i < sizeof availableWeapons; i++) {
 		static weapon[32], weaponModel[128];
 
@@ -3014,7 +2991,7 @@ stock change_skin(id, weapon, ent = 0)
 
 	static skin[skinsInfo];
 
-	if (is_valid_ent(ent) && weapon != CSW_KNIFE) {
+	if (is_valid_ent(ent) && weapon != CSW_KNIFE && weapon != CSW_HEGRENADE && weapon != CSW_SMOKEGRENADE && weapon != CSW_FLASHBANG && weapon != CSW_C4) {
 		new weaponOwner = entity_get_int(ent, EV_INT_iuser1);
 
 		if (is_user_connected(weaponOwner) && !is_user_hltv(weaponOwner) && !is_user_bot(weaponOwner)) {
@@ -3083,18 +3060,12 @@ public deploy_weapon_switch(id)
 		ArrayGetArray(skins, playerData[id][TEMP][BUY_SKIN], skin);
 
 		set_pev(id, pev_viewmodel2, skin[SKIN_MODEL]);
-
-		#if !defined DISABLE_SUBMODELS
 		set_pev(id, pev_body, skin[SKIN_SUBMODEL]);
-		#endif
 	} else if (playerData[id][SKIN] > NONE) {
 		ArrayGetArray(skins, playerData[id][SKIN], skin);
 
 		set_pev(id, pev_viewmodel2, skin[SKIN_MODEL]);
-
-		#if !defined DISABLE_SUBMODELS
 		set_pev(id, pev_body, skin[SKIN_SUBMODEL]);
-		#endif
 	} else if (defaultSkins) {
 		#if !defined DISABLE_SUBMODELS
 		static weaponName[32];
@@ -3104,23 +3075,7 @@ public deploy_weapon_switch(id)
 		formatex(defaultSkin, charsmax(defaultSkin), "models/%s/%s/v_%s_0.mdl", skinsPath, weaponName[7], weaponName[7]);
 
 		set_pev(id, pev_body, 0);
-		#else
-		copy(defaultSkin, charsmax(defaultSkin), defaultModels[playerData[id][TEMP][WEAPON]]);
-		#endif
-
 		set_pev(id, pev_viewmodel2, defaultSkin);
-	} else {
-		#if !defined DISABLE_SUBMODELS
-		static weaponName[32];
-
-		get_weaponname(playerData[id][TEMP][WEAPON], weaponName, charsmax(weaponName));
-
-		replace(weaponName, charsmax(weaponName), "mp5navy", "mp5");
-
-		formatex(defaultSkin, charsmax(defaultSkin), "models/v_%s.mdl", weaponName[7]);
-
-		set_pev(id, pev_viewmodel2, defaultSkin);
-		set_pev(id, pev_body, 0);
 		#endif
 	}
 

@@ -43,7 +43,7 @@ Before starting you need to:
     Inside you will find source files for all skins that you can select for compilation. You may also extend it by adding some of your own - more about it in section below.
 
 ### Management
-1. Inside every weapon directory you will find `_textures` folder with all available skins. 
+1. Inside every weapon directory you will find `_textures` folder with all available skins.
     Select any textures that you want to use and copy them into `skins` folder.
 
     Textures that are already in `skins` are those for skins included in `csgo_mod.zip`, so of course you can remove or replace them.
@@ -88,7 +88,9 @@ If want to only use regular models with single skin you can disable it in `csgo_
 // Uncomment to disable support for skins based on submodels
 //#define DISABLE_SUBMODELS
 ```
-This should improve server performance, but will drastically reduce number of skins that you can use.
+Be sure to also uncomment lines for `v_` models replacement in Unprecacher `list.ini` config.
+
+Disabling submodels support should improve server performance, but will drastically reduce number of skins that you can use.
 
 ## Commands
 If you want to add money (Euro) to any player balance, you can use this command::
