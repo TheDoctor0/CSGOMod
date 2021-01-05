@@ -231,8 +231,6 @@ public molotov_deploy_model(weapon)
 
 	if (!molotovEnabled || !pev_valid(id) || !is_user_alive(id) || !get_bit(id, molotov)) return HAM_IGNORED;
 
-	log_amx("%s", models[ViewModel]);
-
 	set_pev(id, pev_viewmodel2, models[ViewModel]);
 	set_pev(id, pev_weaponmodel2, models[PlayerModel]);
 

@@ -324,13 +324,13 @@ public plugin_precache()
 	}
 	#else
 	for (new i = 0; i < sizeof availableWeapons; i++) {
-		static weapon, weaponModel[128];
+		static weapon[32], weaponModel[128];
 
-		weapon = get_weaponid(availableWeapons[i]);
+		copy(weapon, charsmax(weapon), availableWeapons[i]);
 
-		if (weapon == CSW_C4 || weapon == CSW_HEGRENADE || weapon == CSW_FLASHBANG || weapon == CSW_SMOKEGRENADE) continue;
+		if (equal(weapon, "weapon_c4") || equal(weapon, "weapon_hegrenade") || equal(weapon, "weapon_flashbang") || equal(weapon, "weapon_smokegrenade")) continue;
 
-		formatex(weaponModel, charsmax(weaponModel), "models/%s/%s/v_%s_0.mdl", skinsPath, availableWeapons[i][7], availableWeapons[i][7]);
+		formatex(weaponModel, charsmax(weaponModel), "models/%s/%s/v_%s_0.mdl", skinsPath, weapon[7], weapon[7]);
 
 		if (!file_exists(weaponModel)) {
 			log_to_file("csgo-error.log", "[CS:GO] The file %s containing one of the default skins does not exist!", weaponModel);
