@@ -97,15 +97,21 @@ public client_authorized_post(id)
 	rem_bit(id, VIP);
 	rem_bit(id, SVIP);
 
-	new currentTime[3], hour;
+	new currentTime[3], hour, bool:freeVip = freeEnabled == FREE_ALWAYS;
 
-	get_time("%H", currentTime, charsmax(currentTime));
+	if (!freeVip && freeEnabled == FREE_HOURS) {
+		get_time("%H", currentTime, charsmax(currentTime));
 
-	hour = str_to_num(currentTime);
+		hour = str_to_num(currentTime);
 
-	if (get_user_flags(id) & ADMIN_LEVEL_H || get_user_flags(id) & ADMIN_FLAG_X || freeEnabled == FREE_ALWAYS
-		|| (freeEnabled == FREE_HOURS && (hour >= freeFrom || hour < freeTo))
-	) {
+		if (freeFrom >= freeTo && (hour >= freeFrom || hour < freeTo) {
+			freeVip = true;
+		} else if (freeFrom < freeTo && (hour >= freeTo && hour < freeFrom) {
+			freeVip = true;
+		}
+	}
+
+	if (get_user_flags(id) & ADMIN_LEVEL_H || get_user_flags(id) & ADMIN_FLAG_X || freeVip) {
 		set_bit(id, VIP);
 
 		new playerName[32], tempName[32], size = ArraySize(VIPs), bool:found;
