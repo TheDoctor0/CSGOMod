@@ -176,7 +176,7 @@ native csgo_get_weapon_skin(id, weapon);
 native csgo_get_skin_name(id, skin, data[], length);
 
 /**
- * Giving a player a random skin.
+ * Sets a player a random skin.
  *
  * @param id        Player index
  * @param data      Buffer to copy text to
