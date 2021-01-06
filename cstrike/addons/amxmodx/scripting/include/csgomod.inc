@@ -176,6 +176,17 @@ native csgo_get_weapon_skin(id, weapon);
 native csgo_get_skin_name(id, skin, data[], length);
 
 /**
+ * Retrieves name of skin for current player weapon.
+ *
+ * @param id        Player index
+ * @param data      Buffer to copy text to
+ * @param lenth     Maximum buffer size
+ *
+ * @noreturn
+ */
+native csgo_get_current_skin_name(id, data[], length);
+
+/**
  * Sets a player a random skin.
  *
  * @param id        Player index
