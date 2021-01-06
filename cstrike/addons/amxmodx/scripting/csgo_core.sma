@@ -455,6 +455,7 @@ public plugin_natives()
 	register_native("csgo_get_skin_name", "_csgo_get_skin_name", 1);
 	register_native("csgo_get_current_skin_name", "_csgo_get_current_skin_name", 1);
 	register_native("csgo_get_min_players", "_csgo_get_min_players", 0);
+	register_native("csgo_set_random_skin", "_csgo_set_random_skin", 1);
 }
 
 public plugin_end()
@@ -3531,6 +3532,15 @@ public bool:_csgo_get_min_players()
 	}
 
 	return playersCount >= minPlayers;
+}
+
+public _csgo_set_random_skin(id, dataReturn[], dataLength)
+{
+	new skinID = random_num(0, ArraySize(skins));
+
+	playerData[id][TEMP][ADD_SKIN] = skinID;
+
+	get_skin_info(skinID, SKIN_NAME, dataReturn, dataLength);
 }
 
 stock get_weapon_skin_name(id, ent, dataReturn[], dataLength, weapon = 0, check = 0)
