@@ -1,0 +1,35 @@
+<html>
+<head>
+<style type="text/css">
+body {
+background-color: #161616;
+font-family:Verdana,Tahoma;
+}
+</style>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1257">
+</head>
+<font size="4" color="red"><b><center>Az elérhető Rangok listája:</b></font></center>
+<font size="2" color="#dadada"><b>
+<center><span style="line-height:20px">
+* Nem rangsorolt - 100 ölés alatt<br>
+* Silver I - alap rang<br>
+* Silver II - 100 Elo<br>
+* Silver III - 120 Elo<br>
+* Silver IV - 140 Elo<br>
+* Silver Elite - 160 Elo<br>
+* Silver Elite Master - 180 Elo<br>
+* Gold Nova I - 200 Elo<br>
+* Gold Nova II - 215 Elo<br>
+* Gold Nova III - 230 Elo<br>
+* Gold Nova Master - 245 Elo<br>
+* Master Guardian I - 260 Elo<br>
+* Master Guardian II - 275 Elo<br>
+* Master Guardian Elite - 290 Elo<br>
+* Distinguished Master Guardian - 315 Elo<br>
+* Legendary Eagle - 340 Elo<br>
+* Legendary Eagle Master - 370 Elo<br>
+* Supreme Master First Class - 410 Elo<br>
+* The Global Elite - 450 Elo<br>
+</center></b><br></span>
+</body>
+</html>
