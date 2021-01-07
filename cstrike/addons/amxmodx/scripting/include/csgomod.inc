@@ -198,18 +198,6 @@ native csgo_get_current_skin_name(id, data[], length);
 native csgo_set_random_skin(id, data[], length);
 
 /**
- * Retrieves name of skin with given id.
- *
- * @param id        Player index (for multilang purpose)
- * @param skin      Skin index
- * @param data      Buffer to copy text to
- * @param lenth     Maximum buffer size
- *
- * @noreturn
- */
-native csgo_get_skin_name(id, skin, data[], length);
-
-/**
  * Retrieves player clan id.
  *
  * @param id        Player index
