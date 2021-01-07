@@ -44,7 +44,7 @@ public plugin_init()
 	bind_pcvar_num(register_cvar("csgo_vip_svip_prefix_enabled", "1"), prefixEnabled);
 	bind_pcvar_num(register_cvar("csgo_vip_svip_free_enabled", "0"), freeEnabled);
 	bind_pcvar_num(register_cvar("csgo_vip_svip_free_type", "0"), freeType);
-	bind_pcvar_num(register_cvar("csgo_vip_svip_free_vip_from", "23"), freeFrom);
+	bind_pcvar_num(register_cvar("csgo_vip_svip_free_from", "23"), freeFrom);
 	bind_pcvar_num(register_cvar("csgo_vip_svip_free_to", "9"), freeTo);
 
 	for (new i; i < sizeof commandVIPs; i++) register_clcmd(commandVIPs[i], "show_vips");
