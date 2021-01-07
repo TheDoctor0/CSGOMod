@@ -1,0 +1,32 @@
+<html>
+<head>
+<style type="text/css">
+body {
+background-color: #161616;
+font-family:Verdana,Tahoma;
+}
+</style>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1257">
+</head>
+<font size="2" color="#008000"><b><center>Mivel jár ha SuperVIP vagy?</center></b></font><br />
+<font size="1" color="#dadada">
+<UL>
+<LI TYPE=square>50% több EURO</LI><br>
+<LI TYPE=square>10% Jobb esély skin húzásra</LI><br>
+<LI TYPE=square>Ingyenes Deagle</LI><br>
+<LI TYPE=square>A második körtől HE gránát + Mellény</LI><br>
+<LI TYPE=square>Végtelen töltény a táskában a fegyverekhez.</LI><br>
+<LI TYPE=square>10 HP bónusz ölésenként</LI><br>
+<LI TYPE=square>15 HP bónusz ölésenként fejlövéskor</LI><br>
+<LI TYPE=square>200$ bónusz ölésenként</LI><br>
+<LI TYPE=square>350$ bónusz ölésenként fejlövéskor</LI><br>
+<LI TYPE=square>A harmadik körtől válazsthatsz két fegyverszett közül:</LI><br>
+<LI TYPE=square>* M4A1 + Deagle</LI><br>
+<LI TYPE=square>* AK47 + Deagle</LI><br>
+<LI TYPE=square>* AWP + Deagle</LI><br>
+<LI TYPE=square>CT csapatban ingyenes defkit</LI><br>
+<LI TYPE=square>VIP státusz az eredményjelzőn</LI><br>
+<LI TYPE=square>VIP Chat: u* (alternatíva az adminok u@ parancsára)</LI><br>
+<LI TYPE=square>Jelenlét a VIP (/vips) és SuperVIPs (/svips) listákon</LI><br>
+</body>
+</html>
