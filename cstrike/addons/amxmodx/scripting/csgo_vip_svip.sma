@@ -104,9 +104,9 @@ public client_authorized_post(id)
 
 		hour = str_to_num(currentTime);
 
-		if (freeFrom >= freeTo && (hour >= freeFrom || hour < freeTo) {
+		if (freeFrom >= freeTo && (hour >= freeFrom || hour < freeTo)) {
 			freeVip = true;
-		} else if (freeFrom < freeTo && (hour >= freeTo && hour < freeFrom) {
+		} else if (freeFrom < freeTo && (hour >= freeTo && hour < freeFrom)) {
 			freeVip = true;
 		}
 	}
