@@ -3534,13 +3534,13 @@ public bool:_csgo_get_min_players()
 	return playersCount >= minPlayers;
 }
 
-public _csgo_set_random_skin(id, dataReturn[], dataLength)
+public _csgo_give_random_skin(id)
 {
-	new skinID = random_num(0, ArraySize(skins));
+	new skin[skinsInfo], skinId = random_num(0, ArraySize(skins) - 1);
 
-	playerData[id][TEMP][ADD_SKIN] = skinID;
+	ArrayGetArray(skins, skinId, skin);
 
-	get_skin_info(skinID, SKIN_NAME, dataReturn, dataLength);
+	add_skin(id, skinId, skin[SKIN_WEAPON_SHORT], skin[SKIN_NAME]);
 }
 
 stock get_weapon_skin_name(id, ent, dataReturn[], dataLength, weapon = 0, check = 0)
