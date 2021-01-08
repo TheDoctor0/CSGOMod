@@ -106,7 +106,7 @@ public client_authorized_post(id)
 
 		if (freeFrom >= freeTo && (hour >= freeFrom || hour < freeTo)) {
 			freeVip = true;
-		} else if (freeFrom < freeTo && (hour >= freeTo && hour < freeFrom)) {
+		} else if (freeFrom < freeTo && (hour >= freeFrom && hour < freeTo)) {
 			freeVip = true;
 		}
 	}
