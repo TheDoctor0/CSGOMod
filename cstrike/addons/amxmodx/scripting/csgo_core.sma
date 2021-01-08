@@ -455,7 +455,7 @@ public plugin_natives()
 	register_native("csgo_get_skin_name", "_csgo_get_skin_name", 1);
 	register_native("csgo_get_current_skin_name", "_csgo_get_current_skin_name", 1);
 	register_native("csgo_get_min_players", "_csgo_get_min_players", 0);
-	register_native("csgo_set_random_skin", "_csgo_set_random_skin", 1);
+	register_native("csgo_give_random_skin", "_csgo_give_random_skin", 1);
 }
 
 public plugin_end()
