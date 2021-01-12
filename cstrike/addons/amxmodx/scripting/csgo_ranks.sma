@@ -1396,8 +1396,6 @@ public message_intermission()
 		}
 
 		save_data(winnersId[i], 1);
-
-		get_user_name(winnersId[i], playerName, charsmax(playerName));
 	}
 
 	for (new id = 1; id <= MAX_PLAYERS; id++) {
@@ -1411,6 +1409,8 @@ public message_intermission()
 				case SECOND: formatex(medal, charsmax(medal), "%L", id, "CSGO_RANKS_MEDALS_SILVER");
 				case FIRST: formatex(medal, charsmax(medal), "%L", id, "CSGO_RANKS_MEDALS_GOLD");
 			}
+
+			get_user_name(winnersId[i], playerName, charsmax(playerName));
 
 			if (i == FIRST) {
 				client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_RANKS_MEDALS_BEST_MVP", playerName, winnersFrags[i], medal);
