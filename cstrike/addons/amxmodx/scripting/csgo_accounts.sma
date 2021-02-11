@@ -124,7 +124,7 @@ public kick_player(id)
 
 public block_movement(id)
 {
-	if (!accountsEnabled || !blockMovement || !is_user_valid(id) || !is_user_alive(id) || is_user_bot(id) || playerData[id][STATUS] >= LOGGED) return HAM_IGNORED;
+	if (!accountsEnabled || !blockMovement || !is_user_alive(id) || is_user_bot(id) || playerData[id][STATUS] >= LOGGED) return HAM_IGNORED;
 
 	set_user_maxspeed(id, 0.1);
 
@@ -133,7 +133,7 @@ public block_movement(id)
 
 public account_menu(id)
 {
-	if (!accountsEnabled || !is_user_connected(id) || !is_user_valid(id)) return PLUGIN_HANDLED;
+	if (!accountsEnabled || !is_user_connected(id)) return PLUGIN_HANDLED;
 
 	if (!get_bit(id, dataLoaded)) {
 		remove_task(id);

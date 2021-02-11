@@ -2568,7 +2568,7 @@ public reset_skin(id)
 {
 	rem_bit(id, force);
 
-	if (!is_user_valid(id) || !is_user_alive(id)) return;
+	if (!is_user_alive(id)) return;
 
 	static weaponName[32];
 
@@ -2586,7 +2586,7 @@ public client_command(id)
 
 public event_money(id)
 {
-	if (!is_user_connected(id) || !is_user_valid(id)) return;
+	if (!is_user_connected(id)) return;
 
 	new oldWeapons = playerData[id][TEMP][WEAPONS];
 
@@ -2728,7 +2728,7 @@ public m4a1_secondary_attack(ent)
 
 public player_spawn(id)
 {
-	if (!is_user_valid(id) || !is_user_alive(id)) return;
+	if (!is_user_alive(id)) return;
 
 	if (!task_exists(id + TASK_AIM)) set_task(0.1, "check_aim_weapon", id + TASK_AIM, .flags="b");
 
@@ -2966,7 +2966,7 @@ public check_aim_weapon(id)
 
 public give_weapons(data[2])
 {
-	if (!is_user_valid(data[0]) || !is_user_alive(data[0])) return;
+	if (!is_user_alive(data[0])) return;
 
 	if (pev_valid(data[1])) {
 		ExecuteHamB(Ham_Touch, data[0], data[1]);
