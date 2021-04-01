@@ -2870,6 +2870,8 @@ public observer_animation(data[])
 
 public client_playback_event(flags, id, event, Float:delay, Float:origin[3], Float:angle[3], Float:param1, Float:param2, param3, param4, param5, param6)
 {
+	if (playerData[id][SKINS_BLOCKED]) return FMRES_IGNORED;
+
 	static i, count, spectator, spectators[MAX_PLAYERS];
 
 	get_players(spectators, count, "bch");
@@ -2887,6 +2889,8 @@ public client_playback_event(flags, id, event, Float:delay, Float:origin[3], Flo
 
 public client_user_info_changed(id)
 {
+	if (playerData[id][SKINS_BLOCKED]) return FMRES_IGNORED;
+
 	static userInfo[6] = "cl_lw", clientValue[2], serverValue[2] = "1";
 
 	if (get_user_info(id, userInfo, clientValue, charsmax(clientValue))) {
