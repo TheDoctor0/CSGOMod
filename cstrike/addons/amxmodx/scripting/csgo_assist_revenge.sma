@@ -28,7 +28,7 @@ public plugin_init()
 	register_event("DeathMsg", "player_die", "ae");
 
 	RegisterHam(Ham_Spawn, "player", "player_spawn", 1);
-	
+
 	assistForward = CreateMultiForward("csgo_user_assist", ET_IGNORE, FP_CELL, FP_CELL );
 }
 
@@ -76,9 +76,9 @@ public player_die()
 	if (is_user_connected(killer) && killer != victim && get_user_team(victim) != get_user_team(killer)) {
 		if (playerRevenge[killer] == victim && revengeEnabled) {
 			playerRevenge[killer] = 0;
-			
+
 			ExecuteForward(assistForward, ForwardResult, killer, victim);
-			
+
 			set_user_frags(killer, get_user_frags(killer) + 1);
 
 			cs_set_user_deaths(killer, cs_get_user_deaths(killer));
@@ -98,7 +98,7 @@ public player_die()
 
 			get_user_name(victim, victimName, charsmax(victimName));
 
-			client_print_color(killer, victim, "%s %L", CHAT_PREFIX, killer, "CSGO_OPERATIONS_PROGRESS", victimName);
+			client_print_color(killer, victim, "%s %L", CHAT_PREFIX, killer, "CSGO_REVENGE_CHAT", victimName);
 
 			csgo_add_money(killer, revengeReward);
 			csgo_add_kill(killer);
