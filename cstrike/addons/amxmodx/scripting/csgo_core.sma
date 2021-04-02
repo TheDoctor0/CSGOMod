@@ -2870,7 +2870,7 @@ public observer_animation(data[])
 
 public client_playback_event(flags, id, event, Float:delay, Float:origin[3], Float:angle[3], Float:param1, Float:param2, param3, param4, param5, param6)
 {
-	if (playerData[id][SKINS_BLOCKED]) return FMRES_IGNORED;
+	if (!pev_valid(id) || !is_user_connected(id) || playerData[id][SKINS_BLOCKED]) return FMRES_IGNORED;
 
 	static i, count, spectator, spectators[MAX_PLAYERS];
 
