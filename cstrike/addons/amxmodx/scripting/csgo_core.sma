@@ -3011,16 +3011,8 @@ stock change_skin(id, weapon, ent = 0)
 
 				get_weaponname(weapon, weaponName, charsmax(weaponName));
 
-				if (weapon != get_weapon_id(skin[SKIN_WEAPON])) {
-					entity_set_int(ent, EV_INT_iuser1, 0);
-					entity_set_int(ent, EV_INT_iuser2, NONE);
-
-					playerData[id][SKIN] = NONE;
-					playerData[id][SUBMODEL] = 0;
-				} else {
-					playerData[id][SKIN] = weaponSkin;
-					playerData[id][SUBMODEL] = skin[SKIN_SUBMODEL];
-				}
+				playerData[id][SKIN] = weaponSkin;
+				playerData[id][SUBMODEL] = skin[SKIN_SUBMODEL];
 			}
 
 			#if !defined DISABLE_SUBMODELS
@@ -3030,6 +3022,9 @@ stock change_skin(id, weapon, ent = 0)
 			#endif
 
 			return;
+		} else if (weaponOwner > 0) {
+			entity_set_int(ent, EV_INT_iuser4, 0);
+			entity_set_int(ent, EV_INT_body, NONE);
 		}
 	}
 
@@ -3549,7 +3544,7 @@ public _csgo_give_random_skin(id)
 
 stock get_weapon_skin_name(id, ent, dataReturn[], dataLength, weapon = 0, check = 0)
 {
-	static ownerName[32], weaponName[32], skinWeapon[32], defaultName[32];
+	static ownerName[32], weaponName[32], defaultName[32];
 
 	formatex(defaultName, charsmax(defaultName), "%L", id, "CSGO_CORE_DEFAULT");
 
@@ -3560,16 +3555,7 @@ stock get_weapon_skin_name(id, ent, dataReturn[], dataLength, weapon = 0, check 
 			new weaponSkin = entity_get_int(ent, EV_INT_body);
 
 			if (weaponSkin > NONE) {
-				get_skin_info(weaponSkin, SKIN_WEAPON_SHORT, skinWeapon, charsmax(skinWeapon));
-
-				if (!weapon || weapon == get_weapon_id(skinWeapon)) {
-					get_skin_info(weaponSkin, SKIN_NAME, dataReturn, dataLength);
-				} else {
-					entity_set_int(ent, EV_INT_iuser1, 0);
-					entity_set_int(ent, EV_INT_iuser2, NONE);
-
-					copy(dataReturn, dataLength, defaultName);
-				}
+				get_skin_info(weaponSkin, SKIN_NAME, dataReturn, dataLength);
 			} else {
 				copy(dataReturn, dataLength, defaultName);
 			}
@@ -3856,7 +3842,7 @@ stock get_skin_info(skinId, info, dataReturn[] = "", dataLength = 0)
 
 	ArrayGetArray(skins, skinId, skin);
 
-	if (info == SKIN_NAME || info == SKIN_WEAPON || info == SKIN_MODEL) {
+	if (info == SKIN_NAME || SKIN_WEAPON_SHORT || info == SKIN_WEAPON || info == SKIN_MODEL) {
 		copy(dataReturn, dataLength, skin[info]);
 
 		return 0;
