@@ -58,18 +58,18 @@
 #define M4A4		"M4A4"
 #define KNIFE		"KNIFE"
 
-new const commandSkins[][] = { "skiny", "say /skins", "say_team /skins", "say /skin", "say_team /skin", "say /skiny",
+new const commandSkins[][] = { "skins", "skiny", "say /skins", "say_team /skins", "say /skin", "say_team /skin", "say /skiny",
 	"say_team /skiny", "say /modele", "say_team /modele", "say /model", "say_team /model", "say /jackpot", "say_team /jackpot" };
-new const commandHelp[][] = { "pomoc", "say /pomoc", "say_team /pomoc", "say /help", "say_team /help" };
-new const commandSet[][] = { "ustaw", "say /ustaw", "say_team /ustaw", "say /set", "say_team /set" };
-new const commandBuy[][] = { "kup", "say /kup", "say_team /kup", "say /buy", "say_team /buy", "say /sklep", "say_team /sklep", "say /shop", "say_team /shop" };
-new const commandRandom[][] = { "losuj", "say /los", "say_team /los", "say /losuj", "say_team /losuj", "say /draw", "say_team /draw", "say /drawing", "say_team /drawing" };
-new const commandExchange[][] = { "wymien", "say /exchange", "say_team /exchange", "say /zamien", "say_team /zamien", "say /wymien", "say_team /wymien", "say /wymiana", "say_team /wymiana" };
-new const commandGive[][] = { "daj", "say /give", "say_team /give", "say /oddaj", "say_team /oddaj", "say /daj", "say_team /daj" };
-new const commandMarket[][] = { "rynek", "say /market", "say_team /market", "say /rynek", "say_team /rynek" };
-new const commandSell[][] = { "wystaw", "say /wystaw", "say_team /wystaw", "say /sprzedaj", "say_team /sprzedaj", "say /sell", "say_team /sell" };
-new const commandPurchase[][] = { "wykup", "say /wykup", "say_team /wykup", "say /purchase", "say_team /purchase" };
-new const commandWithdraw[][] = { "wycofaj", "say /wycofaj", "say_team /wycofaj", "say /withdraw", "say_team /withdraw" };
+new const commandHelp[][] = { "help", "pomoc", "say /pomoc", "say_team /pomoc", "say /help", "say_team /help" };
+new const commandSet[][] = { "set", "ustaw", "say /ustaw", "say_team /ustaw", "say /set", "say_team /set" };
+new const commandBuy[][] = { "buymenu", "kup", "say /kup", "say_team /kup", "say /buy", "say_team /buy", "say /sklep", "say_team /sklep", "say /shop", "say_team /shop" };
+new const commandRandom[][] = { "draw", "losuj", "say /los", "say_team /los", "say /losuj", "say_team /losuj", "say /draw", "say_team /draw", "say /drawing", "say_team /drawing" };
+new const commandExchange[][] = { "exchange", "wymien", "say /exchange", "say_team /exchange", "say /zamien", "say_team /zamien", "say /wymien", "say_team /wymien", "say /wymiana", "say_team /wymiana" };
+new const commandGive[][] = { "give", "daj", "say /give", "say_team /give", "say /oddaj", "say_team /oddaj", "say /daj", "say_team /daj" };
+new const commandMarket[][] = { "market", "rynek", "say /market", "say_team /market", "say /rynek", "say_team /rynek" };
+new const commandSell[][] = { "sell", "wystaw", "say /wystaw", "say_team /wystaw", "say /sprzedaj", "say_team /sprzedaj", "say /sell", "say_team /sell" };
+new const commandPurchase[][] = { "purchase", "wykup", "say /wykup", "say_team /wykup", "say /purchase", "say_team /purchase" };
+new const commandWithdraw[][] = { "withdraw", "wycofaj", "say /wycofaj", "say_team /wycofaj", "say /withdraw", "say_team /withdraw" };
 
 new const ammoType[][] = { "", "357sig", "", "762nato", "", "buckshot", "", "45acp", "556nato", "", "9mm", "57mm", "45acp", "556nato", "556nato", "556nato",
 						"45acp", "9mm", "338magnum", "9mm", "556natobox", "buckshot", "556nato", "9mm", "762nato", "", "50ae", "556nato", "762nato", "", "57mm" };

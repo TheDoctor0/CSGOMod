@@ -9,7 +9,7 @@
 
 #define TASK_INFO 9843
 
-new const commandClan[][] = { "say /clan", "say_team /clan", "say /clans", "say_team /clans", "say /klany", "say_team /klany", "say /klan", "say_team /klan", "klan" };
+new const commandClan[][] = { "say /clan", "say_team /clan", "say /clans", "say_team /clans", "say /klany", "say_team /klany", "say /klan", "say_team /klan", "klan", "clan" };
 
 enum _:clanInfo { CLAN_ID, CLAN_LEVEL, Float:CLAN_MONEY, CLAN_KILLS, CLAN_MEMBERS, CLAN_WINS, Trie:CLAN_STATUS, CLAN_NAME[32] };
 enum _:warInfo { WAR_ID, WAR_CLAN, WAR_CLAN2, WAR_PROGRESS, WAR_PROGRESS2, WAR_DURATION, WAR_REWARD };

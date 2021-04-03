@@ -12,7 +12,7 @@ enum _:playerInfo { PLAYER_ID, PLAYER_TYPE, PLAYER_ADDITIONAL, PLAYER_PROGRESS, 
 enum _:operationsInfo { OPERATION_AMOUNT, OPERATION_TYPE, OPERATION_REWARD };
 
 new const commandQuest[][] = { "say /operation", "say_team /operation", "say /mission", "say_team /mission", "say /operacja", "say_team /operacja", "say /misja", "say_team /misja",
-	"say /misje", "say_team /misje", "say /operacje", "say_team /operacje", "say /operations", "say_team /operations", "say /missions", "say_team /missions", "misje" };
+	"say /misje", "say_team /misje", "say /operacje", "say_team /operacje", "say /operations", "say_team /operations", "say /missions", "say_team /missions", "misje", "operations" };
 new const commandProgress[][] = { "say /progress", "say_team /progress", "say /progres", "say_team /progres", "say /postep", "say_team /postep", "postep" };
 new const commandEnd[][] = { "say /koniec", "say_team /koniec", "say /zakoncz", "say_team /zakoncz", "zakoncz", "say_team /przerwij", "say /przerwij",
 	"say_team /cancel", "say /cancel", "say_team /end", "say /end", "przerwij" };

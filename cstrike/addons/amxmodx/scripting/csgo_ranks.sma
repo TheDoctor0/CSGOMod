@@ -183,7 +183,7 @@ stock const daySeconds = 86400;
 stock const hourSeconds = 3600;
 stock const minuteSeconds = 60;
 
-new const commandMenu[][] = { "menustaty", "say /statsmenu", "say_team /statsmenu", "say /statymenu", "say_team /statymenu",
+new const commandMenu[][] = { "statsmenu", "menustaty", "say /statsmenu", "say_team /statsmenu", "say /statymenu", "say_team /statymenu",
 	"say /menustaty", "say_team /menustaty" };
 new const commandRank[][] = { "ranga", "say /ranga", "say_team /ranga", "say /myrank", "say_team /myrank" };
 new const commandRanks[][] = { "rangi", "say /rangi", "say_team /rangi", "say /ranks", "say_team /ranks" };
