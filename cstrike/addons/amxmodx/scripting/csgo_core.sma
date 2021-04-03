@@ -2806,7 +2806,7 @@ public update_client_data_post(id, sendWeapons, handleCD)
 
 	new target = (specMode = pev(id, pev_iuser1)) ? pev(id, pev_iuser2) : id;
 
-	if (pev_valid(target) != VALID_PDATA || !is_user_alive(target) || playerData[id][SKINS_BLOCKED]) return FMRES_IGNORED;
+	if (pev_valid(target) != VALID_PDATA || !is_user_alive(target) || playerData[target][SKINS_BLOCKED]) return FMRES_IGNORED;
 
 	new ent = get_pdata_cbase(target, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
 
@@ -2870,7 +2870,7 @@ public observer_animation(data[])
 
 public client_playback_event(flags, id, event, Float:delay, Float:origin[3], Float:angle[3], Float:param1, Float:param2, param3, param4, param5, param6)
 {
-	if (!pev_valid(id) || !is_user_connected(id) || playerData[id][SKINS_BLOCKED]) return FMRES_IGNORED;
+	if (!is_user_connected(id) || playerData[id][SKINS_BLOCKED]) return FMRES_IGNORED;
 
 	static i, count, spectator, spectators[MAX_PLAYERS];
 
