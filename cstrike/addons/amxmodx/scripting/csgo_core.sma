@@ -2747,13 +2747,13 @@ public add_player_item(id, ent)
 {
 	if (pev_valid(ent) != VALID_PDATA || !is_user_connected(id) || is_user_bot(id) || is_user_hltv(id)) return HAM_IGNORED;
 
-	new owner = entity_get_int(ent, EV_INT_iuser1);
+	new owner = entity_get_int(ent, EV_INT_iuser4);
 
 	if (!is_user_connected(owner)) {
 		new weapon = weapon_entity(ent), skin = get_weapon_skin(id, weapon);
 
-		entity_set_int(ent, EV_INT_iuser1, id);
-		entity_set_int(ent, EV_INT_iuser2, skin);
+		entity_set_int(ent, EV_INT_iuser4, id);
+		entity_set_int(ent, EV_INT_body, skin);
 
 		if (skin > NONE) {
 			new skinName[64];
@@ -2785,11 +2785,11 @@ public set_model(ent, model[])
 
 	if (!is_user_connected(id) || is_user_bot(id) || is_user_hltv(id) || !fm_get_weaponbox_type(ent)) return HAM_IGNORED;
 
-	new owner = entity_get_int(ent, EV_INT_iuser1);
+	new owner = entity_get_int(ent, EV_INT_iuser4);
 
 	if (!is_user_connected(owner)) {
-		entity_set_int(ent, EV_INT_iuser1, id);
-		entity_set_int(ent, EV_INT_iuser2, get_weapon_skin(id, fm_get_weaponbox_type(ent)));
+		entity_set_int(ent, EV_INT_iuser4, id);
+		entity_set_int(ent, EV_INT_body, get_weapon_skin(id, fm_get_weaponbox_type(ent)));
 	}
 
 	return HAM_IGNORED;
@@ -2997,12 +2997,12 @@ stock change_skin(id, weapon, ent = 0)
 	static skin[skinsInfo];
 
 	if (is_valid_ent(ent) && weapon != CSW_KNIFE && weapon != CSW_HEGRENADE && weapon != CSW_SMOKEGRENADE && weapon != CSW_FLASHBANG && weapon != CSW_C4) {
-		new weaponOwner = entity_get_int(ent, EV_INT_iuser1);
+		new weaponOwner = entity_get_int(ent, EV_INT_iuser4);
 
 		if (is_user_connected(weaponOwner) && !is_user_hltv(weaponOwner) && !is_user_bot(weaponOwner)) {
 			playerData[id][TEMP][WEAPON_ENT] = ent;
 
-			new weaponSkin = entity_get_int(ent, EV_INT_iuser2);
+			new weaponSkin = entity_get_int(ent, EV_INT_body);
 
 			if (weaponSkin > NONE) {
 				static weaponName[32];
@@ -3554,10 +3554,10 @@ stock get_weapon_skin_name(id, ent, dataReturn[], dataLength, weapon = 0, check 
 	formatex(defaultName, charsmax(defaultName), "%L", id, "CSGO_CORE_DEFAULT");
 
 	if (is_valid_ent(ent)) {
-		new weaponOwner = entity_get_int(ent, EV_INT_iuser1);
+		new weaponOwner = entity_get_int(ent, EV_INT_iuser4);
 
 		if (is_user_connected(weaponOwner) && !is_user_hltv(weaponOwner) && !is_user_bot(weaponOwner)) {
-			new weaponSkin = entity_get_int(ent, EV_INT_iuser2);
+			new weaponSkin = entity_get_int(ent, EV_INT_body);
 
 			if (weaponSkin > NONE) {
 				get_skin_info(weaponSkin, SKIN_WEAPON_SHORT, skinWeapon, charsmax(skinWeapon));
