@@ -3077,6 +3077,15 @@ public deploy_weapon_switch(id)
 		set_pev(id, pev_body, 0);
 		set_pev(id, pev_viewmodel2, defaultSkin);
 		#endif
+	} else {
+		static weaponName[32];
+
+		get_weaponname(playerData[id][TEMP][WEAPON], weaponName, charsmax(weaponName));
+
+		formatex(defaultSkin, charsmax(defaultSkin), "models/v_%s.mdl", weaponName[7]);
+
+		set_pev(id, pev_body, 0);
+		set_pev(id, pev_viewmodel2, defaultSkin);
 	}
 
 	#if !defined DISABLE_SUBMODELS
