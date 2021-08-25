@@ -12,8 +12,6 @@ Mod was tested on AMXX builds:
 - 1.9-dev+5235
 - 1.10-dev+5407 (recommended)
 
-In both cases with ReHLDS and ReGameDLL also installed - [BasePack](https://github.com/AMXX-pl/BasePack).
-
 ## Installation
 1. Download `csgo_mod.zip` from the lastest [release pack](https://github.com/TheDoctor0/CSGOMod/releases/latest).
 2. Extract downloaded archive and upload `cstrike` directory to your server.
