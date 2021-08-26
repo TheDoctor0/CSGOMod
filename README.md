@@ -13,7 +13,7 @@ Mod was tested on AMXX builds:
 - 1.10-dev+5407 (recommended)
 
 ## Installation
-1. Download `csgo_mod.zip` from the lastest [release pack](https://github.com/TheDoctor0/CSGOMod/releases/latest).
+1. Download `csgo_mod.7z` from the lastest [release pack](https://github.com/TheDoctor0/CSGOMod/releases/latest).
 2. Extract downloaded archive and upload `cstrike` directory to your server.
 3. Add `linux addons/unprecacher/unprecacher_mm_i386.so` to `/cstrike/addons/metamod/plugins.ini`.
 4. Configure database cvars in [csgo_mod.cfg](https://github.com/TheDoctor0/CSGOMod/blob/master/cstrike/addons/amxmodx/configs/csgo_mod.cfg).
@@ -37,14 +37,14 @@ Skins customization is easy and can be done by anyone in a matter of minutes, so
 
 Before starting you need to:
 1. Download and install [Python 3](https://www.python.org/downloads/). This is required to use skins auto-compilation script.
-2. Download `skins.zip` from the [latest release](https://github.com/TheDoctor0/CSGOMod/releases/latest) and extract it anywhere on your computer.
+2. Download `csgo_skins.7z` from the [latest release](https://github.com/TheDoctor0/CSGOMod/releases/latest) and extract it anywhere on your computer.
     Inside you will find source files for all skins that you can select for compilation. You may also extend it by adding some of your own - more about it in section below.
 
 ### Management
 1. Inside every weapon directory you will find `_textures` folder with all available skins.
     Select any textures that you want to use and copy them into `skins` folder.
 
-    Textures that are already in `skins` are those for skins included in `csgo_mod.zip`, so of course you can remove or replace them.
+    Textures that are already in `skins` are those for skins included in `csgo_mod.7z`, so of course you can remove or replace them.
 
     You can make your own textures and add them here. All textures need to be `512x512px` and match weapon structure.
 
