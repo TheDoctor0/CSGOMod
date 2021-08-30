@@ -302,7 +302,6 @@ public plugin_precache()
 
 	fclose(fileOpen);
 
-	#if !defined DISABLE_SUBMODELS
 	for (new i = 0; i < sizeof availableWeapons; i++) {
 		static weapon[32], weaponModel[128];
 
@@ -310,7 +309,11 @@ public plugin_precache()
 
 		if (equal(weapon, "weapon_c4") || equal(weapon, "weapon_hegrenade") || equal(weapon, "weapon_flashbang") || equal(weapon, "weapon_smokegrenade")) continue;
 
+		#if !defined DISABLE_SUBMODELS
 		formatex(weaponModel, charsmax(weaponModel), "models/%s/%s/v_%s_0.mdl", skinsPath, weapon[7], weapon[7]);
+		#else
+		formatex(weaponModel, charsmax(weaponModel), "models/%s/%s/v_%s.mdl", skinsPath, weapon[7], weapon[7]);
+		#endif
 
 		if (!file_exists(weaponModel)) {
 			log_to_file("csgo-error.log", "[CS:GO] The file %s containing one of the default skins does not exist!", weaponModel);
@@ -336,7 +339,6 @@ public plugin_precache()
 			skinsCount++;
 		}
 	}
-	#endif
 
 	if (error) set_fail_state("[CS:GO] Not all the skins were loaded. Check the error logs!");
 
@@ -3063,23 +3065,22 @@ public deploy_weapon_switch(id)
 		ArrayGetArray(skins, playerData[id][TEMP][BUY_SKIN], skin);
 
 		set_pev(id, pev_viewmodel2, skin[SKIN_MODEL]);
-		set_pev(id, pev_body, skin[SKIN_SUBMODEL]);
 	} else if (playerData[id][SKIN] > NONE) {
 		ArrayGetArray(skins, playerData[id][SKIN], skin);
 
 		set_pev(id, pev_viewmodel2, skin[SKIN_MODEL]);
-		set_pev(id, pev_body, skin[SKIN_SUBMODEL]);
 	} else if (defaultSkins) {
-		#if !defined DISABLE_SUBMODELS
 		static weaponName[32];
 
 		get_weaponname(playerData[id][TEMP][WEAPON], weaponName, charsmax(weaponName));
 
+		#if !defined DISABLE_SUBMODELS
 		formatex(defaultSkin, charsmax(defaultSkin), "models/%s/%s/v_%s_0.mdl", skinsPath, weaponName[7], weaponName[7]);
-
-		set_pev(id, pev_body, 0);
-		set_pev(id, pev_viewmodel2, defaultSkin);
+		#else
+		formatex(defaultSkin, charsmax(defaultSkin), "models/%s/%s/v_%s.mdl", skinsPath, weaponName[7], weaponName[7]);
 		#endif
+
+		set_pev(id, pev_viewmodel2, defaultSkin);
 	} else {
 		static weaponName[32];
 
@@ -3087,7 +3088,6 @@ public deploy_weapon_switch(id)
 
 		formatex(defaultSkin, charsmax(defaultSkin), "models/v_%s.mdl", weaponName[7]);
 
-		set_pev(id, pev_body, 0);
 		set_pev(id, pev_viewmodel2, defaultSkin);
 	}
 
@@ -3095,8 +3095,6 @@ public deploy_weapon_switch(id)
 	set_pdata_float(weapon, OFFSET_LAST_EVENT_CHECK, get_gametime() + 0.001, OFFSET_ITEM_LINUX);
 
 	send_weapon_animation(id, get_bit(id, force) ? playerData[id][TEMP][BUY_SUBMODEL] : playerData[id][SUBMODEL]);
-	#else
-	set_pev(id, pev_body, 0);
 	#endif
 }
 
