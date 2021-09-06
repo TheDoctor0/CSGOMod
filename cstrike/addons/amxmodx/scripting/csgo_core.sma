@@ -2623,7 +2623,7 @@ public weapon_deploy_post(ent)
 
 	if (playerData[id][SKINS_BLOCKED]) return HAM_IGNORED;
 
-	if (weapon == CSW_P228 && csgo_get_user_zeus(id)) return HAM_IGNORED;
+	if (weapon == CSW_P228 && csgo_get_user_zeus(id) || weapon == CSW_GLOCK && csgo_get_user_molotov(id)) return HAM_IGNORED;
 
 	#if !defined DISABLE_SUBMODELS
 	if (weapon != CSW_HEGRENADE && weapon != CSW_SMOKEGRENADE && weapon != CSW_FLASHBANG && weapon != CSW_C4) {
