@@ -2803,7 +2803,7 @@ public set_model(ent, model[])
 #if !defined DISABLE_SUBMODELS
 public update_client_data_post(id, sendWeapons, handleCD)
 {
-	if (!pev_valid(id)) return FMRES_IGNORED;
+	if (!pev_valid(id) || playerData[id][SKINS_BLOCKED]) return FMRES_IGNORED;
 
 	enum { SPEC_MODE, SPEC_TARGET, SPEC_END };
 
@@ -2811,7 +2811,7 @@ public update_client_data_post(id, sendWeapons, handleCD)
 
 	new target = (specMode = pev(id, pev_iuser1)) ? pev(id, pev_iuser2) : id;
 
-	if (pev_valid(target) != VALID_PDATA || !is_user_alive(target) || playerData[target][SKINS_BLOCKED]) return FMRES_IGNORED;
+	if (pev_valid(target) != VALID_PDATA || !is_user_alive(target)) return FMRES_IGNORED;
 
 	new ent = get_pdata_cbase(target, OFFSET_ACTIVE_ITEM, OFFSET_PLAYER_LINUX);
 
