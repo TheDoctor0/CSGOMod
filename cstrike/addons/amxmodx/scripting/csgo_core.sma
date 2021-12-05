@@ -1524,6 +1524,7 @@ public exchange_skin_handle(id, menu, item)
 
 		formatex(menuData, charsmax(menuData), "%L", id, "CSGO_CORE_EXCHANGE_THEIR_ITEM", skin[SKIN_NAME], skin[SKIN_WEAPON_SHORT], skin[SKIN_RARITY]);
 
+		num_to_str(skinId, tempId, charsmax(tempId));
 		menu_additem(menu, menuData, tempId);
 
 		skinsCount++;
