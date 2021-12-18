@@ -263,7 +263,7 @@ public create_clan_handle(id)
 	remove_quotes(clanName);
 	trim(clanName);
 
-	if (equal(clanName, "")) {
+	if (!clanName[0]) {
 		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_CREATE_NO_NAME");
 
 		show_clan_menu(id);
@@ -271,7 +271,7 @@ public create_clan_handle(id)
 		return PLUGIN_HANDLED;
 	}
 
-	if (strlen(clanName) < 3) {
+	if (strlen_ex(clanName) < 3) {
 		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_CREATE_NAME_TOO_SHORT");
 
 		show_clan_menu(id);
@@ -796,7 +796,7 @@ public change_name_handle(id)
 	remove_quotes(clanName);
 	trim(clanName);
 
-	if (equal(clanName, "")) {
+	if (!clanName[0]) {
 		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_CREATE_NO_NAME");
 
 		show_clan_menu(id);
@@ -804,7 +804,7 @@ public change_name_handle(id)
 		return PLUGIN_HANDLED;
 	}
 
-	if (strlen(clanName) < 3) {
+	if (strlen_ex(clanName) < 3) {
 		client_print_color(id, id, "%s %L", CHAT_PREFIX, id, "CSGO_CLANS_CREATE_NAME_TOO_SHORT");
 
 		show_clan_menu(id);
@@ -3344,4 +3344,18 @@ stock explode(const string[], const character, output[][], const maxParts, const
 	do {
 		currentLength += (1 + copyc(output[currentPart++], maxLength, string[currentLength], character));
 	} while(currentLength < stringLength && currentPart < maxParts);
+}
+
+stock strlen_ex(const string[])
+{
+	new size;
+	for (new i, stringLength = strlen(string); i < stringLength; i++)
+	{
+		if ((string[i] & 0xE0) == 0xC0)
+			i++;
+
+		size++;
+	}
+	
+	return size;
 }
