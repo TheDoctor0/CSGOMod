@@ -3066,10 +3066,12 @@ public deploy_weapon_switch(id)
 		ArrayGetArray(skins, playerData[id][TEMP][BUY_SKIN], skin);
 
 		set_pev(id, pev_viewmodel2, skin[SKIN_MODEL]);
+		set_pev(id, pev_body, skin[SKIN_SUBMODEL]);
 	} else if (playerData[id][SKIN] > NONE) {
 		ArrayGetArray(skins, playerData[id][SKIN], skin);
 
 		set_pev(id, pev_viewmodel2, skin[SKIN_MODEL]);
+		set_pev(id, pev_body, skin[SKIN_SUBMODEL]);
 	} else if (defaultSkins) {
 		static weaponName[32];
 
@@ -3086,9 +3088,9 @@ public deploy_weapon_switch(id)
 		static weaponName[32];
 
 		get_weaponname(playerData[id][TEMP][WEAPON], weaponName, charsmax(weaponName));
-		
+
 		replace(weaponName, charsmax(weaponName), "mp5navy", "mp5");
-		
+
 		formatex(defaultSkin, charsmax(defaultSkin), "models/v_%s.mdl", weaponName[7]);
 
 		set_pev(id, pev_viewmodel2, defaultSkin);
