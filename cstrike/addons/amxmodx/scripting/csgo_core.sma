@@ -3084,6 +3084,7 @@ public deploy_weapon_switch(id)
 		#endif
 
 		set_pev(id, pev_viewmodel2, defaultSkin);
+		set_pev(id, pev_body, 0);
 	} else {
 		static weaponName[32];
 
@@ -3094,6 +3095,7 @@ public deploy_weapon_switch(id)
 		formatex(defaultSkin, charsmax(defaultSkin), "models/v_%s.mdl", weaponName[7]);
 
 		set_pev(id, pev_viewmodel2, defaultSkin);
+		set_pev(id, pev_body, 0);
 	}
 
 	#if !defined DISABLE_SUBMODELS
