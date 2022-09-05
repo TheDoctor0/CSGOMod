@@ -33,6 +33,10 @@
 //#define DISABLE_SUBMODELS
 
 #if !defined DISABLE_SUBMODELS
+#define ANIMATION_IDLE				0
+#define ANIMATION_IDLE_UNSIL_USP	8
+#define ANIMATION_IDLE_UNSIL_M4A1	7
+
 #define WPNSTATE_USP_SILENCED		(1<<0)
 #define WPNSTATE_GLOCK18_BURST_MODE	(1<<1)
 #define WPNSTATE_M4A1_SILENCED		(1<<2)
@@ -168,7 +172,9 @@ public plugin_init()
 	register_event("TextMsg", "hostages_rescued", "a", "2&#All_Hostages_R");
 	register_event("SendAudio", "t_win_round" , "a", "2&%!MRAD_terwin");
 	register_event("SendAudio", "ct_win_round", "a", "2=%!MRAD_ctwin");
+	#if defined DISABLE_SUBMODELS
 	register_event("SetFOV", "set_fov" , "be");
+	#endif
 	register_event("Money", "event_money", "be");
 
 	register_message(SVC_INTERMISSION, "message_intermission");
@@ -1047,6 +1053,8 @@ public buy_weapon_skin_confirm_handle(id, menu, item)
 
 			#if !defined DISABLE_SUBMODELS
 			set_pev(id, pev_viewmodel2, "");
+
+			if (task_exists(id + TASK_DEPLOY)) remove_task(id + TASK_DEPLOY);
 
 			set_task(0.1, "deploy_weapon_switch", id + TASK_DEPLOY);
 			#else
@@ -2530,6 +2538,7 @@ public message_intermission()
 	return PLUGIN_CONTINUE;
 }
 
+#if defined DISABLE_SUBMODELS
 public set_fov(id)
 {
 	if (playerData[id][SKIN] > NONE && (!playerData[id][TEMP][WEAPON_ENT] || is_valid_ent(playerData[id][TEMP][WEAPON_ENT])) && (playerData[id][TEMP][WEAPON] == CSW_AWP || playerData[id][TEMP][WEAPON] == CSW_SCOUT)) {
@@ -2550,6 +2559,7 @@ public set_fov(id)
 		}
 	}
 }
+#endif
 
 public show_countdown(id)
 {
@@ -2650,9 +2660,7 @@ public weapon_send_weapon_anim_post(ent, animation, skipLocal)
 
 	switch (weapon) {
 		case CSW_C4, CSW_HEGRENADE, CSW_FLASHBANG, CSW_SMOKEGRENADE: return HAM_IGNORED;
-		default: {
-			send_weapon_animation(id, get_bit(id, force) ? playerData[id][TEMP][BUY_SUBMODEL] : playerData[id][SUBMODEL], animation);
-		}
+		default: send_weapon_animation(id, get_bit(id, force) ? playerData[id][TEMP][BUY_SUBMODEL] : playerData[id][SUBMODEL], animation);
 	}
 
 	return HAM_IGNORED;
@@ -2841,7 +2849,18 @@ public update_client_data_post(id, sendWeapons, handleCD)
 			new data[3];
 			data[0] = id;
 			data[1] = get_bit(target, force) ? playerData[target][TEMP][BUY_SUBMODEL] : playerData[target][SUBMODEL];
-			data[2] = 0;
+
+			if (get_pdata_int(ent, OFFSET_SILENCER, OFFSET_ITEM_LINUX) & WPNSTATE_USP_SILENCED || get_pdata_int(ent, OFFSET_SILENCER, OFFSET_ITEM_LINUX) & WPNSTATE_M4A1_SILENCED) {
+				data[2] = ANIMATION_IDLE;
+			} else {
+				switch (weapon) {
+					case CSW_USP: data[2] = ANIMATION_IDLE_UNSIL_USP;
+					case CSW_M4A1: data[2] = ANIMATION_IDLE_UNSIL_M4A1;
+					default: data[2] = ANIMATION_IDLE;
+				}
+			}
+
+			if (task_exists(id + TASK_SPEC)) remove_task(id + TASK_SPEC);
 
 			set_task(0.1, "observer_animation", id + TASK_SPEC, data, sizeof(data));
 		}
@@ -2849,7 +2868,11 @@ public update_client_data_post(id, sendWeapons, handleCD)
 
 	if (!lastEventCheck) {
 		set_cd(handleCD, CD_flNextAttack, gameTime + 0.001);
-		set_cd(handleCD, CD_WeaponAnim, 0);
+
+		switch (weapon) {
+			case CSW_USP, CSW_M4A1: set_cd(handleCD, CD_WeaponAnim, ANIMATION_IDLE);
+			default: set_cd(handleCD, CD_WeaponAnim, get_weapon_draw_animation(ent));
+		}
 
 		return FMRES_HANDLED;
 	}
@@ -3022,6 +3045,8 @@ stock change_skin(id, weapon, ent = 0)
 			}
 
 			#if !defined DISABLE_SUBMODELS
+			if (task_exists(id + TASK_DEPLOY)) remove_task(id + TASK_DEPLOY);
+
 			set_task(0.1, "deploy_weapon_switch", id + TASK_DEPLOY);
 			#else
 			deploy_weapon_switch(id);
@@ -3042,6 +3067,8 @@ stock change_skin(id, weapon, ent = 0)
 	}
 
 	#if !defined DISABLE_SUBMODELS
+	if (task_exists(id + TASK_DEPLOY)) remove_task(id + TASK_DEPLOY);
+
 	set_task(0.1, "deploy_weapon_switch", id + TASK_DEPLOY);
 	#else
 	deploy_weapon_switch(id);
@@ -3101,12 +3128,17 @@ public deploy_weapon_switch(id)
 	#if !defined DISABLE_SUBMODELS
 	set_pdata_float(weapon, OFFSET_LAST_EVENT_CHECK, get_gametime() + 0.001, OFFSET_ITEM_LINUX);
 
-	send_weapon_animation(id, get_bit(id, force) ? playerData[id][TEMP][BUY_SUBMODEL] : playerData[id][SUBMODEL]);
+	new submodel = get_bit(id, force) ? playerData[id][TEMP][BUY_SUBMODEL] : playerData[id][SUBMODEL];
+
+	switch (weapon_entity(weapon)) {
+		case CSW_USP, CSW_M4A1: send_weapon_animation(id, submodel, ANIMATION_IDLE);
+		default: send_weapon_animation(id, submodel, get_weapon_draw_animation(weapon));
+	}
 	#endif
 }
 
 #if !defined DISABLE_SUBMODELS
-stock send_weapon_animation(id, submodel, animation = 0)
+stock send_weapon_animation(id, submodel, animation = ANIMATION_IDLE)
 {
 	static i, count, spectator, spectators[MAX_PLAYERS];
 
@@ -3130,7 +3162,7 @@ stock send_weapon_animation(id, submodel, animation = 0)
 
 		set_pev(spectator, pev_weaponanim, animation);
 
-		message_begin(MSG_ONE, SVC_WEAPONANIM, _, spectator);
+		message_begin(MSG_ONE_UNRELIABLE, SVC_WEAPONANIM, _, spectator);
 		write_byte(animation);
 		write_byte(submodel);
 		message_end();
@@ -3284,6 +3316,8 @@ stock eject_brass(id, ent)
 		case CSW_ELITE: return;
 		default: set_pdata_int(ent, OFFSET_SHELL, shellRifle, OFFSET_ITEM_LINUX);
 	}
+
+	if (task_exists(id + TASK_SHELL)) remove_task(id + TASK_SHELL);
 
 	if (get_pdata_int(ent, OFFSET_SILENCER, OFFSET_ITEM_LINUX) & WPNSTATE_FAMAS_BURST_MODE || get_pdata_int(ent, OFFSET_SILENCER, OFFSET_ITEM_LINUX) & WPNSTATE_GLOCK18_BURST_MODE) {
 		set_task(0.1, "eject_shell", id + TASK_SHELL);
