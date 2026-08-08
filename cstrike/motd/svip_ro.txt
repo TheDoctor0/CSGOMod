@@ -12,10 +12,10 @@ font-family:Verdana,Tahoma;
 <font size="1" color="#dadada">
 <UL>
 <LI TYPE=square>50% mai mult din EURO castigat</LI><br>
-<LI TYPE=square>10% Sanse mai mari de atragere a skin-urilor</LI><br>
+<LI TYPE=square>10% Sanse mai mari de extragere a skin-urilor</LI><br>
 <LI TYPE=square>Deagle Gratuit</LI><br>
 <LI TYPE=square>Incepand cu runda a II-a Toate Grenadele + Vesta</LI><br>
-<LI TYPE=square>Munitie rucsac nelimitat pentru arme.</LI><br>
+<LI TYPE=square>Munitie de rezerva nelimitata pentru arme.</LI><br>
 <LI TYPE=square>10 HP bonus pentru omor</LI><br>
 <LI TYPE=square>15 HP bonus pentru omor in cap</LI><br>
 <LI TYPE=square>200$ bonus pentru omor</LI><br>
@@ -25,7 +25,7 @@ font-family:Verdana,Tahoma;
 <LI TYPE=square>* AK47 + Deagle</LI><br>
 <LI TYPE=square>* AWP + Deagle</LI><br>
 <LI TYPE=square>Defuse Kit Gratuit (pentru CT)</LI><br>
-<LI TYPE=square>VIP status in tabloul de bord</LI><br>
+<LI TYPE=square>Status VIP in scoreboard</LI><br>
 <LI TYPE=square>VIPs Chat: u* (alternativa pentru u@)</LI><br>
 <LI TYPE=square>Prezenta pe lista de VIPs (/vips) si SuperVIPs (/svips)</LI><br>
 </body>

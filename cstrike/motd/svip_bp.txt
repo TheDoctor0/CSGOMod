@@ -14,13 +14,13 @@ font-family:Verdana,Tahoma;
 <LI TYPE=square>50% mais do EURO ganho</LI><br>
 <LI TYPE=square>10% mais chance de criar uma skin</LI><br>
 <LI TYPE=square>Deagle(GRATIS)</LI><br>
-<LI TYPE=square>Do 2ª round em diante, todas as granadas + colete</LI><br>
-<LI TYPE=square>Municao mochila ilimitada para armas.</LI><br>
+<LI TYPE=square>Do round 2 em diante, todas as granadas + colete</LI><br>
+<LI TYPE=square>Municao de mochila ilimitada para armas.</LI><br>
 <LI TYPE=square>10 HP bonus por kill</LI><br>
-<LI TYPE=square>15 HP bonus por kill with HS</LI><br>
+<LI TYPE=square>15 HP bonus por kill com HS</LI><br>
 <LI TYPE=square>200$ bonus por kill</LI><br>
 <LI TYPE=square>350$ bonus por kills com HS</LI><br>
-<LI TYPE=square>Do 3ª round em diante, uma escolha de tres conjuntos de armas:</LI><br>
+<LI TYPE=square>Do round 3 em diante, uma escolha de tres conjuntos de armas:</LI><br>
 <LI TYPE=square>* M4A1 + Deagle</LI><br>
 <LI TYPE=square>* AK47 + Deagle</LI><br>
 <LI TYPE=square>* AWP + Deagle</LI><br>

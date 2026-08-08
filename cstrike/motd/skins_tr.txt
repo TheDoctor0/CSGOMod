@@ -4,11 +4,11 @@
 </head>
 <body style="color: #fff" bgcolor="black">
 <font size="4" color="orange"><b>Sunucuya katildiktan sonra giris yapmalisiniz.<br>
-To do this type <font color="#f00">/account</font>.</b></font><br>
+Bunun icin konsola <font color="#f00">/account</font> yaz.</b></font><br>
 <br>
 Giristen sonra, butun gerekli bilgiler sag ust kosede belirecek.<br>
 <br>
-<b><font color ="#ff0000">FHer oldurme ve harita objektifi icin, skin alabilecegin Euro alacaksin!</font></b><br>
+<b><font color ="#ff0000">Her oldurme ve harita objektifi icin, skin alabilecegin Euro alacaksin!</font></b><br>
 <br>
 Butun mevcut komutlara ulasmak icin /menu yazabilirsin.<br>
 <br>

@@ -11,7 +11,7 @@ font-family:Verdana,Tahoma;
 <font size="4" color="red"><b><center>Lista de rankings disponiveis:</b></font></center>
 <font size="2" color="#dadada"><b>
 <center><span style="line-height:20px">
-* Unranked - Conseguir 100 kills<br>
+* Unranked - abaixo de 100 kills<br>
 * Silver I - Rank Padrao<br>
 * Silver II - 100 Pontos<br>
 * Silver III - 120 Pontos<br>

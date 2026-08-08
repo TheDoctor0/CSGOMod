@@ -5,7 +5,7 @@
 </head>
 <body style="color: #fff" bgcolor="black">
 <font size="4" color="orange"><b>Dupa ce intri pe server trebuie sa te inregistrezi.<br>
-To do this type <font color="#f00">/account</font>.</b></font><br>
+Pentru asta tasteaza <font color="#f00">/account</font>.</b></font><br>
 <br>
 Dupa conectare, toate informatiile necesare vor aparea în coltul din dreapta sus.<br>
 <br>
@@ -16,7 +16,7 @@ Puteți utiliza /menu pentru a accesa toate comenzile disponibile.<br>
 <font size="4" color="orange"><b>1. Seteaza Skin (/set)</b></font><br>
 In acest meniu va puteti selecta skin-urile si le puteti pune pe armele alese.<br>
 <br>
-<font size="4" color="orange"><b>2. Cumpara Skin (/kup)</b></font><br>
+<font size="4" color="orange"><b>2. Cumpara Skin (/buy)</b></font><br>
 Acesta este un magazin unde puteti cumpara skin-uri la un anumit pret.<br>
 <br>
 <font size="4" color="orange"><b>3. Trage un Skin (/draw)</b></font><br>
@@ -35,10 +35,10 @@ Clanurile sunt propriile tale echipe pentru jucatori, care iti ofera bonusuri sp
 Optiunea de a transfera euro catre alti jucatori.<br>
 <br>
 <font size="4" color="orange"><b>8. Schimbarea Skin-urilor (/exchange)</b></font><br>
-Cineva are o piele pe care o vrei? In acest meniu puteti tranzactiona cu el.<br>
+Cineva are un skin pe care il vrei? In acest meniu puteti face schimb cu el.<br>
 <br>
 <font size="4" color="orange"><b>9. Ofera un Skin (/give)</b></font><br>
-Dacă ai o inima buna, poti da cuiva pielea de care nu ai nevoie.<br>
+Daca ai o inima buna, poti da cuiva skinul de care nu ai nevoie.<br>
 <br>
 <font size="4" color="orange"><b>10. Setari HUD (/hud)</b></font><br>
 Puteti modifica setarile de afisare HUD aici.<br>
