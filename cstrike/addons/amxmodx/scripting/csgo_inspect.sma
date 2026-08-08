@@ -139,11 +139,9 @@ public inspect_weapon(id)
 
 stock play_inspect(id, weapon, animation)
 {
-	set_pdata_float(weapon, OFFSET_WEAPON_IDLE, 7.0, OFFSET_ITEM_LINUX);
-	set_pev(id, pev_weaponanim, animation);
+	#pragma unused id
 
-	message_begin(MSG_ONE_UNRELIABLE, SVC_WEAPONANIM, {0, 0, 0}, id);
-	write_byte(animation);
-	write_byte(pev(id, pev_body));
-	message_end();
+	set_pdata_float(weapon, OFFSET_WEAPON_IDLE, 7.0, OFFSET_ITEM_LINUX);
+
+	ExecuteHamB(Ham_CS_Weapon_SendWeaponAnim, weapon, animation, 0);
 }

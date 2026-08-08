@@ -321,7 +321,7 @@ stock send_weapon_animation(const id, const animation)
 
 	message_begin(MSG_ONE_UNRELIABLE, SVC_WEAPONANIM, _, id);
 	write_byte(animation);
-	write_byte(pev(id, pev_body));
+	write_byte(0);
 	message_end();
 }
 
