@@ -5,7 +5,7 @@
 </head>
 <body style="color: #fff" bgcolor="black">
 <font size="4" color="orange"><b>A szerverre való csatlakozás után be kell jelentkezned.<br>
-Ehez használd a <font color="#f00">/account</font> parancsot.</b></font><br>
+Ehhez használd a <font color="#f00">/account</font> parancsot.</b></font><br>
 <br>
 Bejelentkezés után minden szükséges információ megjelenik a jobb felső sarokban.<br>
 <br>
@@ -14,7 +14,7 @@ Bejelentkezés után minden szükséges információ megjelenik a jobb felső sa
 Használhatod a /menu parancsot, hogy lásd az összes általad elérhető parancsot.<br>
 <br>
 <font size="4" color="orange"><b>1. Skin Alkalmazása (/set)</b></font><br>
-Ebben a menüpontban kiválaszhatsz egy meglévő skint és alkalmazhatod azt.<br>
+Ebben a menüpontban kiválaszthatsz egy meglévő skint és alkalmazhatod azt.<br>
 <br>
 <font size="4" color="orange"><b>2. Skin Vásárlása (/kup)</b></font><br>
 Ebben a menüpontban vásárolhatsz skineket.<br>
@@ -38,7 +38,7 @@ Ez a menüpont Pénz (Euro) mozgatásra való.<br>
 Valakinek megvan a skin amit keresel? Itt cserélhettek.<br>
 <br>
 <font size="4" color="orange"><b>9. Skin Küldése (/give)</b></font><br>
-Ha jó szivű vagy akkor átadhatod a skineket amelyekre nincs szökséged.<br>
+Ha jó szívű vagy akkor átadhatod a skineket amelyekre nincs szükséged.<br>
 <br>
 <font size="4" color="orange"><b>10. HUD Konfiguráció (/hud)</b></font><br>
 A HUD kijelző beállításait módosíthatod itt.<br>

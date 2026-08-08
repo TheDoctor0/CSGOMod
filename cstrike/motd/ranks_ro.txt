@@ -12,7 +12,7 @@ font-family:Verdana,Tahoma;
 <font size="2" color="#dadada"><b>
 <center><span style="line-height:20px">
 * Fara Rank - iti trebuie 100 de omoruri<br>
-* Silver I - normal rank<br>
+* Silver I - rang normal<br>
 * Silver II - 100 Elo<br>
 * Silver III - 120 Elo<br>
 * Silver IV - 140 Elo<br>

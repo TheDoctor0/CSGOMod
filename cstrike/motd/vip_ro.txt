@@ -22,7 +22,7 @@ font-family:Verdana,Tahoma;
 <LI TYPE=square>* M4A1 + Deagle</LI><br>
 <LI TYPE=square>* AK47 + Deagle</LI><br>
 <LI TYPE=square>Defuse Kit Gratuit (pentru CT)</LI><br>
-<LI TYPE=square>VIP status in tabloul de bord</LI><br>
+<LI TYPE=square>Status VIP in scoreboard</LI><br>
 <LI TYPE=square>VIPs Chat: u* (alternativa pentru u@)</LI><br>
 <LI TYPE=square>Prezenta pe lista VIP-urilor (/vips)</LI><br>
 </body>

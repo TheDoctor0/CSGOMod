@@ -16,7 +16,7 @@ You can use /menu to access all available commands.<br>
 <font size="4" color="orange"><b>1. Set Skin (/set)</b></font><br>
 In this menu you can select your skins and put them on the chosen weapons.<br>
 <br>
-<font size="4" color="orange"><b>2. Buy Skin (/kup)</b></font><br>
+<font size="4" color="orange"><b>2. Buy Skin (/buy)</b></font><br>
 This is a shop where you can buy skins at a certain price.<br>
 <br>
 <font size="4" color="orange"><b>3. Draw Skin (/draw)</b></font><br>

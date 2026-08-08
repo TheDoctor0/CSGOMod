@@ -6,7 +6,7 @@ background-color: #161616;
 font-family:Verdana,Tahoma;
 }
 </style>
-<meta http-equiv="Content-Type" content="text/html; charset=windows-1257">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 </head>
 <font size="4" color="red"><b><center>Az elérhető Rangok listája:</b></font></center>
 <font size="2" color="#dadada"><b>
