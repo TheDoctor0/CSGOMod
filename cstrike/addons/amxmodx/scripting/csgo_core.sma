@@ -2037,6 +2037,12 @@ public set_skin_price(id)
 
 	change_local_skin(id, playerData[id][SALE_SKIN]);
 
+	if (playerData[id][ACTIVE][get_weapon_id(skin[SKIN_WEAPON_SHORT])] == playerData[id][SALE_SKIN] && has_skin(id, playerData[id][SALE_SKIN], 1) == NONE) {
+		set_skin(id, skin[SKIN_WEAPON_SHORT]);
+
+		remove_active_skin(id, skin[SKIN_WEAPON_SHORT]);
+	}
+
 	for (new player = 1; player <= MAX_PLAYERS; player++) {
 		if (!is_user_connected(player) || is_user_hltv(player) || is_user_bot(player)) continue;
 
@@ -2761,9 +2767,9 @@ public add_player_item(id, ent)
 {
 	if (pev_valid(ent) != VALID_PDATA || !is_user_connected(id) || is_user_bot(id) || is_user_hltv(id)) return HAM_IGNORED;
 
-	new owner = entity_get_int(ent, FIELD_PLAYER);
+	new owner = entity_get_int(ent, FIELD_PLAYER), currentSkin = entity_get_int(ent, FIELD_SKIN);
 
-	if (!is_user_connected(owner)) {
+	if (!is_user_connected(owner) || (currentSkin > NONE && !skin_matches_weapon(currentSkin, weapon_entity(ent)))) {
 		new weapon = weapon_entity(ent), skin = get_weapon_skin(id, weapon);
 
 		entity_set_int(ent, FIELD_PLAYER, id);
@@ -3026,12 +3032,18 @@ stock change_skin(id, weapon, ent = 0)
 	static skin[skinsInfo];
 
 	if (is_valid_ent(ent) && weapon != CSW_KNIFE && weapon != CSW_HEGRENADE && weapon != CSW_SMOKEGRENADE && weapon != CSW_FLASHBANG && weapon != CSW_C4) {
-		new weaponOwner = entity_get_int(ent, FIELD_PLAYER);
+		new weaponOwner = entity_get_int(ent, FIELD_PLAYER), weaponSkin = entity_get_int(ent, FIELD_SKIN);
+
+		if (weaponSkin > NONE && !skin_matches_weapon(weaponSkin, weapon)) {
+			entity_set_int(ent, FIELD_PLAYER, 0);
+			entity_set_int(ent, FIELD_SKIN, NONE);
+
+			weaponOwner = 0;
+			weaponSkin = NONE;
+		}
 
 		if (is_user_connected(weaponOwner) && !is_user_hltv(weaponOwner) && !is_user_bot(weaponOwner)) {
 			playerData[id][TEMP][WEAPON_ENT] = ent;
-
-			new weaponSkin = entity_get_int(ent, FIELD_SKIN);
 
 			if (weaponSkin > NONE) {
 				static weaponName[32];
@@ -3335,6 +3347,17 @@ public eject_shell(id)
 	set_pdata_float(id, OFFSET_EJECT, get_gametime(), OFFSET_PLAYER_LINUX);
 }
 #endif
+
+stock bool:skin_matches_weapon(skinId, weapon)
+{
+	if (skinId <= NONE || skinId >= ArraySize(skins)) return false;
+
+	static skin[skinsInfo];
+
+	ArrayGetArray(skins, skinId, skin);
+
+	return get_weapon_id(skin[SKIN_WEAPON_SHORT]) == weapon;
+}
 
 stock get_weapon_skin(id, weapon)
 {
